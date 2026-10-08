@@ -4,6 +4,7 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
   HeadBucketCommand,
+  CreateBucketCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import net from 'node:net';
@@ -117,7 +118,16 @@ export const getObject = (key, range) =>
       ...(range ? { Range: range } : {}),
     }),
   );
-export const storageReady = () => s3.send(new HeadBucketCommand({ Bucket: config.S3_BUCKET }));
+export const storageReady = async () => {
+  try {
+    return await s3.send(new HeadBucketCommand({ Bucket: config.S3_BUCKET }));
+  } catch (e) {
+    if (e.name === 'NotFound' || e.$metadata?.httpStatusCode === 404 || e.name === 'NoSuchBucket') {
+      return await s3.send(new CreateBucketCommand({ Bucket: config.S3_BUCKET }));
+    }
+    throw e;
+  }
+};
 export const signedObject = (key, name, mime, expiresIn = 300) =>
   getSignedUrl(
     publicS3,
