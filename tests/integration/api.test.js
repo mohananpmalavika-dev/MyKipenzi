@@ -441,6 +441,44 @@ test('API integration against an isolated PostgreSQL schema', async (t) => {
       assert.equal((await request(`/users/${bob.user.id}/block`,undefined,alice,'DELETE')).status,200);
       assert.equal((await request(`/conversations/${conversation}/messages`,{client_id:randomUUID(),text:'unblocked'},bob)).status,201);
     });
+    await t.test('groups show one conversation and each member’s selected translation', async () => {
+      const result = await request('/conversations/groups', { name: 'Our group', handles: [bob.user.handle, eve.user.handle] }, alice);
+      assert.equal(result.status, 201, JSON.stringify(result.data));
+      const cid = result.data.id;
+      for (const session of [alice, bob, eve]) {
+        const groups = (await request('/conversations', undefined, session)).data.filter(item => item.id === cid);
+        assert.equal(groups.length, 1);
+        assert.equal(groups[0].peer.name, 'Our group');
+        assert.equal(groups[0].members.length, 3);
+        assert.equal(groups[0].is_group, true);
+      }
+      assert.equal((await request(`/conversations/${cid}/calls`, { kind: 'audio' }, alice)).status, 400);
+      const sent = await request(`/conversations/${cid}/messages`, { client_id: randomUUID(), text: 'Hello everyone', source_language: 'en' }, alice);
+      assert.equal(sent.status, 201, JSON.stringify(sent.data));
+      for (const [lang, text] of [['sw', 'Habari wote'], ['manglish', 'Ellavarkkum namaskaram']]) {
+        await db.query("INSERT INTO translations(message_id,language,status,text) VALUES($1,$2,'ready',$3) ON CONFLICT(message_id,language) DO UPDATE SET status='ready',text=EXCLUDED.text", [sent.data.id, lang, text]);
+      }
+      for (const [session, expected] of [[bob, 'Habari wote'], [eve, 'Ellavarkkum namaskaram']]) {
+        const page = await request(`/conversations/${cid}/messages`, undefined, session);
+        assert.equal(page.status, 200, JSON.stringify(page.data));
+        assert.equal(page.data.messages[0].translation.text, expected);
+        assert.equal(page.data.messages[0].receiver_translation, null);
+        const single = await request(`/messages/${sent.data.id}`, undefined, session);
+        assert.equal(single.data.translation.text, expected);
+      }
+      // The two recipients now share a language: sending must still succeed,
+      // and translation fan-out must create only one job for that language.
+      await db.query("UPDATE users SET language='sw' WHERE id=$1", [eve.user.id]);
+      const shared = await request(`/conversations/${cid}/messages`, { client_id: randomUUID(), text: 'Same language', source_language: 'en' }, alice);
+      assert.equal(shared.status, 201, JSON.stringify(shared.data));
+      const jobs = (await db.query("SELECT payload FROM outbox WHERE kind='translate' AND payload->>'message_id'=$1", [shared.data.id])).rows;
+      if (jobs.length) {
+        assert.equal(jobs.length, 1);
+        assert.equal(jobs[0].payload.language, 'sw');
+        assert.equal(jobs[0].payload.requester_ids.length, 2);
+      }
+      assert.equal((await request('/conversations/groups', { name: 'Invalid', handles: [bob.user.handle, bob.user.handle] }, alice)).status, 400);
+    });
     await t.test('logout invalidates the session', async () => {
       await request('/notifications/subscription', { endpoint: 'https://fcm.googleapis.com/fcm/send/logout-test', keys: { p256dh: testPushKeys.publicKey, auth: 'A'.repeat(22) } }, alice);
       assert.equal((await request('/auth/logout', {}, alice)).status, 200);

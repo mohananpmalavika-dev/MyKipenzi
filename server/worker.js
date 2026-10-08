@@ -66,8 +66,13 @@ async function translation(data) {
     return;
   }
 
+  const trimmed = (m.text || '').trim();
+  const isTargetMalayalam = language === 'ml';
+  const isPureMalayalam = isTargetMalayalam && /\p{sc=Malayalam}/u.test(trimmed) && !/[a-zA-Z]/.test(trimmed);
+  const isPureEmojiOrSymbols = !/[a-zA-Z]/i.test(trimmed) && !/\p{sc=Malayalam}/u.test(trimmed);
+
   const text =
-    m.source_language === language
+    m.source_language === language || isPureMalayalam || isPureEmojiOrSymbols
       ? m.text
       : await translateText(m.text, m.source_language, language);
   await transaction(async (c) => {
@@ -171,7 +176,7 @@ const worker = new Worker(
     else if (job.name === 'delete_voice') await deleteVoice(job.data.voice_id);
     else if (job.name === 'push') await deliverMessagePush(job.data, job.attemptsMade);
   },
-  { connection: queueConnection, concurrency: 3 },
+  { connection: queueConnection, concurrency: 6 },
 );
 worker.on('error', (e) => logger.error({ error: e.message }, 'Worker error'));
 worker.on('failed', async (job, error) => {

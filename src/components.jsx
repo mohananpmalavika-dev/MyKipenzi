@@ -25,10 +25,13 @@ import {
   Type,
   Palette,
   RotateCcw,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { api, fileBlob, downloadFile } from './api.js';
 import { languages, stickers } from '../shared/constants.js';
 import { startLovingRingtone, stopLovingRingtone } from './ringtone.js';
+import { FONT_SIZES } from './useThemeAndFontSize.js';
 export function ButtonIcon({ label, children, ...props }) {
   return (
     <button className="icon-btn" type="button" title={label} aria-label={label} {...props}>
@@ -614,6 +617,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
           </div>
         )}
         {message.reply && <blockquote className="quoted-reply"><strong>{message.reply.sender}</strong><p>{message.reply.deleted_at ? 'Message deleted' : message.reply.text || (message.reply.sticker ? stickers[message.reply.sticker] : 'Attachment')}</p></blockquote>}
+        {group && !mine && <small className="group-sender">{message.sender?.name || 'Member'}</small>}
         {message.sticker && (
           <div className="sticker" aria-label={message.sticker}>
             {stickers[message.sticker]}
@@ -629,7 +633,6 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
         ) : isAudioNote ? (
           message.text ? <p dir="auto" className="voice-caption">{message.text}</p> : null
         ) : (
-          {group && !mine && <small className="group-sender">{message.sender?.name || 'Member'}</small>}
           <p dir="auto">{message.deleted_at ? 'Message deleted' : translated ? message.translation.text : message.text}</p>
         )}
         {isAudioNote && (

@@ -136,6 +136,67 @@ io.on('connection', (socket) => {
       /* doodle invite is best effort */
     }
   });
+  socket.on('heartbeat:pulse', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const peer = await one(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [cid, user.id],
+      );
+      if (peer) {
+        io.to(`user:${peer.user_id}`).emit('heartbeat:pulse', {
+          ...payload,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* heartbeat pulse is best effort */
+    }
+  });
+  socket.on('heartbeat:invite', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const peer = await one(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [cid, user.id],
+      );
+      if (peer) {
+        io.to(`user:${peer.user_id}`).emit('heartbeat:invite', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* heartbeat invite is best effort */
+    }
+  });
+  socket.on('heartbeat:status', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const peer = await one(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [cid, user.id],
+      );
+      if (peer) {
+        io.to(`user:${peer.user_id}`).emit('heartbeat:status', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          active: Boolean(payload.active),
+        });
+      }
+    } catch {
+      /* heartbeat status is best effort */
+    }
+  });
 });
 await events.subscribe('kipenzi-events');
 events.on('message', (_channel, body) => {
@@ -159,7 +220,12 @@ async function flush() {
       for (const row of rows) {
         if (row.kind === 'event')
           await redis.publish('kipenzi-events', JSON.stringify(row.payload));
-        else await queue.add(row.kind, row.payload, { jobId: `outbox-${row.id}`, ...(row.kind === 'push' ? { delay: 2000 } : {}) });
+        else
+          await queue.add(row.kind, row.payload, {
+            jobId: `outbox-${row.id}`,
+            priority: row.kind === 'translate' ? 1 : 5,
+            ...(row.kind === 'push' ? { delay: 2000 } : {}),
+          });
         await c.query('DELETE FROM outbox WHERE id=$1', [row.id]);
       }
     });
@@ -169,7 +235,7 @@ async function flush() {
     flushing = false;
   }
 }
-const flushTimer = setInterval(flush, 300);
+const flushTimer = setInterval(flush, 150);
 flushTimer.unref();
 let sweeping = false;
 const sweepTimer = setInterval(async () => {

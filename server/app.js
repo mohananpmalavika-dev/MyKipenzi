@@ -18,6 +18,7 @@ import {
   assertCanContact,
   messageSelect,
   sendMessage,
+  ensureReaderTranslations,
   changeMessage,
   toggleReaction,
   changeCall,
@@ -185,6 +186,7 @@ export function createApp(io) {
     const message = await one(`${messageSelect} WHERE m.id=$1`, [mid, req.user.id, req.user.language]);
     if (!message) throw new HttpError(404, 'Message not found.');
     await membership(req.user.id, message.conversation_id);
+    await ensureReaderTranslations(req.user, [message]);
     res.json(message);
   });
   app.patch('/api/messages/:id', async (req, res) => {
@@ -424,6 +426,7 @@ export function createApp(io) {
        ORDER BY m.seq DESC LIMIT 31`,
       [cid, req.user.language, req.user.id, input.before || null, input.q, input.kind],
     );
+    await ensureReaderTranslations(req.user, result.rows.slice(0,30));
     res.json({ messages: result.rows.slice(0,30), has_more: result.rows.length>30 });
   });
   app.get('/api/conversations/:id/messages', async (req, res) => {
@@ -445,6 +448,7 @@ export function createApp(io) {
         `${messageSelect} WHERE m.conversation_id=$1 AND m.seq>$4 ORDER BY m.seq ASC LIMIT 50`,
         [cid, req.user.language, req.user.id, after.data],
       );
+      await ensureReaderTranslations(req.user, result.rows);
       res.json({ messages: result.rows, has_more: result.rows.length === 50 });
       return;
     }
@@ -452,6 +456,7 @@ export function createApp(io) {
       `${messageSelect} WHERE m.conversation_id=$1 AND ($4::bigint IS NULL OR m.seq<$4) ORDER BY m.seq DESC LIMIT 50`,
       [cid, req.user.language, req.user.id, before.success ? before.data : null],
     );
+    await ensureReaderTranslations(req.user, result.rows);
     res.json({ messages: result.rows.reverse(), has_more: result.rows.length === 50 });
   });
   app.post('/api/conversations/:id/messages', async (req, res) => {

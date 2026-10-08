@@ -17,6 +17,20 @@ export async function assertCanContact(userId, conversationId, client = db) {
 }
 export const enqueue = (client, kind, payload) =>
   client.query('INSERT INTO outbox(kind,payload) VALUES($1,$2)', [kind, JSON.stringify(payload)]);
+export async function ensureReaderTranslations(user, messages) {
+  if (!user.ai_consent || !config.GEMINI_API_KEY) return;
+  const missing = messages.filter(m => !m.deleted_at && m.sender_id !== user.id && !m.translation && (m.text || m.attachment?.mime?.startsWith('audio/') || (/^voice-note-/.test(m.attachment?.name || '') && m.attachment?.mime === 'video/webm')));
+  if (!missing.length) return;
+  await transaction(async c => {
+    for (const m of missing) {
+      const result = await c.query('INSERT INTO translations(message_id,language) SELECT m.id,$2 FROM messages m JOIN users u ON u.id=m.sender_id WHERE m.id=$1 AND u.ai_consent AND m.deleted_at IS NULL ON CONFLICT DO NOTHING RETURNING message_id', [m.id, user.language]);
+      if (result.rowCount) {
+        await enqueue(c, 'translate', { message_id: m.id, language: user.language, requester_id: user.id });
+        m.translation = { language: user.language, status: 'pending', text: null };
+      }
+    }
+  });
+}
 export async function conversationEvent(client, conversationId, event, data) {
   const members = (
     await client.query('SELECT user_id FROM members WHERE conversation_id=$1', [conversationId])
@@ -46,7 +60,7 @@ export const messageSelect = `SELECT m.*,jsonb_build_object('id',u.id,'name',u.n
   FROM (
     SELECT r.emoji, COUNT(*)::int AS count,
            jsonb_agg(jsonb_build_object('id', ru.id, 'name', ru.name) ORDER BY r.created_at) AS users,
-           bool_or(r.user_id = $3) AS reacted
+           bool_or(r.user_id = $2) AS reacted
     FROM reactions r
     JOIN users ru ON ru.id = r.user_id
     WHERE r.message_id = m.id

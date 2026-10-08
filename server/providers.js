@@ -1,7 +1,9 @@
+import { createHash } from 'node:crypto';
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 import { config } from './config.js';
 import { languages } from '../shared/contracts.js';
 import { HttpError } from './security.js';
+import { redis } from './infra.js';
 export async function providerFetch(url, options = {}) {
   const response = await fetch(url, {
     ...options,
@@ -17,6 +19,14 @@ export async function providerFetch(url, options = {}) {
 }
 export async function translateText(text, source, target) {
   if (!config.GEMINI_API_KEY) throw new HttpError(503, 'Translation is not configured.');
+  const trimmed = (text || '').trim();
+  if (!trimmed) return '';
+
+  const cacheKey = `trans:cache:${source}:${target}:${createHash('sha256').update(trimmed).digest('hex')}`;
+  const cached = await redis.get(cacheKey).catch(() => null);
+  if (cached) return cached;
+
+  const maxTokens = Math.min(2048, Math.max(256, Math.ceil(trimmed.length * 4)));
   const response = await providerFetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.GEMINI_MODEL)}:generateContent`,
     {
@@ -31,7 +41,7 @@ export async function translateText(text, source, target) {
           ],
         },
         contents: [{ role: 'user', parts: [{ text }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 8192 },
+        generationConfig: { temperature: 0.1, maxOutputTokens: maxTokens },
       }),
     },
   );
@@ -42,6 +52,8 @@ export async function translateText(text, source, target) {
     .trim();
   if (!result || result.length > 20000 || data.candidates?.[0]?.finishReason !== 'STOP')
     throw new HttpError(502, 'Translation could not be completed.');
+
+  await redis.set(cacheKey, result, 'EX', 86400 * 7).catch(() => {});
   return result;
 }
 
