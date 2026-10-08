@@ -22,7 +22,11 @@ export async function conversationEvent(client, conversationId, event, data) {
 }
 export const messageSelect = `SELECT m.*,jsonb_build_object('id',u.id,'name',u.name,'handle',u.handle) AS sender,
  CASE WHEN a.id IS NOT NULL THEN jsonb_build_object('id',a.id,'name',a.name,'mime',a.mime,'size',a.size) ELSE NULL END AS attachment,
- CASE WHEN t.message_id IS NOT NULL THEN jsonb_build_object('language',t.language,'status',t.status,'text',t.text) ELSE NULL END AS translation
+ CASE WHEN t.message_id IS NOT NULL THEN jsonb_build_object('language',t.language,'status',t.status,'text',t.text) ELSE NULL END AS translation,
+ (SELECT jsonb_build_object('language',recipient.language,'status',rt.status,'text',rt.text)
+  FROM members rm JOIN users recipient ON recipient.id=rm.user_id
+  JOIN translations rt ON rt.message_id=m.id AND rt.language=recipient.language
+  WHERE rm.conversation_id=m.conversation_id AND rm.user_id<>m.sender_id LIMIT 1) AS receiver_translation
  FROM messages m JOIN users u ON u.id=m.sender_id LEFT JOIN attachments a ON a.id=m.attachment_id
  LEFT JOIN translations t ON t.message_id=m.id AND t.language=$2`;
 export async function sendMessage(user, input, conversationId) {

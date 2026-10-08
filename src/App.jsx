@@ -27,6 +27,7 @@ import { Avatar, ButtonIcon, CallOverlay, Message, Modal, Settings } from './com
 import { useCall } from './useCall.js';
 import { languages, stickers } from '../shared/constants.js';
 import { ReactionOverlay, detectReaction } from './ReactionOverlay.jsx';
+import { InstallApp } from './InstallApp.jsx';
 const mergeMessages = (old, next) =>
   Array.from(new Map([...old, ...next].map((m) => [m.id, m])).values()).sort(
     (a, b) => Number(a.seq) - Number(b.seq),
@@ -226,6 +227,7 @@ function Auth({ capabilities, onSession, onError }) {
               <small>Zero eavesdropping. Just pure love, real trust, and unfiltered honesty.</small>
             </span>
           </div>
+          <InstallApp />
         </div>
       </section>
     </main>
@@ -603,6 +605,7 @@ function Chat({ session, capabilities, onSession, onError }) {
           </ButtonIcon>
         </div>
         <div className="rail-bottom">
+          <InstallApp compact />
           <ButtonIcon label="Settings" className="rail-btn" onClick={() => setShowSettings(true)}>
             <SettingsIcon size={22} />
           </ButtonIcon>
@@ -629,6 +632,7 @@ function Chat({ session, capabilities, onSession, onError }) {
             <Plus size={21} />
           </ButtonIcon>
         </div>
+        <div className="panel-install"><InstallApp /></div>
         <label className="search-box">
           <Search size={17} />
           <input
@@ -738,6 +742,7 @@ function Chat({ session, capabilities, onSession, onError }) {
                 <p>My person · Ride or die forever 🤍</p>
               </div>
               <div className="header-actions">
+                <InstallApp compact />
                 <ButtonIcon
                   label="Start voice call"
                   disabled={!connected || !!call.call}

@@ -955,6 +955,40 @@ small {
 .mine .message-meta svg {
   color: #6a8a56;
 }
+.install-app-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #c9d7c5;
+  border-radius: 12px;
+  color: #163c35;
+  background: #eef3e9;
+  font: inherit;
+  cursor: pointer;
+}
+.auth-form-wrap > .install-app-btn { margin-top: 18px; width: 100%; }
+.panel-install { padding: 0 24px 12px; }
+.panel-install:empty { display: none; }
+.nav-rail .install-compact { color: #bed2b6; }
+.install-steps { padding-left: 24px; line-height: 1.8; margin: 18px 0; }
+.install-note { font-size: 13px; line-height: 1.6; color: #64796d; }
+.receiver-preview {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #b8cee4;
+  color: #1457a0;
+}
+.receiver-preview small {
+  display: block;
+  color: #1457a0;
+}
+.receiver-preview p {
+  margin-top: 5px;
+  color: #1457a0;
+}
 .translation-label {
   font-size: 9px;
   color: #889a7a;
@@ -2186,6 +2220,52 @@ small {
     opacity: 0;
     transform: scale(0.9) translateY(-30px);
   }
+}
+
+.ringtone-preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 12px 14px;
+  background: rgba(45, 119, 98, 0.08);
+  border-radius: 12px;
+  border: 1px solid rgba(45, 119, 98, 0.18);
+  margin-top: 4px;
+}
+
+.loving-ringtone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  animation: pulseGlow 1.8s ease-in-out infinite;
+}
+
+.ring-pulse-icon {
+  font-size: 16px;
+  display: inline-block;
+  animation: ringShake 0.8s ease-in-out infinite;
+}
+
+@keyframes ringShake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-15deg) scale(1.15); }
+  75% { transform: rotate(15deg) scale(1.15); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 182, 193, 0.3); }
+  50% { transform: scale(1.04); box-shadow: 0 0 24px rgba(255, 182, 193, 0.65); }
 }
 
 @media (prefers-reduced-motion: reduce) {

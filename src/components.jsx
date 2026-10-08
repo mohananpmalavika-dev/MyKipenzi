@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { api, fileBlob, downloadFile } from './api.js';
 import { languages, stickers } from '../shared/constants.js';
+import { startLovingRingtone, stopLovingRingtone } from './ringtone.js';
 export function ButtonIcon({ label, children, ...props }) {
   return (
     <button className="icon-btn" type="button" title={label} aria-label={label} {...props}>
@@ -93,7 +94,8 @@ export function Settings({ user, capabilities, onClose, onUser, onError }) {
       ai_consent: user.ai_consent,
       likeness_consent: user.likeness_consent,
     }),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [previewingRingtone, setPreviewingRingtone] = useState(false);
   const run = async (fn) => {
     setBusy(true);
     try {
@@ -267,6 +269,29 @@ export function Settings({ user, capabilities, onClose, onUser, onError }) {
           </div>
         </div>
         {voiceStatus}
+        <div className="ringtone-preview-row">
+          <div>
+            <strong>Loving Call Ringtone</strong>
+            <small>Melodic chime + caller voice announcement</small>
+          </div>
+          <button
+            type="button"
+            className="secondary"
+            style={{ width: 'auto', padding: '9px 15px', fontSize: '12px' }}
+            onClick={() => {
+              if (previewingRingtone) {
+                stopLovingRingtone();
+                setPreviewingRingtone(false);
+              } else {
+                setPreviewingRingtone(true);
+                startLovingRingtone(user.name || 'Bestie', draft.language);
+                setTimeout(() => setPreviewingRingtone(false), 9000);
+              }
+            }}
+          >
+            {previewingRingtone ? '⏹ Stop' : '🔔 Preview Ringtone'}
+          </button>
+        </div>
         <button className="primary" disabled={busy}>
           {busy ? <LoaderCircle className="spin" size={18} /> : 'Save sanctuary settings'}
         </button>
@@ -406,6 +431,20 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
         )}
         {message.attachment && <Attachment attachment={message.attachment} onError={onError} />}
         <p dir="auto">{translated && !original ? message.translation.text : message.text}</p>
+        {mine && message.text && message.receiver_translation && (
+          <div className="receiver-preview" aria-live="polite">
+            <small>Receiver sees · {languages[message.receiver_translation.language]}</small>
+            {message.receiver_translation.status === 'ready' ? (
+              <p dir="auto">{message.receiver_translation.text}</p>
+            ) : (
+              <small>
+                {message.receiver_translation.status === 'pending'
+                  ? 'Translating…'
+                  : 'Translation unavailable · Receiver sees the original'}
+              </small>
+            )}
+          </div>
+        )}
         {translated && (
           <button
             type="button"
@@ -535,6 +574,19 @@ export function CallOverlay({ controller, user, peer }) {
   }, [phase]);
   if (!call) return null;
   const incoming = call.state === 'ringing' && call.callee_id === user.id;
+
+  useEffect(() => {
+    if (incoming) {
+      const callerName = peer?.name || 'Your bestie';
+      startLovingRingtone(callerName, user?.language);
+    } else {
+      stopLovingRingtone();
+    }
+    return () => {
+      stopLovingRingtone();
+    };
+  }, [incoming, peer?.name, user?.language]);
+
   return (
     <div
       className="call-overlay"
@@ -562,6 +614,12 @@ export function CallOverlay({ controller, user, peer }) {
                   ? 'Connecting to my favorite person...'
                   : phase}
           </p>
+          {incoming && (
+            <div className="loving-ringtone-badge">
+              <span className="ring-pulse-icon">🎵</span>
+              <span>Ringing: {peer?.name || 'Your bestie'} is calling with love 💖</span>
+            </div>
+          )}
         </div>
         {local && <MediaVideo stream={local} muted className="local-video" />}
       </div>
