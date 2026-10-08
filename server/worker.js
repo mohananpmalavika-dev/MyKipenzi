@@ -80,34 +80,41 @@ async function media(data) {
   let key = audioKey,
     mime = 'audio/mpeg';
   if (job.kind === 'avatar') {
-    let providerId = job.provider_id;
-    if (!providerId) {
-      const current = await one('SELECT * FROM users WHERE id=$1', [user.id]);
-      if (!current.ai_consent || !current.likeness_consent)
-        throw new Error('Consent was withdrawn.');
-      const photo = await one('SELECT object_key FROM attachments WHERE id=$1', [
-        current.avatar_id,
-      ]);
-      const result = await createAvatar(
-        await providerObject(photo.object_key),
-        await providerObject(audioKey),
-      );
-      providerId = result.id;
-      if (!providerId) throw new Error('Avatar provider returned no job.');
-      await db.query('UPDATE media_jobs SET provider_id=$2 WHERE id=$1', [job.id, providerId]);
+    if (config.DID_API_KEY) {
+      let providerId = job.provider_id;
+      if (!providerId) {
+        const current = await one('SELECT * FROM users WHERE id=$1', [user.id]);
+        if (!current.ai_consent || !current.likeness_consent)
+          throw new Error('Consent was withdrawn.');
+        const photo = await one('SELECT object_key FROM attachments WHERE id=$1', [
+          current.avatar_id,
+        ]);
+        const result = await createAvatar(
+          await providerObject(photo.object_key),
+          await providerObject(audioKey),
+        );
+        providerId = result.id;
+        if (!providerId) throw new Error('Avatar provider returned no job.');
+        await db.query('UPDATE media_jobs SET provider_id=$2 WHERE id=$1', [job.id, providerId]);
+      }
+      let result;
+      for (let attempt = 0; attempt < 40; attempt++) {
+        result = await getAvatar(providerId);
+        if (result.status === 'done' || result.status === 'error' || result.status === 'rejected')
+          break;
+        await sleep(3000);
+      }
+      if (result?.status !== 'done' || !result.result_url)
+        throw new Error('Talking photo is not ready. Retry later.');
+      key = `generated/${user.id}/${job.id}.mp4`;
+      mime = 'video/mp4';
+      await putObject(key, await avatarVideo(result.result_url), mime);
+    } else {
+      // Free Audio-Reactive Talking Avatar:
+      // High-fidelity speech audio is already saved in audioKey.
+      key = audioKey;
+      mime = 'audio/mpeg';
     }
-    let result;
-    for (let attempt = 0; attempt < 40; attempt++) {
-      result = await getAvatar(providerId);
-      if (result.status === 'done' || result.status === 'error' || result.status === 'rejected')
-        break;
-      await sleep(3000);
-    }
-    if (result?.status !== 'done' || !result.result_url)
-      throw new Error('Talking photo is not ready. Retry later.');
-    key = `generated/${user.id}/${job.id}.mp4`;
-    mime = 'video/mp4';
-    await putObject(key, await avatarVideo(result.result_url), mime);
   }
   await transaction(async (c) => {
     await c.query(

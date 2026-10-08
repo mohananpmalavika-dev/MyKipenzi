@@ -118,9 +118,9 @@ export function startLovingRingtone(callerName, userLanguage = 'en') {
         if (!isPlaying) return;
         try {
           navigator.vibrate([400, 200, 400, 200, 800, 500]);
-        } catch {}
+        } catch { /* Vibration may be unavailable on this device. */ }
       }, 3000);
-    } catch {}
+    } catch { /* Vibration may be unavailable on this device. */ }
   }
 }
 
@@ -136,12 +136,12 @@ export function stopLovingRingtone() {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     try {
       window.speechSynthesis.cancel();
-    } catch {}
+    } catch { /* Speech may have already stopped. */ }
   }
 
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
     try {
       navigator.vibrate(0);
-    } catch {}
+    } catch { /* Vibration may be unavailable on this device. */ }
   }
 }

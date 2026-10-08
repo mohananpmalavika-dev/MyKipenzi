@@ -17,7 +17,7 @@ createRoot(document.getElementById('root')).render(
     <InstallProvider><App /></InstallProvider>
   </React.StrictMode>,
 );
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+if (window.isSecureContext && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     void navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(() => {});
   });

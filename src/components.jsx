@@ -15,6 +15,9 @@ import {
   Monitor,
   PhoneOff,
   Phone,
+  Play,
+  Pause,
+  Sparkles,
 } from 'lucide-react';
 import { api, fileBlob, downloadFile } from './api.js';
 import { languages, stickers } from '../shared/constants.js';
@@ -363,7 +366,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
           if (!response.ok) throw new Error('Media download failed.');
           url = URL.createObjectURL(await response.blob());
           if (active) {
-            setMedia({ url, kind: result.kind });
+            setMedia({ url, kind: result.kind, mime: result.mime });
             setBusy(false);
           } else URL.revokeObjectURL(url);
         } else if (result.status === 'failed') {
@@ -529,11 +532,218 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
       )}
       {media &&
         (media.kind === 'avatar' ? (
-          <video className="generated-video" controls src={media.url} />
+          media.mime?.startsWith('video') ? (
+            <video className="generated-video" controls src={media.url} />
+          ) : (
+            <TalkingAvatar person={user} audioUrl={media.url} />
+          )
         ) : (
           <audio controls src={media.url} />
         ))}
     </article>
+  );
+}
+export function TalkingAvatar({ person, audioUrl }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [energy, setEnergy] = useState(0);
+  const audioRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const analyserRef = useRef(null);
+  const audioCtxRef = useRef(null);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const onLoadedMetadata = () => {
+      setDuration(audio.duration || 0);
+    };
+    const onTimeUpdate = () => {
+      setCurrentTime(audio.currentTime || 0);
+      if (audio.duration) {
+        setProgress((audio.currentTime / audio.duration) * 100);
+      }
+    };
+    const onEnded = () => {
+      setIsPlaying(false);
+      setProgress(0);
+      setEnergy(0);
+    };
+
+    audio.addEventListener('loadedmetadata', onLoadedMetadata);
+    audio.addEventListener('timeupdate', onTimeUpdate);
+    audio.addEventListener('ended', onEnded);
+
+    return () => {
+      audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+      audio.removeEventListener('timeupdate', onTimeUpdate);
+      audio.removeEventListener('ended', onEnded);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close().catch(() => {});
+      }
+    };
+  }, [audioUrl]);
+
+  const togglePlay = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+      setEnergy(0);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    } else {
+      try {
+        if (!audioCtxRef.current) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            const ctx = new AudioContextClass();
+            const analyser = ctx.createAnalyser();
+            analyser.fftSize = 64;
+            const source = ctx.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(ctx.destination);
+            audioCtxRef.current = ctx;
+            analyserRef.current = analyser;
+          }
+        }
+        if (audioCtxRef.current?.state === 'suspended') {
+          await audioCtxRef.current.resume();
+        }
+
+        await audio.play();
+        setIsPlaying(true);
+
+        const updateEnergy = () => {
+          if (analyserRef.current) {
+            const data = new Uint8Array(analyserRef.current.frequencyBinCount);
+            analyserRef.current.getByteFrequencyData(data);
+            let sum = 0;
+            for (let i = 0; i < data.length; i++) sum += data[i];
+            const avg = sum / (data.length * 255);
+            setEnergy(avg);
+          } else {
+            setEnergy(0.3 + 0.3 * Math.sin(Date.now() / 150));
+          }
+          animFrameRef.current = requestAnimationFrame(updateEnergy);
+        };
+        updateEnergy();
+      } catch {
+        try {
+          await audio.play();
+          setIsPlaying(true);
+          const updateEnergy = () => {
+            setEnergy(0.35 + 0.25 * Math.sin(Date.now() / 180));
+            animFrameRef.current = requestAnimationFrame(updateEnergy);
+          };
+          updateEnergy();
+        } catch {
+          // Playback interrupted or user interaction required
+        }
+      }
+    }
+  };
+
+  const handleSeek = (e) => {
+    const audio = audioRef.current;
+    if (!audio || !duration) return;
+    const newTime = (Number(e.target.value) / 100) * duration;
+    audio.currentTime = newTime;
+    setProgress(Number(e.target.value));
+  };
+
+  const formatTime = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  return (
+    <div className={`talking-avatar-card ${isPlaying ? 'speaking' : ''}`}>
+      <audio ref={audioRef} src={audioUrl} preload="metadata" />
+      <div className="talking-badge">
+        <Sparkles size={11} className={isPlaying ? 'sparkle-spin' : ''} />
+        <span>Talking Photo · {isPlaying ? 'Speaking' : 'Ready'}</span>
+      </div>
+
+      <div className="talking-stage">
+        <div
+          className={`talking-aura ring-1 ${isPlaying ? 'active' : ''}`}
+          style={{ transform: `scale(${1 + energy * 0.4})` }}
+        />
+        <div
+          className={`talking-aura ring-2 ${isPlaying ? 'active' : ''}`}
+          style={{ transform: `scale(${1 + energy * 0.6})` }}
+        />
+        <div
+          className={`talking-aura ring-3 ${isPlaying ? 'active' : ''}`}
+          style={{ transform: `scale(${1 + energy * 0.85})` }}
+        />
+
+        <div
+          className="talking-portrait"
+          style={{
+            transform: isPlaying
+              ? `scale(${1 + energy * 0.08}) rotate(${Math.sin(currentTime * 3) * 1.5}deg)`
+              : 'none',
+          }}
+        >
+          <Avatar person={person} size="huge" />
+          {isPlaying && (
+            <div
+              className="talking-lip-indicator"
+              style={{
+                transform: `scaleY(${0.6 + energy * 1.2})`,
+                opacity: 0.8 + energy * 0.2,
+              }}
+            >
+              <span className="lip-bar bar-1" />
+              <span className="lip-bar bar-2" />
+              <span className="lip-bar bar-3" />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="talking-visualizer">
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+          const height = isPlaying
+            ? Math.max(4, Math.min(24, (energy * 28 + (1 + Math.sin(currentTime * 8 + i)) * 4)))
+            : 4;
+          return <span key={i} className="eq-bar" style={{ height: `${height}px` }} />;
+        })}
+      </div>
+
+      <div className="talking-controls">
+        <button
+          type="button"
+          className="talking-play-btn"
+          onClick={togglePlay}
+          aria-label={isPlaying ? 'Pause' : 'Play talking photo'}
+        >
+          {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+        </button>
+        <div className="talking-timeline">
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={progress}
+            onChange={handleSeek}
+            className="talking-slider"
+          />
+          <div className="talking-time-display">
+            <span>{formatTime(currentTime)}</span>
+            <span>{formatTime(duration)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 function MediaVideo({ stream, muted, className }) {
@@ -572,8 +782,7 @@ export function CallOverlay({ controller, user, peer }) {
       timer = setInterval(() => setSeconds(Math.floor((Date.now() - start) / 1000)), 1000);
     return () => clearInterval(timer);
   }, [phase]);
-  if (!call) return null;
-  const incoming = call.state === 'ringing' && call.callee_id === user.id;
+  const incoming = call?.state === 'ringing' && call.callee_id === user.id;
 
   useEffect(() => {
     if (incoming) {
@@ -587,6 +796,7 @@ export function CallOverlay({ controller, user, peer }) {
     };
   }, [incoming, peer?.name, user?.language]);
 
+  if (!call) return null;
   return (
     <div
       className="call-overlay"

@@ -86,7 +86,7 @@ export function createApp(io) {
       translation: !!config.GEMINI_API_KEY,
       speech: true,
       voice_clone: !!config.ELEVENLABS_API_KEY,
-      avatar: !!config.DID_API_KEY && !!config.ELEVENLABS_API_KEY,
+      avatar: true,
       turn: !!config.TURN_URL,
       stickers,
     }),
@@ -428,20 +428,18 @@ export function createApp(io) {
         403,
         'You and your friend both need to allow AI translation and voice reading.',
       );
-    if (!config.ELEVENLABS_API_KEY || (!input.own_voice && !config.ELEVENLABS_VOICE_ID))
-      throw new HttpError(503, 'Natural voice reading is not configured.');
     if (
       input.own_voice &&
-      (!req.user.likeness_consent || !req.user.voice_id || !req.user.voice_verified)
+      (!config.ELEVENLABS_API_KEY || !req.user.likeness_consent || !req.user.voice_id || !req.user.voice_verified)
     )
       throw new HttpError(400, 'Upload and verify your own voice first.');
     if (
       input.kind === 'avatar' &&
-      (!config.DID_API_KEY || !req.user.avatar_id || !req.user.likeness_consent)
+      (!req.user.avatar_id || !req.user.likeness_consent)
     )
       throw new HttpError(
         400,
-        'Talking photo needs the avatar provider, your profile photo, and likeness consent.',
+        'Talking photo needs your profile photo and likeness consent in settings.',
       );
     await aiLimit(req.user.id);
     const jobId = randomUUID();
@@ -464,6 +462,7 @@ export function createApp(io) {
       id: job.id,
       status: job.status,
       kind: job.kind,
+      mime: job.mime,
       error: job.error,
       url: job.status === 'ready' ? `/api/media/${job.id}/content` : null,
     });
@@ -479,7 +478,7 @@ export function createApp(io) {
       res,
       job.object_key,
       job.mime,
-      job.kind === 'avatar' ? 'talking-photo.mp4' : 'message.mp3',
+      job.mime?.startsWith('video') ? 'talking-photo.mp4' : (job.kind === 'avatar' ? 'talking-photo.mp3' : 'message.mp3'),
     );
   });
   app.get('/api/calls/ice', (_req, res) => {
