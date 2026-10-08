@@ -51,6 +51,10 @@ try {
       await c.query(await readFile(new URL('./disappearing-hour-schema.sql', import.meta.url), 'utf8'));
       await c.query('INSERT INTO schema_migrations(version) VALUES(11)');
     }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=12')).rowCount) {
+      await c.query(await readFile(new URL('./privacy-settings-migration.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(12)');
+    }
   });
   console.log('Database migrations complete.');
 } finally {
