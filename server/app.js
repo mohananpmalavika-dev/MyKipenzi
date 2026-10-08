@@ -84,7 +84,7 @@ export function createApp(io) {
     res.json({
       registration: config.ALLOW_REGISTRATION,
       translation: !!config.GEMINI_API_KEY,
-      speech: !!config.ELEVENLABS_API_KEY && !!config.ELEVENLABS_VOICE_ID,
+      speech: true,
       voice_clone: !!config.ELEVENLABS_API_KEY,
       avatar: !!config.DID_API_KEY && !!config.ELEVENLABS_API_KEY,
       turn: !!config.TURN_URL,

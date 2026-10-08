@@ -1,3 +1,4 @@
+import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 import { config } from './config.js';
 import { languages } from '../shared/contracts.js';
 import { HttpError } from './security.js';
@@ -73,18 +74,44 @@ export async function voiceVerified(voiceId) {
     result.voice_verification?.requires_verification === false
   );
 }
+
+const EDGE_VOICES = {
+  ml: 'ml-IN-SobhanaNeural',
+  manglish: 'ml-IN-SobhanaNeural',
+  sw: 'sw-KE-ZuriNeural',
+  en: 'en-US-JennyNeural',
+};
+
+async function edgeSpeech(text, language) {
+  const voice = EDGE_VOICES[language] || EDGE_VOICES.en;
+  const tts = new MsEdgeTTS();
+  await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+  const { audioStream } = tts.toStream(text);
+  const chunks = [];
+  return new Promise((resolve, reject) => {
+    audioStream.on('data', (c) => chunks.push(c));
+    audioStream.on('end', () => resolve(Buffer.concat(chunks)));
+    audioStream.on('error', reject);
+  });
+}
+
 export async function speech(text, language, voiceId) {
-  if (!config.ELEVENLABS_API_KEY || !voiceId)
-    throw new HttpError(503, 'Natural voice reading is not configured.');
-  const response = await providerFetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_44100_128`,
-    {
-      method: 'POST',
-      headers: { 'xi-api-key': config.ELEVENLABS_API_KEY, 'content-type': 'application/json' },
-      body: JSON.stringify({ text, model_id: config.ELEVENLABS_MODEL, language_code: language }),
-    },
-  );
-  return cappedBody(response, 25 * 1024 * 1024);
+  if (config.ELEVENLABS_API_KEY && voiceId && voiceId !== 'free_edge_tts') {
+    try {
+      const response = await providerFetch(
+        `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}?output_format=mp3_44100_128`,
+        {
+          method: 'POST',
+          headers: { 'xi-api-key': config.ELEVENLABS_API_KEY, 'content-type': 'application/json' },
+          body: JSON.stringify({ text, model_id: config.ELEVENLABS_MODEL, language_code: language }),
+        },
+      );
+      return cappedBody(response, 25 * 1024 * 1024);
+    } catch {
+      // Fallback to free neural voice
+    }
+  }
+  return edgeSpeech(text, language);
 }
 export const createAvatar = async (photoUrl, audioUrl) =>
   (

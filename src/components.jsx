@@ -381,19 +381,20 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
       onError('This browser does not support voice reading.');
       return;
     }
-    if (user.language === 'manglish') {
-      onError('For Manglish pronunciation, use Natural voice, which converts it to Malayalam.');
-      return;
-    }
+    const readingTranslation = translated && !original;
     const utterance = new SpeechSynthesisUtterance(
-      translated ? message.translation.text : message.text,
+      readingTranslation ? message.translation.text : message.text,
     );
     utterance.lang =
-      (translated ? user.language : message.source_language) === 'ml'
+      (readingTranslation ? user.language : message.source_language) === 'ml'
         ? 'ml-IN'
-        : (translated ? user.language : message.source_language) === 'sw'
+        : (readingTranslation ? user.language : message.source_language) === 'sw'
           ? 'sw-KE'
           : 'en-US';
+    utterance.onerror = (event) => {
+      if (event.error !== 'canceled' && event.error !== 'interrupted')
+        onError('Voice reading failed. Check your browser sound settings and try again.');
+    };
     speechSynthesis.cancel();
     speechSynthesis.speak(utterance);
   };

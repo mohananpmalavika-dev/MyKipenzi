@@ -699,7 +699,7 @@ function Chat({ session, capabilities, onSession, onError }) {
               <Avatar person={chosen.peer} />
               <div className="chat-title">
                 <h2>{chosen.peer.name}</h2>
-                <p>A little space for the two of you.</p>
+                <p>A little space for the two of us.</p>
               </div>
               <div className="header-actions">
                 <ButtonIcon
@@ -799,7 +799,7 @@ function Chat({ session, capabilities, onSession, onError }) {
                       )}
                       <div className="conversation-start">
                         <span>
-                          <ShieldCheck size={14} /> A little space for the two of you
+                          <ShieldCheck size={14} /> A little space for the two of us
                         </span>
                         <p>
                           A quick hello to {chosen.peer.name}. Or the thing that’s been on your

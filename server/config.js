@@ -20,7 +20,7 @@ export const config = z
     CLAMAV_PORT: z.coerce.number().default(3310),
     SKIP_VIRUS_SCAN: bool.default(false),
     GEMINI_API_KEY: z.string().default(''),
-    GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
+    GEMINI_MODEL: z.string().default('gemini-3.5-flash-lite'),
     ELEVENLABS_API_KEY: z.string().default(''),
     ELEVENLABS_MODEL: z.string().default('eleven_v3'),
     ELEVENLABS_VOICE_ID: z.string().default(''),
