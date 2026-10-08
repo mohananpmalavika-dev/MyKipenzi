@@ -4,37 +4,75 @@ import { one, db, transaction } from './db.js';
 import { queueConnection, redis, queue, logger, limit } from './infra.js';
 import {
   translateText,
+  translateAudio,
   speech,
   createAvatar,
   getAvatar,
   avatarVideo,
   deleteVoice,
 } from './providers.js';
-import { putObject, providerObject } from './storage.js';
+import { putObject, providerObject, readObject } from './storage.js';
 import { enqueue, conversationEvent } from './service.js';
+import { deliverMessagePush } from './push.js';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function translation(data) {
-  const { message_id, language, requester_id } = data;
+  const { message_id, language, requester_id, requester_ids } = data;
   const m = await one(
-    'SELECT m.*,u.ai_consent,t.status FROM messages m JOIN users u ON u.id=m.sender_id JOIN translations t ON t.message_id=m.id AND t.language=$2 WHERE m.id=$1',
+    'SELECT m.*,u.ai_consent,t.status,a.object_key,a.mime,a.name FROM messages m JOIN users u ON u.id=m.sender_id JOIN translations t ON t.message_id=m.id AND t.language=$2 LEFT JOIN attachments a ON a.id=m.attachment_id WHERE m.id=$1',
     [message_id, language],
   );
-  if (!m || m.status === 'ready') return;
+  if (!m || m.deleted_at || m.status === 'ready') return;
   if (!m.ai_consent) throw new Error('AI processing consent was withdrawn.');
-  if (requester_id) {
-    const requester = await one('SELECT ai_consent FROM users WHERE id=$1', [requester_id]);
-    if (!requester?.ai_consent)
+  const requesters = requester_ids || (requester_id ? [requester_id] : []);
+  if (requesters.length) {
+    const requester = await one('SELECT 1 FROM users u JOIN members mm ON mm.user_id=u.id WHERE u.id=ANY($1::uuid[]) AND u.ai_consent AND mm.conversation_id=$2 LIMIT 1', [requesters, m.conversation_id]);
+    if (!requester)
       throw new Error('Translation recipient withdrew AI processing consent.');
   }
   // Translation is capped separately because one sender can trigger one job per language.
   const day = new Date().toISOString().slice(0, 10);
   await limit(`translation:${day}:${m.sender_id}`, 200, 86400);
   await limit(`translation:global:${day}`, config.AI_GLOBAL_DAILY_LIMIT * 5, 86400);
+
+  const isVoice =
+    m.attachment_id &&
+    (m.mime?.startsWith('audio/') ||
+      (/^voice-note-/.test(m.name || '') && m.mime === 'video/webm'));
+
+  if (isVoice && (!m.text || m.text.trim() === '')) {
+    const audioBytes = await readObject(m.object_key);
+    const results = await translateAudio(Buffer.from(audioBytes), m.mime, m.name);
+    await transaction(async (c) => {
+      const current = await one(
+        'SELECT edited_at,deleted_at FROM messages WHERE id=$1 FOR UPDATE',
+        [message_id],
+        c,
+      );
+      if (!current || current.deleted_at || String(current.edited_at) !== String(m.edited_at))
+        return;
+      for (const [lang, transText] of Object.entries(results)) {
+        if (['ml', 'manglish', 'sw', 'en'].includes(lang) && transText) {
+          await c.query(
+            "INSERT INTO translations(message_id,language,status,text) VALUES($1,$2,'ready',$3) ON CONFLICT(message_id,language) DO UPDATE SET text=EXCLUDED.text,status='ready'",
+            [message_id, lang, transText],
+          );
+        }
+      }
+      await conversationEvent(c, m.conversation_id, 'message:changed', {
+        conversation_id: m.conversation_id,
+        message_id,
+      });
+    });
+    return;
+  }
+
   const text =
     m.source_language === language
       ? m.text
       : await translateText(m.text, m.source_language, language);
   await transaction(async (c) => {
+    const current = await one('SELECT text,edited_at,deleted_at FROM messages WHERE id=$1 FOR UPDATE', [message_id], c);
+    if (!current || current.deleted_at || current.text !== m.text || String(current.edited_at) !== String(m.edited_at)) return;
     await c.query(
       "UPDATE translations SET text=$3,status='ready' WHERE message_id=$1 AND language=$2",
       [message_id, language, text],
@@ -53,6 +91,7 @@ async function media(data) {
     'SELECT m.*,u.ai_consent FROM messages m JOIN users u ON u.id=m.sender_id WHERE m.id=$1',
     [job.message_id],
   );
+  if (!m || m.deleted_at) return;
   if (!user.ai_consent || !m.ai_consent) throw new Error('AI processing consent was withdrawn.');
   if (job.own_voice && (!user.voice_id || !user.voice_verified || !user.likeness_consent))
     throw new Error('Your own voice is unavailable.');
@@ -130,6 +169,7 @@ const worker = new Worker(
     if (job.name === 'translate') await translation(job.data);
     else if (job.name === 'media') await media(job.data);
     else if (job.name === 'delete_voice') await deleteVoice(job.data.voice_id);
+    else if (job.name === 'push') await deliverMessagePush(job.data, job.attemptsMade);
   },
   { connection: queueConnection, concurrency: 3 },
 );

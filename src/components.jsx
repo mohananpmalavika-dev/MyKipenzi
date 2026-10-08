@@ -103,6 +103,8 @@ export function Settings({ user, capabilities, onClose, onUser, onError, message
       language: user.language,
       ai_consent: user.ai_consent,
       likeness_consent: user.likeness_consent,
+      online_status_visibility: user.online_status_visibility || 'everyone',
+      last_seen_visibility: user.last_seen_visibility || 'everyone',
     }),
     [busy, setBusy] = useState(false),
     [previewingRingtone, setPreviewingRingtone] = useState(false);
@@ -280,6 +282,35 @@ export function Settings({ user, capabilities, onClose, onUser, onError, message
           </div>
         </div>
         {voiceStatus}
+        <h3 style={{ marginTop: '24px', marginBottom: '12px', fontSize: '16px' }}>Privacy Settings</h3>
+        <label>
+          Who can see when I'm online
+          <select
+            value={draft.online_status_visibility}
+            onChange={(e) => setDraft({ ...draft, online_status_visibility: e.target.value })}
+          >
+            <option value="everyone">Everyone</option>
+            <option value="contacts">My contacts</option>
+            <option value="nobody">Nobody</option>
+          </select>
+          <small>
+            Control who can see when you're actively using the app
+          </small>
+        </label>
+        <label>
+          Who can see my last seen time
+          <select
+            value={draft.last_seen_visibility}
+            onChange={(e) => setDraft({ ...draft, last_seen_visibility: e.target.value })}
+          >
+            <option value="everyone">Everyone</option>
+            <option value="contacts">My contacts</option>
+            <option value="nobody">Nobody</option>
+          </select>
+          <small>
+            Control who can see when you were last active
+          </small>
+        </label>
         <div className="ringtone-preview-row">
           <div>
             <strong>Loving Call Ringtone</strong>
@@ -310,7 +341,7 @@ export function Settings({ user, capabilities, onClose, onUser, onError, message
     </Modal>
   );
 }
-function Attachment({ attachment, onError }) {
+export function Attachment({ attachment, onError }) {
   const [preview, setPreview] = useState(null);
   const audio =
     attachment.mime.startsWith('audio/') ||
@@ -371,12 +402,120 @@ function Attachment({ attachment, onError }) {
     </div>
   );
 }
-export function Message({ message, mine, peerRead, user, capabilities, onError }) {
+export function Message({ message, mine, peerRead, user, capabilities, onError, onReply, onChanged, highlighted, group }) {
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState(message.text);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [longPressTimer, setLongPressTimer] = useState(null);
+  
+  const mutate = async (method) => {
+    setActionBusy(true);
+    try {
+      await api(`/messages/${message.id}`, { method, ...(method === "PATCH" ? { body: { text: editText } } : {}) });
+      setEditing(false);
+      setConfirmDelete(false);
+      await onChanged?.();
+    } catch (e) { onError(e.message); } finally { setActionBusy(false); }
+  };
+
+  const toggleReaction = async (emoji) => {
+    try {
+      await api(`/messages/${message.id}/reactions`, {
+        method: 'POST',
+        body: { emoji },
+      });
+      setShowReactionPicker(false);
+      await onChanged?.();
+    } catch (e) {
+      onError(e.message);
+    }
+  };
+
+  const handleLongPressStart = (e) => {
+    if (message.deleted_at) return;
+    e.preventDefault();
+    const timer = setTimeout(() => {
+      setShowReactionPicker(true);
+    }, 500);
+    setLongPressTimer(timer);
+  };
+
+  const handleLongPressEnd = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (longPressTimer) clearTimeout(longPressTimer);
+    };
+  }, [longPressTimer]);
   const [job, setJob] = useState(null),
     [media, setMedia] = useState(null),
     [busy, setBusy] = useState(false),
     [ownVoice, setOwnVoice] = useState(false);
   const translated = !mine && message.translation?.status === 'ready';
+
+  const isAudioNote =
+    message.attachment &&
+    (message.attachment.mime?.startsWith('audio/') ||
+      (/^voice-note-/.test(message.attachment.name || '') &&
+        message.attachment.mime === 'video/webm'));
+
+  const defaultVoiceLang =
+    user.language || 'en';
+  const [selectedVoiceLang, setSelectedVoiceLang] = useState(defaultVoiceLang);
+  const [translatingLang, setTranslatingLang] = useState(null);
+
+  const currentVoiceItem =
+    message.translations?.[selectedVoiceLang] ||
+    (message.translation?.language === selectedVoiceLang ? message.translation : null) ||
+    (message.receiver_translation?.language === selectedVoiceLang
+      ? message.receiver_translation
+      : null);
+  const currentVoiceText =
+    currentVoiceItem?.status === 'ready' ? currentVoiceItem.text : null;
+  const isVoicePending =
+    currentVoiceItem?.status === 'pending' ||
+    (!currentVoiceText && message.translation?.status === 'pending') ||
+    translatingLang === selectedVoiceLang;
+
+  const requestVoiceTranslation = async (lang) => {
+    setSelectedVoiceLang(lang);
+    if (!message.translations?.[lang] || message.translations[lang].status !== 'ready') {
+      setTranslatingLang(lang);
+      try {
+        await api(`/messages/${message.id}/translate`, {
+          method: 'POST',
+          body: { language: lang },
+        });
+      } catch (e) {
+        onError(e.message);
+      } finally {
+        setTranslatingLang(null);
+      }
+    }
+  };
+
+  const playVoiceText = (text, lang) => {
+    if (!('speechSynthesis' in window)) {
+      onError('This browser does not support voice reading.');
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang === 'ml' ? 'ml-IN' : lang === 'sw' ? 'sw-KE' : 'en-US';
+    utterance.onerror = (event) => {
+      if (event.error !== 'canceled' && event.error !== 'interrupted')
+        onError('Voice reading failed. Check your browser sound settings.');
+    };
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utterance);
+  };
+
   useEffect(() => {
     if (!job) return;
     let active = true,
@@ -432,14 +571,14 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
       onError('This browser does not support voice reading.');
       return;
     }
-    const readingTranslation = translated;
-    const utterance = new SpeechSynthesisUtterance(
-      readingTranslation ? message.translation.text : message.text,
-    );
+    const readingTranslation = translated || Boolean(currentVoiceText);
+    const textToSpeak = currentVoiceText || (readingTranslation ? message.translation.text : message.text);
+    const langToSpeak = currentVoiceText ? selectedVoiceLang : (readingTranslation ? user.language : message.source_language);
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
     utterance.lang =
-      (readingTranslation ? user.language : message.source_language) === 'ml'
+      langToSpeak === 'ml'
         ? 'ml-IN'
-        : (readingTranslation ? user.language : message.source_language) === 'sw'
+        : langToSpeak === 'sw'
           ? 'sw-KE'
           : 'en-US';
     utterance.onerror = (event) => {
@@ -450,16 +589,117 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
     speechSynthesis.speak(utterance);
   };
   return (
-    <article className={`message ${mine ? 'mine' : ''}`}>
-      <div className="bubble">
+    <article id={`message-${message.id}`} className={`message ${mine ? 'mine' : ''} ${highlighted ? 'message-highlight' : ''}`}>
+      <div 
+        className="bubble"
+        onMouseDown={handleLongPressStart}
+        onMouseUp={handleLongPressEnd}
+        onMouseLeave={handleLongPressEnd}
+        onTouchStart={handleLongPressStart}
+        onTouchEnd={handleLongPressEnd}
+        onTouchCancel={handleLongPressEnd}
+      >
+        {showReactionPicker && (
+          <div className="reaction-picker">
+            {['❤️','😂','👍','😮','😢','🙏'].map(emoji => (
+              <button
+                key={emoji}
+                type="button"
+                onClick={() => void toggleReaction(emoji)}
+                aria-label={`React with ${emoji}`}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        )}
+        {message.reply && <blockquote className="quoted-reply"><strong>{message.reply.sender}</strong><p>{message.reply.deleted_at ? 'Message deleted' : message.reply.text || (message.reply.sticker ? stickers[message.reply.sticker] : 'Attachment')}</p></blockquote>}
         {message.sticker && (
           <div className="sticker" aria-label={message.sticker}>
             {stickers[message.sticker]}
           </div>
         )}
         {message.attachment && <Attachment attachment={message.attachment} onError={onError} />}
-        <p dir="auto">{translated ? message.translation.text : message.text}</p>
-        {translated && (
+        {editing ? (
+          <form className="message-edit" onSubmit={event => { event.preventDefault(); void mutate('PATCH'); }}>
+            <textarea aria-label="Edit message" value={editText} onChange={event => setEditText(event.target.value)} maxLength={5000} disabled={actionBusy} autoFocus />
+            <button type="submit" disabled={actionBusy || !editText.trim()}>Save</button>
+            <button type="button" disabled={actionBusy} onClick={() => setEditing(false)}>Cancel</button>
+          </form>
+        ) : isAudioNote ? (
+          message.text ? <p dir="auto" className="voice-caption">{message.text}</p> : null
+        ) : (
+          {group && !mine && <small className="group-sender">{message.sender?.name || 'Member'}</small>}
+          <p dir="auto">{message.deleted_at ? 'Message deleted' : translated ? message.translation.text : message.text}</p>
+        )}
+        {isAudioNote && (
+          <div className="voice-translation-card">
+            <div className="voice-translation-header">
+              <div className="voice-translation-badge">
+                <Sparkles size={12} className="sparkle-icon" />
+                <span>Voice Translation</span>
+              </div>
+              <div className="voice-lang-chips" role="tablist" aria-label="Voice translation languages">
+                {[
+                  { id: 'ml', label: 'മലയാളം' },
+                  { id: 'manglish', label: 'Manglish' },
+                  { id: 'sw', label: 'Kiswahili' },
+                  { id: 'en', label: 'English' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={selectedVoiceLang === item.id}
+                    className={`voice-lang-chip ${selectedVoiceLang === item.id ? 'active' : ''}`}
+                    onClick={() => void requestVoiceTranslation(item.id)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {currentVoiceText ? (
+              <div className="voice-translation-body">
+                <p className="voice-translated-text" dir="auto">
+                  {currentVoiceText}
+                </p>
+                <div className="voice-translation-footer">
+                  <span className="voice-lang-desc">
+                    {selectedVoiceLang === 'en'
+                      ? 'English transcription'
+                      : `${languages[selectedVoiceLang] || selectedVoiceLang} translation`}
+                  </span>
+                  <button
+                    type="button"
+                    className="voice-listen-action"
+                    title="Listen to translation"
+                    onClick={() => playVoiceText(currentVoiceText, selectedVoiceLang)}
+                  >
+                    <Volume2 size={12} /> Listen
+                  </button>
+                </div>
+              </div>
+            ) : isVoicePending ? (
+              <div className="voice-translating-state">
+                <LoaderCircle size={13} className="spin" />
+                <span>Translating voice note into {languages[selectedVoiceLang]}…</span>
+              </div>
+            ) : (
+              <div className="voice-translation-prompt">
+                <button
+                  type="button"
+                  className="voice-fetch-btn"
+                  onClick={() => void requestVoiceTranslation(selectedVoiceLang)}
+                >
+                  <RefreshCw size={12} /> Translate into {languages[selectedVoiceLang]}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+        {!isAudioNote && translated && (
           <>
             <small className="translation-label">{languages[message.translation.language || user.language]}</small>
             <div className="sender-original">
@@ -468,7 +708,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
             </div>
           </>
         )}
-        {mine && message.text && message.receiver_translation && (
+        {!isAudioNote && mine && message.text && message.receiver_translation && (
           <div className="receiver-preview" aria-live="polite">
             <small>Receiver sees · {languages[message.receiver_translation.language]}</small>
             {message.receiver_translation.status === 'ready' ? (
@@ -482,10 +722,10 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
             )}
           </div>
         )}
-        {!mine && message.translation?.status === 'pending' && (
+        {!isAudioNote && !mine && message.translation?.status === 'pending' && (
           <small className="translation-label">Translating… · Original shown</small>
         )}
-        {!mine && message.translation?.status === 'failed' && (
+        {!isAudioNote && !mine && message.translation?.status === 'failed' && (
           <button
             type="button"
             className="translation-label"
@@ -500,6 +740,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
           </button>
         )}
         <div className="message-meta">
+          {message.edited_at && !message.deleted_at && <small>Edited</small>}
           <time dateTime={message.created_at}>
             {new Date(message.created_at).toLocaleTimeString([], {
               hour: '2-digit',
@@ -513,8 +754,30 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
               <Check size={15} aria-label="Sent" />
             ))}
         </div>
+        {message.reactions && Object.keys(message.reactions).length > 0 && (
+          <div className="reactions-container">
+            {Object.entries(message.reactions).map(([emoji, data]) => (
+              <button
+                key={emoji}
+                type="button"
+                className={`reaction-item ${data.reacted ? 'reacted' : ''}`}
+                onClick={() => void toggleReaction(emoji)}
+                title={data.users?.map(u => u.name).join(', ')}
+              >
+                <span className="reaction-emoji">{emoji}</span>
+                <span className="reaction-count">{data.count}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-      {message.text && (
+      {!message.deleted_at && <div className="message-actions">
+        {onReply && <button type="button" disabled={actionBusy} onClick={() => onReply(message)}>Reply</button>}
+        {mine && message.text && <button type="button" disabled={actionBusy} onClick={() => { setEditText(message.text); setEditing(true); }}>Edit</button>}
+        {mine && <button type="button" disabled={actionBusy} onClick={() => setConfirmDelete(true)}>Delete</button>}
+      </div>}
+      {confirmDelete && <div className="message-delete-confirm" role="alert"><span>Delete this message for everyone?</span><button type="button" disabled={actionBusy} onClick={() => void mutate('DELETE')}>Delete for everyone</button><button type="button" disabled={actionBusy} onClick={() => setConfirmDelete(false)}>Cancel</button></div>}
+      {message.text && !message.deleted_at && (
         <details className="message-tools">
           <summary>
             <Volume2 size={13} /> Read / animate

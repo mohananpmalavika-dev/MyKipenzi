@@ -1,0 +1,3 @@
+CREATE TABLE user_blocks (blocker_id uuid REFERENCES users(id) ON DELETE CASCADE, blocked_id uuid REFERENCES users(id) ON DELETE CASCADE, created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(blocker_id,blocked_id), CHECK(blocker_id<>blocked_id));
+CREATE TABLE user_reports (id uuid PRIMARY KEY, reporter_id uuid NOT NULL REFERENCES users(id), reported_id uuid NOT NULL REFERENCES users(id), reason text NOT NULL CHECK(reason IN ('spam','harassment','impersonation','other')), details text NOT NULL DEFAULT '', created_at timestamptz NOT NULL DEFAULT now(), CHECK(reporter_id<>reported_id), CHECK(length(details)<=2000));
+CREATE INDEX user_reports_review ON user_reports(created_at DESC);

@@ -12,6 +12,9 @@ export const publicUser = (u) => ({
   avatar_id: u.avatar_id,
   has_voice: !!u.voice_id,
   voice_verified: u.voice_verified,
+  online_status_visibility: u.online_status_visibility,
+  last_seen_visibility: u.last_seen_visibility,
+  last_seen: u.last_seen,
 });
 export async function getSession(cookieHeader) {
   const raw = parse(cookieHeader || '').kipenzi_session;

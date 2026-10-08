@@ -7,7 +7,7 @@ process.env.S3_BUCKET ||= 'unused';
 process.env.S3_ACCESS_KEY ||= 'unused';
 process.env.S3_SECRET_KEY ||= 'unused';
 process.env.GEMINI_API_KEY = 'test';
-const { translateText, avatarVideo, voiceVerified } = await import('../server/providers.js');
+const { translateText, translateAudio, avatarVideo, voiceVerified } = await import('../server/providers.js');
 test('translation handles Manglish as a language and preserves user text as data', async () => {
   const original = globalThis.fetch;
   let body;
@@ -25,6 +25,65 @@ test('translation handles Manglish as a language and preserves user text as data
     assert.equal(body.contents[0].parts[0].text, 'sughamano?');
     assert.match(body.systemInstruction.parts[0].text, /romanized Malayalam/);
     assert.match(body.systemInstruction.parts[0].text, /Kiswahili/);
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+test('translateAudio transcribes voice note and translates to Malayalam, Manglish, and Swahili', async () => {
+  const original = globalThis.fetch;
+  let body;
+  globalThis.fetch = async (_url, options) => {
+    body = JSON.parse(options.body);
+    return new Response(
+      JSON.stringify({
+        candidates: [
+          {
+            finishReason: 'STOP',
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    transcript: 'Hello, how are you?',
+                    ml: 'ഹലോ, സുഖമാണോ?',
+                    manglish: 'Hello, sugamano?',
+                    sw: 'Hujambo, habari gani?',
+                    en: 'Hello, how are you?',
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+      { status: 200 },
+    );
+  };
+  try {
+    const audioBuffer = Buffer.from('fake-audio-bytes');
+    const result = await translateAudio(audioBuffer, 'audio/webm', 'voice-note-1.webm');
+    assert.equal(result.transcript, 'Hello, how are you?');
+    assert.equal(result.ml, 'ഹലോ, സുഖമാണോ?');
+    assert.equal(result.manglish, 'Hello, sugamano?');
+    assert.equal(result.sw, 'Hujambo, habari gani?');
+    assert.equal(body.contents[0].parts[0].inlineData.mimeType, 'audio/webm');
+    assert.equal(body.contents[0].parts[0].inlineData.data, audioBuffer.toString('base64'));
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+test('translateAudio rejects when provider fails or truncates', async () => {
+  const original = globalThis.fetch;
+  globalThis.fetch = async () =>
+    new Response(
+      JSON.stringify({
+        candidates: [{ finishReason: 'MAX_TOKENS', content: { parts: [{ text: 'incomplete' }] } }],
+      }),
+    );
+  try {
+    await assert.rejects(
+      () => translateAudio(Buffer.from('bytes'), 'audio/webm'),
+      /could not be completed/,
+    );
   } finally {
     globalThis.fetch = original;
   }

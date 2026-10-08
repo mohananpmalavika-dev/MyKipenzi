@@ -37,7 +37,7 @@ try {
       if (data === '2') ws.send('3');
     });
   });
-  await page.goto(base);
+  await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.locator('.connection-indicator.online').waitFor();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   const sound = page.getByRole('checkbox', { name: 'Play a sound for new messages' });

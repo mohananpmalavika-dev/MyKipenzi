@@ -2,10 +2,16 @@ CREATE TABLE users (
  id uuid PRIMARY KEY, handle text UNIQUE NOT NULL, name text NOT NULL, email text UNIQUE NOT NULL,
  password_hash text NOT NULL, language text NOT NULL DEFAULT 'en' CHECK(language IN ('en','ml','manglish','sw')),
  ai_consent boolean NOT NULL DEFAULT false, likeness_consent boolean NOT NULL DEFAULT false,
- avatar_id uuid, voice_id text, voice_verified boolean NOT NULL DEFAULT false, created_at timestamptz NOT NULL DEFAULT now()
+ avatar_id uuid, voice_id text, voice_verified boolean NOT NULL DEFAULT false, 
+ last_seen timestamptz, 
+ online_status_visibility text NOT NULL DEFAULT 'everyone' CHECK(online_status_visibility IN ('everyone','contacts','nobody')),
+ last_seen_visibility text NOT NULL DEFAULT 'everyone' CHECK(last_seen_visibility IN ('everyone','contacts','nobody')),
+ created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE TABLE sessions (token_hash text PRIMARY KEY, user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE, csrf text NOT NULL, expires_at timestamptz NOT NULL);
 CREATE INDEX sessions_expiry ON sessions(expires_at);
+CREATE TABLE push_subscriptions (endpoint text PRIMARY KEY, user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE, session_token_hash text NOT NULL REFERENCES sessions(token_hash) ON DELETE CASCADE, p256dh text NOT NULL, auth text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX push_subscriptions_user ON push_subscriptions(user_id);
 CREATE TABLE conversations (id uuid PRIMARY KEY, direct_key text UNIQUE NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
 CREATE TABLE members (conversation_id uuid REFERENCES conversations(id) ON DELETE CASCADE, user_id uuid REFERENCES users(id) ON DELETE CASCADE, read_seq bigint NOT NULL DEFAULT 0, PRIMARY KEY(conversation_id,user_id));
 CREATE TABLE attachments (id uuid PRIMARY KEY, owner_id uuid NOT NULL REFERENCES users(id), conversation_id uuid REFERENCES conversations(id), purpose text NOT NULL CHECK(purpose IN ('chat','avatar')), object_key text UNIQUE NOT NULL, name text NOT NULL, mime text NOT NULL, size integer NOT NULL, created_at timestamptz NOT NULL DEFAULT now());

@@ -26,6 +26,8 @@ export const profile = z.object({
   language,
   ai_consent: z.boolean(),
   likeness_consent: z.boolean(),
+  online_status_visibility: z.enum(['everyone', 'contacts', 'nobody']).optional(),
+  last_seen_visibility: z.enum(['everyone', 'contacts', 'nobody']).optional(),
 });
 export const messageInput = z
   .object({
@@ -34,8 +36,12 @@ export const messageInput = z
     source_language: z.enum(['auto', 'en', 'ml', 'manglish', 'sw']).default('auto'),
     sticker: z.enum(Object.keys(stickers)).optional(),
     attachment_id: id.optional(),
+    reply_to_id: id.optional(),
   })
   .refine((v) => v.text || v.sticker || v.attachment_id, { message: 'Message is empty' });
+export const messageEdit = z.object({ text: z.string().trim().min(1).max(5000) });
+export const reactionEmojis = ['❤️','😂','👍','😮','😢','🙏'];
+export const reactionInput = z.object({ emoji: z.enum(reactionEmojis) });
 export const signalInput = z
   .object({ call_id: id, type: z.enum(['offer', 'answer', 'ice']), data: z.unknown() })
   .superRefine((v, ctx) => {

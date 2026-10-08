@@ -44,6 +44,78 @@ export async function translateText(text, source, target) {
     throw new HttpError(502, 'Translation could not be completed.');
   return result;
 }
+
+export function normalizeAudioMime(mime, filename = '') {
+  const m = (mime || '').toLowerCase();
+  const n = (filename || '').toLowerCase();
+  if (m.includes('webm') || n.endsWith('.webm')) return 'audio/webm';
+  if (m.includes('ogg') || n.endsWith('.ogg')) return 'audio/ogg';
+  if (m.includes('mp4') || m.includes('m4a') || n.endsWith('.m4a') || n.endsWith('.mp4')) return 'audio/mp4';
+  if (m.includes('mp3') || m.includes('mpeg') || n.endsWith('.mp3')) return 'audio/mp3';
+  if (m.includes('wav') || n.endsWith('.wav')) return 'audio/wav';
+  return 'audio/webm';
+}
+
+export async function translateAudio(buffer, mime = 'audio/webm', filename = '') {
+  if (!config.GEMINI_API_KEY) throw new HttpError(503, 'Translation is not configured.');
+  const normalizedMime = normalizeAudioMime(mime, filename);
+  const base64Audio = Buffer.isBuffer(buffer)
+    ? buffer.toString('base64')
+    : Buffer.from(buffer).toString('base64');
+  const response = await providerFetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.GEMINI_MODEL)}:generateContent`,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-goog-api-key': config.GEMINI_API_KEY },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [
+            {
+              text: 'You are an expert audio translator and transcriber. The audio input is a voice message in English. Transcribe the English speech, and translate it into: Malayalam (written in Malayalam script), Manglish (spoken Malayalam rendered in Latin/English chat alphabet, not English), and Swahili (Kiswahili). Always respond strictly with valid JSON with keys transcript, ml, manglish, sw, en. Never include markdown code blocks or conversational text.',
+            },
+          ],
+        },
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              { inlineData: { mimeType: normalizedMime, data: base64Audio } },
+              {
+                text: 'Transcribe this voice message and translate into Malayalam ("ml" in Malayalam script), Manglish ("manglish" in Latin alphabet), Swahili ("sw"), and English transcript ("en"). Return JSON.',
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.1,
+          responseMimeType: 'application/json',
+          maxOutputTokens: 8192,
+        },
+      }),
+    },
+  );
+  const data = await response.json();
+  const raw = data.candidates?.[0]?.content?.parts
+    ?.map((p) => p.text || '')
+    .join('')
+    .trim();
+  if (!raw || data.candidates?.[0]?.finishReason !== 'STOP')
+    throw new HttpError(502, 'Voice note translation could not be completed.');
+  try {
+    const parsed = JSON.parse(raw);
+    const transcript = parsed.transcript || parsed.en || '';
+    return {
+      transcript,
+      en: parsed.en || transcript,
+      ml: parsed.ml || '',
+      manglish: parsed.manglish || '',
+      sw: parsed.sw || '',
+    };
+  } catch {
+    throw new HttpError(502, 'Voice note translation could not be completed.');
+  }
+}
+
 export async function cloneVoice(name, buffer, mime, filename = 'sample') {
   if (!config.ELEVENLABS_API_KEY) throw new HttpError(503, 'Voice cloning is not configured.');
   const form = new FormData();

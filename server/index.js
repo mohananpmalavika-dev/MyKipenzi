@@ -7,7 +7,7 @@ import { redis, queue, queueConnection, logger, limit } from './infra.js';
 import { getSession } from './auth.js';
 import { createApp } from './app.js';
 import { signalInput, id } from '../shared/contracts.js';
-import { membership, conversationEvent } from './service.js';
+import { assertCanContact, membership, conversationEvent } from './service.js';
 let app;
 const http = createServer((req, res) => app(req, res));
 const io = new Server(http, {
@@ -53,6 +53,7 @@ io.on('connection', (socket) => {
         [signal.call_id, user.id],
       );
       if (!call) throw new Error('Call unavailable');
+      await assertCanContact(user.id, call.conversation_id);
       if (
         (signal.type === 'offer' && call.caller_id !== user.id) ||
         (signal.type === 'answer' && call.callee_id !== user.id)
@@ -71,6 +72,7 @@ io.on('connection', (socket) => {
       await limit(`typing:${user.id}`, 30, 60);
       const cid = id.parse(payload.conversation_id);
       await membership(user.id, cid);
+      await assertCanContact(user.id, cid);
       const peer = await one(
         'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
         [cid, user.id],
@@ -92,6 +94,46 @@ io.on('connection', (socket) => {
       if (call) await redis.set(`call-alive:${callId}:${user.id}`, '1', 'EX', 90);
     } catch {
       /* Call maintenance closes expired sessions. */
+    }
+  });
+  socket.on('doodle:sync', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const peer = await one(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [cid, user.id],
+      );
+      if (peer) {
+        io.to(`user:${peer.user_id}`).emit('doodle:sync', {
+          ...payload,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* doodle sync is best effort */
+    }
+  });
+  socket.on('doodle:invite', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const peer = await one(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [cid, user.id],
+      );
+      if (peer) {
+        io.to(`user:${peer.user_id}`).emit('doodle:invite', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* doodle invite is best effort */
     }
   });
 });
@@ -117,7 +159,7 @@ async function flush() {
       for (const row of rows) {
         if (row.kind === 'event')
           await redis.publish('kipenzi-events', JSON.stringify(row.payload));
-        else await queue.add(row.kind, row.payload, { jobId: `outbox-${row.id}` });
+        else await queue.add(row.kind, row.payload, { jobId: `outbox-${row.id}`, ...(row.kind === 'push' ? { delay: 2000 } : {}) });
         await c.query('DELETE FROM outbox WHERE id=$1', [row.id]);
       }
     });

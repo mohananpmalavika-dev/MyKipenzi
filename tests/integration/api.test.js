@@ -5,6 +5,10 @@ import { createServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
 import pg from 'pg';
 import 'dotenv/config';
+import webpush from 'web-push';
+const testPushKeys = webpush.generateVAPIDKeys();
+process.env.VAPID_PUBLIC_KEY = testPushKeys.publicKey;
+process.env.VAPID_PRIVATE_KEY = testPushKeys.privateKey;
 const schema = `test_${randomUUID().replaceAll('-', '')}`;
 process.env.RATE_LIMIT_NAMESPACE = schema;
 const admin = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -14,8 +18,13 @@ url.searchParams.set('options', `-c search_path=${schema}`);
 process.env.DATABASE_URL = url.toString();
 const { db } = await import('../../server/db.js');
 const { createApp } = await import('../../server/app.js');
+const { deliverMessagePush } = await import('../../server/push.js');
 const { redis, queue, queueConnection } = await import('../../server/infra.js');
 await db.query(await readFile(new URL('../../server/schema.sql', import.meta.url), 'utf8'));
+await db.query(await readFile(new URL('../../server/message-actions-schema.sql', import.meta.url), 'utf8'));
+await db.query(await readFile(new URL('../../server/safety-schema.sql', import.meta.url), 'utf8'));
+await db.query(await readFile(new URL('../../server/reactions-schema.sql', import.meta.url), 'utf8'));
+await db.query(await readFile(new URL('../../server/group-schema.sql', import.meta.url), 'utf8'));
 const server = createServer(createApp());
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
@@ -75,6 +84,28 @@ test('API integration against an isolated PostgreSQL schema', async (t) => {
         alice.user.handle,
       );
     });
+    await t.test('user directory requires login, exposes only public fields, searches and paginates every other user', async () => {
+      assert.equal((await request('/users')).status, 401);
+      const directory = await request('/users', undefined, alice);
+      assert.equal(directory.status, 200);
+      assert.equal(directory.data.users.length, 2);
+      assert.ok(directory.data.users.every(person => person.id !== alice.user.id));
+      for (const person of directory.data.users)
+        assert.deepEqual(Object.keys(person).sort(), ['avatar_id', 'blocked_by_me', 'contact_blocked', 'handle', 'id', 'last_seen', 'name', 'online']);
+      assert.equal((await request('/users?q=%40BOB', undefined, alice)).data.users[0].id, bob.user.id);
+      assert.equal((await request('/users?q=eve', undefined, alice)).data.users[0].id, eve.user.id);
+      assert.equal((await request('/users?q=%25', undefined, alice)).data.users.length, 0);
+      assert.equal((await request('/users?offset=-1', undefined, alice)).status, 400);
+      await db.query("INSERT INTO users(id,handle,name,email,password_hash) SELECT gen_random_uuid(),'directory_'||n,'Directory '||lpad(n::text,3,'0'),'directory_'||n||'@example.com','unused-test-hash' FROM generate_series(1,55) n");
+      const first = (await request('/users', undefined, alice)).data;
+      const second = (await request('/users?offset=50', undefined, alice)).data;
+      assert.equal(first.users.length, 50);
+      assert.equal(first.has_more, true);
+      assert.equal(second.users.length, 7);
+      assert.equal(second.has_more, false);
+      assert.equal(new Set([...first.users, ...second.users].map(person => person.id)).size, 57);
+      await db.query("DELETE FROM users WHERE name LIKE 'Directory %'");
+    });
     await t.test('direct conversation creation is idempotent and isolated', async () => {
       const first = await request('/conversations', { handle: bob.user.handle }, alice);
       assert.equal(first.status, 201);
@@ -133,6 +164,51 @@ test('API integration against an isolated PostgreSQL schema', async (t) => {
       assert.equal(events.rows.length, 1);
       assert.deepEqual(events.rows[0].payload.users, [bob.user.id]);
       await db.query('UPDATE users SET language=$2 WHERE id=$1', [bob.user.id, bob.user.language]);
+    });
+    await t.test('background pushes are session-bound, translated, unread-only, and remove expired subscriptions', async () => {
+      const subscription = { endpoint: 'https://fcm.googleapis.com/fcm/send/isolated-test', keys: { p256dh: testPushKeys.publicKey, auth: 'A'.repeat(22) } };
+      assert.equal((await request('/notifications/config')).status, 401);
+      const pushConfig = (await request('/notifications/config', undefined, bob)).data;
+      assert.equal(pushConfig.enabled, true);
+      assert.deepEqual(Object.keys(pushConfig).sort(), ['enabled', 'public_key']);
+      assert.equal((await request('/notifications/subscription', subscription, { ...bob, csrf: 'wrong' })).status, 403);
+      assert.equal((await request('/notifications/subscription', { ...subscription, endpoint: 'https://127.0.0.1/internal' }, bob)).status, 400);
+      assert.equal((await request('/notifications/subscription', subscription, bob)).status, 200);
+      await db.query('UPDATE users SET language=$2 WHERE id=$1', [bob.user.id, 'ml']);
+      const delivered = [];
+      const send = async (_subscription, payload, options) => delivered.push({ ...JSON.parse(payload), ttl: options.TTL });
+      await deliverMessagePush({ message_id: message.id, user_id: bob.user.id }, 0, send);
+      assert.equal(delivered.length, 1);
+      assert.equal(delivered[0].title, alice.user.name);
+      assert.equal(delivered[0].body, 'സുഖമാണോ?');
+      assert.equal(delivered[0].data.user_id, bob.user.id);
+      assert.equal(delivered[0].ttl, 300);
+      await db.query('UPDATE messages SET deleted_at=now() WHERE id=$1', [message.id]);
+      await deliverMessagePush({ message_id: message.id, user_id: bob.user.id }, 0, send);
+      assert.equal(delivered.length, 1);
+      await db.query('UPDATE messages SET deleted_at=NULL WHERE id=$1', [message.id]);
+      await deliverMessagePush({ message_id: message.id, user_id: alice.user.id }, 0, send);
+      await deliverMessagePush({ message_id: message.id, user_id: eve.user.id }, 0, send);
+      assert.equal(delivered.length, 1);
+      await request('/notifications/subscription', { endpoint: subscription.endpoint }, eve, 'DELETE');
+      assert.equal((await db.query('SELECT endpoint FROM push_subscriptions')).rowCount, 1);
+      const queued = await db.query("SELECT payload FROM outbox WHERE kind='push' AND payload->>'message_id'=$1", [message.id]);
+      assert.deepEqual(queued.rows.map(row => row.payload.user_id), [bob.user.id]);
+      await deliverMessagePush({ message_id: message.id, user_id: bob.user.id }, 0, async () => { throw { statusCode: 410 }; });
+      assert.equal((await db.query('SELECT endpoint FROM push_subscriptions')).rowCount, 0);
+      await request('/notifications/subscription', subscription, bob);
+      const tokenHash = (await db.query('SELECT session_token_hash FROM push_subscriptions')).rows[0].session_token_hash;
+      await db.query("UPDATE sessions SET expires_at=now()-interval '1 second' WHERE token_hash=$1", [tokenHash]);
+      await deliverMessagePush({ message_id: message.id, user_id: bob.user.id }, 0, send);
+      assert.equal(delivered.length, 1);
+      await db.query("UPDATE sessions SET expires_at=now()+interval '1 day' WHERE token_hash=$1", [tokenHash]);
+      await db.query('UPDATE members SET read_seq=$3 WHERE conversation_id=$1 AND user_id=$2', [conversation, bob.user.id, message.seq]);
+      await deliverMessagePush({ message_id: message.id, user_id: bob.user.id }, 0, send);
+      assert.equal(delivered.length, 1);
+      await db.query('UPDATE members SET read_seq=0 WHERE conversation_id=$1 AND user_id=$2', [conversation, bob.user.id]);
+      await request('/notifications/subscription', { endpoint: subscription.endpoint }, bob, 'DELETE');
+      await db.query('UPDATE users SET language=$2 WHERE id=$1', [bob.user.id, bob.user.language]);
+      await db.query(await readFile(new URL('../../server/push-schema.sql', import.meta.url), 'utf8'));
     });
     await t.test('read receipts are monotonic and require a real conversation cursor', async () => {
       assert.equal(
@@ -300,9 +376,76 @@ test('API integration against an isolated PostgreSQL schema', async (t) => {
         );
       },
     );
+    await t.test('replies remain private and only senders may edit or delete messages', async () => {
+      const original = await request(`/conversations/${conversation}/messages`, { client_id: randomUUID(), text: 'Original message' }, alice);
+      const mid = original.data.id;
+      const reply = await request(`/conversations/${conversation}/messages`, { client_id: randomUUID(), text: 'A specific reply', reply_to_id: mid }, bob);
+      assert.equal(reply.status, 201);
+      assert.equal((await request(`/messages/${reply.data.id}`, undefined, bob)).data.reply.text, 'Original message');
+      assert.equal((await request(`/messages/${mid}`, { text: 'Unauthorized' }, bob, 'PATCH')).status, 403);
+      assert.equal((await request(`/messages/${mid}`, undefined, eve, 'DELETE')).status, 404);
+      assert.equal((await request(`/messages/${mid}`, { text: ' ' }, alice, 'PATCH')).status, 400);
+      const edited = await request(`/messages/${mid}`, { text: 'Edited message' }, alice, 'PATCH');
+      assert.equal(edited.status, 200);
+      assert.ok(edited.data.edited_at);
+      assert.equal((await request(`/messages/${reply.data.id}`, undefined, bob)).data.reply.text, 'Edited message');
+      assert.equal((await request(`/messages/${mid}`, undefined, bob, 'DELETE')).status, 403);
+      const deleted = await request(`/messages/${mid}`, undefined, alice, 'DELETE');
+      assert.equal(deleted.status, 200);
+      assert.ok(deleted.data.deleted_at);
+      assert.equal(deleted.data.text, 'Message deleted');
+      assert.equal((await request(`/messages/${mid}`, { text: 'Restore' }, alice, 'PATCH')).status, 409);
+      assert.equal((await request(`/messages/${reply.data.id}`, undefined, bob)).data.reply.text, 'Message deleted');
+      assert.equal((await request(`/conversations/${conversation}/messages`, { client_id: randomUUID(), text: 'Reply', reply_to_id: mid }, bob)).status, 400);
+      const other = (await request('/conversations', { handle: eve.user.handle }, alice)).data.id;
+      assert.equal((await request(`/conversations/${other}/messages`, { client_id: randomUUID(), text: 'Wrong conversation', reply_to_id: reply.data.id }, alice)).status, 400);
+    });
+    await t.test('chat library searches full history literally and protects private media', async () => {
+      assert.equal((await request(`/conversations/${conversation}/library`, undefined, eve)).status,404);
+      assert.equal((await request(`/conversations/${conversation}/library`)).status,401);
+      await db.query("INSERT INTO messages(id,conversation_id,sender_id,client_id,text,source_language) VALUES(gen_random_uuid(),$1,$2,gen_random_uuid(),'literal 100%_unique','en')",[conversation,alice.user.id]);
+      const literal = await request(`/conversations/${conversation}/library?q=100%25_unique`,undefined,bob);
+      assert.equal(literal.status,200,JSON.stringify(literal.data));
+      assert.equal(literal.data.messages.length,1);
+      const first = (await request(`/conversations/${conversation}/library`,undefined,bob)).data;
+      assert.equal(first.messages.length,30); assert.equal(first.has_more,true);
+      const second = (await request(`/conversations/${conversation}/library?before=${first.messages.at(-1).seq}`,undefined,bob)).data;
+      assert.ok(second.messages.every(m=>Number(m.seq)<Number(first.messages.at(-1).seq)));
+      assert.ok(first.messages.every(m=>!m.deleted_at));
+      const photos = (await request(`/conversations/${conversation}/library?kind=photos`,undefined,bob)).data;
+      assert.ok(photos.messages.length); assert.ok(photos.messages.every(m=>m.attachment.mime.startsWith('image/')));
+      const files = (await request(`/conversations/${conversation}/library?kind=documents`,undefined,bob)).data;
+      assert.equal(files.messages.length,0);
+      assert.equal((await request(`/conversations/${conversation}/library?kind=invalid`,undefined,bob)).status,400);
+      assert.equal((await request(`/conversations/${conversation}/library?before=-1`,undefined,bob)).status,400);
+    });
+    await t.test('blocks stop contact in both directions and reports remain private', async () => {
+      assert.equal((await request(`/users/${alice.user.id}/block`,{},alice,'PUT')).status,400);
+      assert.equal((await request(`/users/${bob.user.id}/block`,{},alice,'PUT')).status,200);
+      assert.equal((await request(`/users/${bob.user.id}/block`,{},alice,'PUT')).status,200);
+      for (const session of [alice,bob]) {
+        assert.equal((await request(`/conversations/${conversation}/messages`,{client_id:randomUUID(),text:'blocked'},session)).status,403);
+        assert.equal((await request(`/conversations/${conversation}/calls`,{kind:'audio'},session)).status,403);
+        assert.equal((await request(`/conversations/${conversation}/messages`,undefined,session)).status,200);
+      }
+      const directory=(await request('/users?q='+bob.user.handle,undefined,alice)).data.users[0];
+      assert.equal(directory.blocked_by_me,true); assert.equal(directory.contact_blocked,true); assert.equal(directory.online,null);
+      assert.equal((await request('/conversations',{handle:alice.user.handle},bob)).status,403);
+      assert.equal((await request(`/users/${bob.user.id}/block`,undefined,bob,'DELETE')).status,200);
+      assert.equal((await request(`/conversations/${conversation}/messages`,{client_id:randomUUID(),text:'still blocked'},bob)).status,403);
+      const report=await request(`/users/${bob.user.id}/report`,{reason:'harassment',details:'Repeated unwanted contact'},alice);
+      assert.equal(report.status,201);
+      assert.equal((await db.query('SELECT details FROM user_reports WHERE id=$1',[report.data.id])).rows[0].details,'Repeated unwanted contact');
+      assert.equal((await request(`/users/${bob.user.id}/report`,{reason:'invalid'},alice)).status,400);
+      assert.equal((await request(`/users/${alice.user.id}/report`,{reason:'spam'},alice)).status,400);
+      assert.equal((await request(`/users/${bob.user.id}/block`,undefined,alice,'DELETE')).status,200);
+      assert.equal((await request(`/conversations/${conversation}/messages`,{client_id:randomUUID(),text:'unblocked'},bob)).status,201);
+    });
     await t.test('logout invalidates the session', async () => {
+      await request('/notifications/subscription', { endpoint: 'https://fcm.googleapis.com/fcm/send/logout-test', keys: { p256dh: testPushKeys.publicKey, auth: 'A'.repeat(22) } }, alice);
       assert.equal((await request('/auth/logout', {}, alice)).status, 200);
       assert.equal((await request('/conversations', undefined, alice)).status, 401);
+      assert.equal((await db.query('SELECT endpoint FROM push_subscriptions WHERE user_id=$1', [alice.user.id])).rowCount, 0);
     });
   } finally {
     await new Promise((resolve) => server.close(resolve));
