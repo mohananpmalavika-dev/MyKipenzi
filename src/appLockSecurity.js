@@ -71,3 +71,8 @@ export async function unlockDevice(record) {
   const credential=await navigator.credentials.get({publicKey:{challenge,rpId:location.hostname,allowCredentials:[{type:'public-key',id:decode(record.id),transports:['internal']}],userVerification:'required',timeout:60000}});
   await verifyDeviceAssertion(credential,record,challenge,location.origin,location.hostname);
 }
+
+export async function deviceAvailable() {
+  if (!globalThis.isSecureContext || !globalThis.PublicKeyCredential || !navigator.credentials?.create || !navigator.credentials?.get) return false;
+  try { return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); } catch { return false; }
+}

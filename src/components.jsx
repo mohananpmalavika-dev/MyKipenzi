@@ -36,9 +36,26 @@ import {
   Copy,
   ChevronDown,
   ChevronUp,
+  Calendar,
+  Clock,
+  HeartHandshake,
+  Hand,
+  Zap,
+  Lock,
+  Unlock,
 } from 'lucide-react';
+import { playTouchSound, triggerTouchHaptics, HAPTIC_PATTERNS } from './touchAudio.js';
+import { parseStoryShare, STORY_CATEGORIES } from '../shared/relationshipStory.js';
+import {
+  parseTimeCapsuleChatShare,
+  calculateCapsuleCountdown,
+  TIME_CAPSULE_OCCASIONS,
+  SEAL_SYMBOLS,
+} from '../shared/timeCapsule.js';
+import { ViewOnceMedia } from './ViewOnceMedia.jsx';
 import { PhotoViewer } from './PhotoViewer.jsx';
 import { MediaPlayer } from './MediaPlayer.jsx';
+import { AppLockSettings } from './AppLock.jsx';
 import { MessageHistory, useMessageClock } from './MessageStatus.jsx';
 import { hasExpired } from '../shared/disappearing.js';
 import { api, fileBlob, downloadFile } from './api.js';
@@ -48,6 +65,8 @@ import { FONT_SIZES } from './useThemeAndFontSize.js';
 import { playHeartbeatSound, triggerHeartbeatHaptics } from './heartbeatAudio.js';
 import { detectVoiceFilterFromFilename } from './voiceFilters.js';
 import { CallReactionOverlay } from './CallReactionOverlay.jsx';
+import { ARFilterStudio } from './ARFilterStudio.jsx';
+import { ARVideoProcessor, getFilterById } from './arVideoFilters.js';
 export function ButtonIcon({ label, children, ...props }) {
   return (
     <button className="icon-btn" type="button" title={label} aria-label={label} {...props}>
@@ -186,6 +205,7 @@ export function Settings({
     <Modal title="Sanctuary Settings" onClose={onClose}>
       <form onSubmit={save} className="settings-form">
         {messageAlerts}
+        <AppLockSettings />
         <div className="profile-row">
           <Avatar person={user} size="large" />
           <div>
@@ -470,7 +490,7 @@ export function Attachment({ attachment, onError }) {
   useEffect(() => {
     let active = true,
       url;
-    if (attachment.mime.startsWith('image/') || attachment.mime.startsWith('video/') || audio)
+    if (!attachment.view_once && (attachment.mime.startsWith('image/') || attachment.mime.startsWith('video/') || audio))
       fileBlob(attachment.id)
         .then((blob) => {
           url = URL.createObjectURL(blob);
@@ -482,11 +502,12 @@ export function Attachment({ attachment, onError }) {
       active = false;
       if (url) URL.revokeObjectURL(url);
     };
-  }, [attachment.id, attachment.mime, audio, onError]);
+  }, [attachment.id, attachment.mime, attachment.view_once, audio, onError]);
   const isCustomSticker =
     attachment.name?.startsWith('sticker-') ||
     (attachment.mime?.startsWith('image/') && attachment.name?.toLowerCase().includes('sticker'));
 
+  if (attachment.view_once) return <p>① View-once media · Open in chat</p>;
   if (isCustomSticker) {
     return (
       <div className="custom-sticker-attachment">
@@ -583,6 +604,64 @@ export function HeartbeatCard({ text }) {
         <Activity size={14} />
         <span>{isPlaying ? 'Feeling Heartbeat... 💓' : 'Feel Heartbeat (സ്പന്ദനം അനുഭവിക്കൂ)'}</span>
       </button>
+    </div>
+  );
+}
+
+export function VirtualTouchCard({ text, onOpenTouch }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const isHug = text.includes('Haptic Hug') || text.includes('സ്നേഹാലിംഗനം') || text.includes('Hug');
+  const cleanMessage = text.replace(/🫂\s*\[(Virtual Touch|Haptic Hug)[^\]]*\]\s*/i, '').trim();
+
+  const handleFeelTouch = () => {
+    setIsPlaying(true);
+    if (isHug) {
+      triggerTouchHaptics(HAPTIC_PATTERNS.hug);
+      playTouchSound('hug', 0.5);
+    } else {
+      triggerTouchHaptics(HAPTIC_PATTERNS.pulse);
+      playTouchSound('gentle', 0.5);
+    }
+
+    setTimeout(() => {
+      setIsPlaying(false);
+    }, 1800);
+  };
+
+  return (
+    <div className={`virtual-touch-chat-card ${isPlaying ? 'card-pulsing' : ''} ${isHug ? 'is-hug' : ''}`}>
+      <div className="vt-card-top">
+        <div className="vt-card-icon-wrap">
+          <HeartHandshake size={24} className={`vt-card-icon ${isPlaying ? 'hug-anim' : ''}`} />
+        </div>
+        <div className="vt-card-meta">
+          <strong>{isHug ? 'Haptic Hug 🫂 (സ്നേഹാലിംഗനം)' : 'Virtual Touch 🌸 (മൃദുസ്പർശം)'}</strong>
+          <span>Sent with loving touch presence · തത്സമയ സ്പർശനം</span>
+        </div>
+      </div>
+
+      {cleanMessage && <p className="vt-card-message">{cleanMessage}</p>}
+
+      <div className="vt-card-actions">
+        <button
+          type="button"
+          className={`vt-feel-touch-btn ${isPlaying ? 'active' : ''}`}
+          onClick={handleFeelTouch}
+        >
+          <Zap size={14} />
+          <span>{isPlaying ? 'Feeling Touch... 🫂' : 'Feel Touch (സ്പർശനം അനുഭവിക്കൂ)'}</span>
+        </button>
+
+        {onOpenTouch && (
+          <button
+            type="button"
+            className="vt-touch-back-btn"
+            onClick={onOpenTouch}
+          >
+            <Hand size={14} /> Touch Back
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -716,7 +795,180 @@ export function WatchPartyCard({ text, onOpenWatchParty }) {
   );
 }
 
-export function Message({ message, mine, peerRead, user, capabilities, onError, onReply, onForward, onChanged, highlighted, group, contactBlocked, onOpenDailyPrompt, onOpenMusic, onOpenWatchParty }) {
+export function StoryMemoryCard({ text, onOpenStory }) {
+  const parsed = parseStoryShare(text);
+  if (!parsed || parsed.type !== 'memory') {
+    return <p dir="auto">{text}</p>;
+  }
+
+  const cat = STORY_CATEGORIES[parsed.category] || STORY_CATEGORIES.sweet_moment;
+
+  return (
+    <div className="story-chat-card">
+      <div className="story-chat-card-top">
+        <div className="story-chat-card-badge" style={{ backgroundColor: `${cat.color}20`, color: cat.color }}>
+          <span>{parsed.emoji || cat.icon}</span>
+          <strong>{cat.labelMl}</strong>
+        </div>
+        {parsed.date && <span className="story-chat-card-date">📅 {parsed.date}</span>}
+      </div>
+
+      <h4 className="story-chat-card-title">{parsed.title}</h4>
+
+      {parsed.description && (
+        <p className="story-chat-card-desc" dir="auto">
+          &ldquo;{parsed.description}&rdquo;
+        </p>
+      )}
+
+      {parsed.photo_url && (
+        <div className="story-chat-card-photo-wrap">
+          <img src={parsed.photo_url} alt={parsed.title} className="story-chat-card-photo" />
+        </div>
+      )}
+
+      <div className="story-chat-card-footer">
+        <span className="story-chat-subtext">Our Story Memory · നമ്മുടെ ഓർമ്മകൾ 💕</span>
+        {onOpenStory && (
+          <button
+            type="button"
+            className="story-chat-open-btn"
+            onClick={() => onOpenStory('timeline')}
+          >
+            <span>View in Our Story 📖</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function StoryMilestoneCard({ text, onOpenStory }) {
+  const parsed = parseStoryShare(text);
+  if (!parsed || parsed.type !== 'milestone') {
+    return <p dir="auto">{text}</p>;
+  }
+
+  const isCelebration = parsed.daysRemaining === 0;
+
+  return (
+    <div className={`story-chat-card milestone ${isCelebration ? 'celebration-card' : ''}`}>
+      <div className="story-chat-card-top">
+        <div className="story-chat-card-badge">
+          <span>{parsed.emoji || '💖'}</span>
+          <strong>വിശേഷ ദിവസം · Milestone</strong>
+        </div>
+        {parsed.targetDate && <span className="story-chat-card-date">🎯 {parsed.targetDate}</span>}
+      </div>
+
+      <h4 className="story-chat-card-title">{parsed.title}</h4>
+
+      <div className="story-chat-milestone-stats">
+        <div className="story-chat-stat-pill">
+          <Heart size={12} fill="#ef4444" color="#ef4444" />
+          <span>Together for {parsed.daysTogether} Days</span>
+        </div>
+        <div className="story-chat-stat-pill countdown">
+          <Clock size={12} />
+          <span>
+            {isCelebration
+              ? 'Today is the day! 🎉'
+              : `${parsed.daysRemaining} days remaining`}
+          </span>
+        </div>
+      </div>
+
+      {parsed.note && (
+        <p className="story-chat-card-desc" dir="auto">
+          &ldquo;{parsed.note}&rdquo;
+        </p>
+      )}
+
+      <div className="story-chat-card-footer">
+        <span className="story-chat-subtext">Countdown &amp; Milestones · വിശേഷ ദിവസങ്ങൾ ✨</span>
+        {onOpenStory && (
+          <button
+            type="button"
+            className="story-chat-open-btn"
+            onClick={() => onOpenStory('milestones')}
+          >
+            <span>Open Countdown ⏳</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function TimeCapsuleChatCard({ text, onOpenTimeCapsule }) {
+  const parsed = parseTimeCapsuleChatShare(text);
+  if (!parsed) {
+    return <p dir="auto">{text}</p>;
+  }
+
+  const countdown = calculateCapsuleCountdown(parsed.unlock_at);
+  const occ = TIME_CAPSULE_OCCASIONS[parsed.occasion] || TIME_CAPSULE_OCCASIONS.custom;
+  const seal = SEAL_SYMBOLS[parsed.seal_symbol] || SEAL_SYMBOLS.heart;
+  const isUnlocked = countdown.isUnlocked;
+
+  return (
+    <div className={`time-capsule-chat-card ${isUnlocked ? 'unlocked' : 'sealed'}`}>
+      <div className="tc-chat-card-top">
+        <div className="tc-chat-card-badge">
+          <span>{occ.icon}</span>
+          <strong>{occ.labelMl}</strong>
+          <span className="tc-chat-sep">·</span>
+          <span>{occ.labelEn}</span>
+        </div>
+        <div className="tc-chat-seal-stamp">
+          <span>{seal.emoji}</span>
+        </div>
+      </div>
+
+      <h4 className="tc-chat-card-title">{parsed.title}</h4>
+
+      <div className="tc-chat-card-info-row">
+        <span>Sealed with love by <strong>{parsed.sender_name}</strong></span>
+        {parsed.has_audio && <span className="tc-chat-pill-voice">🎙️ Voice Note</span>}
+        {parsed.has_photo && <span className="tc-chat-pill-photo">📸 Photo</span>}
+      </div>
+
+      <div className={`tc-chat-countdown-bar ${isUnlocked ? 'ready' : ''}`}>
+        {isUnlocked ? <Unlock size={14} /> : <Lock size={14} />}
+        <span>
+          {isUnlocked
+            ? 'Unlocked with Love! 💌 (ഇപ്പോൾ തുറക്കാം)'
+            : `Unlocks in: ${countdown.labelEn} (${countdown.labelMl})`}
+        </span>
+      </div>
+
+      <div className="tc-chat-card-footer">
+        <span className="tc-chat-footer-label">Digital Time Capsule · രഹസ്യ കത്ത് ⏳</span>
+        {onOpenTimeCapsule && (
+          <button
+            type="button"
+            className="tc-chat-open-btn"
+            onClick={() => onOpenTimeCapsule(parsed.id)}
+          >
+            {isUnlocked ? (
+              <>
+                <Unlock size={14} />
+                <span>Open Secret Love Letter 🔓✨ (തുറക്കുക)</span>
+              </>
+            ) : (
+              <>
+                <Lock size={14} />
+                <span>View Sealed Capsule 💌 (കാണുക)</span>
+              </>
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function Message({ message, mine, peerRead, user, capabilities, onError, onReply, onForward, onChanged, highlighted, group, contactBlocked, onOpenDailyPrompt, onOpenMusic, onOpenWatchParty, onOpenStory, onOpenTouch, onOpenTimeCapsule }) {
   const [showHistory, setShowHistory] = useState(false);
   const { canDelete, expiration } = useMessageClock(message);
   const [editing, setEditing] = useState(false);
@@ -759,7 +1011,10 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
 
   const handleLongPressStart = (e) => {
     if (message.deleted_at) return;
-    e.preventDefault();
+    // Let text and controls keep their native selection and interaction behavior.
+    if (e.target.closest('p, blockquote, button, a, input, textarea, audio, video')) return;
+    if (e.type === 'mousedown' && e.button !== 0) return;
+    if (window.getSelection()?.toString()) return;
     const timer = setTimeout(() => {
       setShowReactionPicker(true);
     }, 500);
@@ -955,7 +1210,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
             {stickers[message.sticker]}
           </div>
         )}
-        {message.attachment && <Attachment attachment={message.attachment} onError={onError} />}
+        {message.view_once && !message.deleted_at ? <ViewOnceMedia message={message} mine={mine} onError={onError} /> : message.attachment && <Attachment attachment={message.attachment} onError={onError} />}
         {editing ? (
           <form className="message-edit" onSubmit={event => { event.preventDefault(); void mutate('PATCH'); }}>
             <textarea aria-label="Edit message" value={editText} onChange={event => setEditText(event.target.value)} maxLength={5000} disabled={actionBusy} autoFocus />
@@ -964,6 +1219,8 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
           </form>
         ) : isAudioNote ? (
           message.text ? <p dir="auto" className="voice-caption">{message.text}</p> : null
+        ) : !message.deleted_at && (message.text?.startsWith('🫂 [Virtual Touch') || message.text?.startsWith('🫂 [Haptic Hug')) ? (
+          <VirtualTouchCard text={message.text} onOpenTouch={onOpenTouch} />
         ) : !message.deleted_at && message.text?.startsWith('💓 [Heartbeat Pulse') ? (
           <HeartbeatCard text={message.text} />
         ) : !message.deleted_at && message.text?.startsWith('✨ [Daily Us Prompt') ? (
@@ -972,6 +1229,12 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
           <ListenTogetherCard text={message.text} onOpenMusic={onOpenMusic} />
         ) : !message.deleted_at && message.text?.startsWith('🎬 [Watch Party') ? (
           <WatchPartyCard text={message.text} onOpenWatchParty={onOpenWatchParty} />
+        ) : !message.deleted_at && (message.text?.startsWith('[OUR_STORY_MEMORY]') || message.text?.startsWith('🌟 [Our Story Memory')) ? (
+          <StoryMemoryCard text={message.text} onOpenStory={onOpenStory} />
+        ) : !message.deleted_at && (message.text?.startsWith('[OUR_STORY_MILESTONE]') || message.text?.startsWith('⏳ [Our Story Milestone') || message.text?.startsWith('💍 [Our Story Milestone')) ? (
+          <StoryMilestoneCard text={message.text} onOpenStory={onOpenStory} />
+        ) : !message.deleted_at && (message.text?.startsWith('[TIME_CAPSULE:') || message.text?.startsWith('💌 [Digital Time Capsule') || message.text?.startsWith('⏳ [Digital Time Capsule')) ? (
+          <TimeCapsuleChatCard text={message.text} onOpenTimeCapsule={onOpenTimeCapsule} />
         ) : (
           <p dir="auto">{message.deleted_at ? 'Message deleted' : translated ? message.translation.text : message.text}</p>
         )}
@@ -1168,9 +1431,9 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
         )}
       </div>
       {!message.deleted_at && <div className="message-actions">
-        <button type="button" aria-pressed={!!message.starred} disabled={actionBusy} onClick={() => void saveMessage("star")}>{message.starred ? "Unstar" : "Star"}</button>
-        <button type="button" aria-pressed={!!message.pinned} disabled={actionBusy || contactBlocked} onClick={() => void saveMessage("pin")}>{message.pinned ? "Unpin" : "Pin"}</button>
-        {onForward && <button type="button" disabled={actionBusy || contactBlocked} onClick={() => onForward(message)}>Forward</button>}
+        <button type="button" aria-pressed={!!message.starred} disabled={actionBusy || message.view_once} onClick={() => void saveMessage("star")}>{message.starred ? "Unstar" : "Star"}</button>
+        <button type="button" aria-pressed={!!message.pinned} disabled={actionBusy || contactBlocked || message.view_once} onClick={() => void saveMessage("pin")}>{message.pinned ? "Unpin" : "Pin"}</button>
+        {onForward && !message.view_once && <button type="button" disabled={actionBusy || contactBlocked} onClick={() => onForward(message)}>Forward</button>}
         {onReply && <button type="button" disabled={actionBusy} onClick={() => onReply(message)}>Reply</button>}
         {mine && message.text && <button type="button" disabled={actionBusy} onClick={() => { setEditText(message.text); setEditing(true); }}>Edit</button>}
         {mine && <button type="button" disabled={actionBusy || !canDelete} title={canDelete ? 'Delete for everyone within 24 hours' : 'The 24-hour deletion window has ended'} onClick={() => setConfirmDelete(true)}>Delete</button>}
@@ -1442,10 +1705,90 @@ function MediaVideo({ stream, muted, className }) {
   return <video className={className} ref={ref} autoPlay playsInline muted={muted} />;
 }
 export function CallOverlay({ controller, user, peer, musicController, socket }) {
-  const { call, local, remote, phase, sharing, muted, cameraOff } = controller;
+  const {
+    call,
+    local,
+    remote,
+    phase,
+    sharing,
+    muted,
+    cameraOff,
+    rawStream,
+    replaceVideoTrack,
+    updateLocalStream,
+  } = controller;
   const [seconds, setSeconds] = useState(0);
   const [remoteVideo, setRemoteVideo] = useState(false);
+  const [activeFilterId, setActiveFilterId] = useState('none');
+  const [showARPanel, setShowARPanel] = useState(false);
   const stageRef = useRef(null);
+  const processorRef = useRef(null);
+  const originalStreamRef = useRef(null);
+
+  // Initialize AR Video Processor
+  useEffect(() => {
+    processorRef.current = new ARVideoProcessor();
+    return () => {
+      processorRef.current?.destroy();
+      processorRef.current = null;
+    };
+  }, []);
+
+  // Track the raw camera stream whenever available
+  useEffect(() => {
+    const streamToSave = rawStream || (local && activeFilterId === 'none' ? local : null);
+    if (streamToSave && streamToSave.getVideoTracks().length > 0) {
+      originalStreamRef.current = streamToSave;
+      processorRef.current?.setRawStream(streamToSave);
+    }
+  }, [rawStream, local, activeFilterId]);
+
+  // Clean up filter on call end
+  useEffect(() => {
+    if (!call || ['ended', 'declined', 'missed'].includes(call.state)) {
+      setActiveFilterId('none');
+      setShowARPanel(false);
+      processorRef.current?.stop();
+    }
+  }, [call]);
+
+  const handleFilterSelect = useCallback(
+    (filterId, options = {}) => {
+      setActiveFilterId(filterId);
+      const proc = processorRef.current;
+      if (!proc) return;
+
+      const baseStream = originalStreamRef.current || rawStream || local;
+
+      if (filterId === 'none') {
+        proc.setFilter('none');
+        proc.stop();
+        if (replaceVideoTrack) {
+          const originalVideoTrack = baseStream?.getVideoTracks()[0] || null;
+          replaceVideoTrack(originalVideoTrack);
+        }
+        if (updateLocalStream && baseStream) {
+          updateLocalStream(new MediaStream(baseStream.getTracks()));
+        }
+      } else {
+        if (baseStream) {
+          proc.setRawStream(baseStream);
+        }
+        proc.setFilter(filterId, options);
+        proc.start();
+
+        const outStream = proc.getOutputStream(30);
+        const filteredTrack = outStream?.getVideoTracks()[0];
+        if (filteredTrack) {
+          replaceVideoTrack?.(filteredTrack);
+          const audioTracks = baseStream?.getAudioTracks() || [];
+          updateLocalStream?.(new MediaStream([filteredTrack, ...audioTracks]));
+        }
+      }
+    },
+    [rawStream, local, replaceVideoTrack, updateLocalStream],
+  );
+
   useEffect(() => {
     const tracks = remote?.getVideoTracks() || [];
     const update = () =>
@@ -1486,6 +1829,9 @@ export function CallOverlay({ controller, user, peer, musicController, socket })
   }, [incoming, peer?.name, user?.language]);
 
   if (!call) return null;
+  const activeFilter = getFilterById(activeFilterId);
+  const isMl = user?.language === 'ml' || user?.language === 'manglish' || true;
+
   return (
     <div
       className="call-overlay"
@@ -1522,13 +1868,43 @@ export function CallOverlay({ controller, user, peer, musicController, socket })
         </div>
         {local && <MediaVideo stream={local} muted className="local-video" />}
         {musicController?.active && musicController?.dock}
+
+        {/* Active AR Filter Indicator Pill */}
+        {call.kind === 'video' && activeFilterId !== 'none' && (
+          <div className="active-ar-indicator">
+            <span className="ar-indicator-dot" />
+            <span className="ar-indicator-title">
+              {activeFilter.icon} {isMl ? activeFilter.nameMl : activeFilter.nameEn}
+            </span>
+            <button
+              type="button"
+              className="ar-indicator-clear"
+              onClick={() => handleFilterSelect('none')}
+              title="Remove AR filter"
+              aria-label="Remove AR Filter"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* In-Call AR Filters & Virtual Backgrounds Studio Drawer */}
+        <ARFilterStudio
+          isOpen={showARPanel}
+          onClose={() => setShowARPanel(false)}
+          activeFilterId={activeFilterId}
+          onSelectFilter={handleFilterSelect}
+          processor={processorRef.current}
+          isMalayalam={isMl}
+        />
+
         {call && (call.state === 'active' || phase === 'Connected') && (
           <CallReactionOverlay
             call={call}
             user={user}
             peer={peer}
             socket={socket}
-            isMalayalam={user?.language === 'ml' || user?.language === 'manglish' || true}
+            isMalayalam={isMl}
             containerRef={stageRef}
           />
         )}
@@ -1561,6 +1937,16 @@ export function CallOverlay({ controller, user, peer, musicController, socket })
                 aria-label={cameraOff ? 'Enable camera' : 'Disable camera'}
               >
                 {cameraOff ? <VideoOff /> : <Video />}
+              </button>
+            )}
+            {call.kind === 'video' && !cameraOff && (
+              <button
+                className={`call-control ${activeFilterId !== 'none' || showARPanel ? 'toggled' : ''}`}
+                onClick={() => setShowARPanel((prev) => !prev)}
+                aria-label="AR Filters & Backgrounds"
+                title="AR ഫിൽട്ടറുകളും ബാക്ക്ഗ്രൗണ്ടുകളും (AR Filters & Backgrounds ✨)"
+              >
+                <Sparkles />
               </button>
             )}
             <button
@@ -1600,436 +1986,7 @@ export function CallOverlay({ controller, user, peer, musicController, socket })
   );
 }
 
-export function StickerCreatorModal({ onClose, onSendSticker, onSaveToLibrary, onError }) {
-  const [imageSrc, setImageSrc] = useState(null);
-  const [shape, setShape] = useState('circle');
-  const [borderWidth, setBorderWidth] = useState(8);
-  const [borderColor, setBorderColor] = useState('#ffffff');
-  const [caption, setCaption] = useState('');
-  const [captionPos, setCaptionPos] = useState('bottom');
-  const [filter, setFilter] = useState('none');
-  const [scale, setScale] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStartRef = useRef({ x: 0, y: 0 });
-  const panStartRef = useRef({ x: 0, y: 0 });
-  const canvasRef = useRef(null);
-  const imgRef = useRef(null);
-  const fileInputRef = useRef(null);
-
-  const handleFile = useCallback(
-    (file) => {
-      if (!file || !file.type.startsWith('image/')) {
-        onError?.('Please choose an image file (PNG, JPG, WebP).');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          imgRef.current = img;
-          setImageSrc(e.target.result);
-          setScale(1);
-          setPan({ x: 0, y: 0 });
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    },
-    [onError],
-  );
-
-  useEffect(() => {
-    const handlePaste = (e) => {
-      const items = e.clipboardData?.items;
-      if (!items) return;
-      for (const item of items) {
-        if (item.type.startsWith('image/')) {
-          handleFile(item.getAsFile());
-          break;
-        }
-      }
-    };
-    window.addEventListener('paste', handlePaste);
-    return () => window.removeEventListener('paste', handlePaste);
-  }, [handleFile]);
-
-  const renderSticker = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !imgRef.current) return;
-    const ctx = canvas.getContext('2d');
-    const size = 320;
-    canvas.width = size;
-    canvas.height = size;
-    ctx.clearRect(0, 0, size, size);
-
-    const cx = size / 2;
-    const cy = size / 2;
-    const radius = size * 0.42;
-
-    ctx.save();
-    ctx.beginPath();
-    if (shape === 'circle') {
-      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-    } else if (shape === 'rounded') {
-      const w = radius * 1.85;
-      const h = radius * 1.85;
-      ctx.roundRect(cx - w / 2, cy - h / 2, w, h, 32);
-    } else if (shape === 'heart') {
-      const s = radius * 0.038;
-      ctx.moveTo(cx, cy - 25 * s);
-      ctx.bezierCurveTo(cx - 30 * s, cy - 60 * s, cx - 60 * s, cy - 20 * s, cx, cy + 50 * s);
-      ctx.bezierCurveTo(cx + 60 * s, cy - 20 * s, cx + 30 * s, cy - 60 * s, cx, cy - 25 * s);
-    } else if (shape === 'star') {
-      const spikes = 5;
-      const outerRadius = radius;
-      const innerRadius = radius * 0.55;
-      let rot = (Math.PI / 2) * 3;
-      let x = cx;
-      let y = cy;
-      const step = Math.PI / spikes;
-      ctx.moveTo(cx, cy - outerRadius);
-      for (let i = 0; i < spikes; i++) {
-        x = cx + Math.cos(rot) * outerRadius;
-        y = cy + Math.sin(rot) * outerRadius;
-        ctx.lineTo(x, y);
-        rot += step;
-        x = cx + Math.cos(rot) * innerRadius;
-        y = cy + Math.sin(rot) * innerRadius;
-        ctx.lineTo(x, y);
-        rot += step;
-      }
-      ctx.lineTo(cx, cy - outerRadius);
-      ctx.closePath();
-    } else {
-      const w = radius * 1.95;
-      const h = radius * 1.95;
-      ctx.roundRect(cx - w / 2, cy - h / 2, w, h, 20);
-    }
-
-    if (borderWidth > 0) {
-      ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
-      ctx.shadowBlur = 14;
-      ctx.shadowOffsetY = 6;
-      ctx.lineWidth = borderWidth * 2;
-      ctx.strokeStyle = borderColor;
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    ctx.clip();
-
-    if (filter === 'vibrant') ctx.filter = 'saturate(1.5) contrast(1.15)';
-    else if (filter === 'warm') ctx.filter = 'sepia(0.25) saturate(1.3) hue-rotate(-10deg)';
-    else if (filter === 'noir') ctx.filter = 'grayscale(1) contrast(1.2)';
-    else ctx.filter = 'none';
-
-    const img = imgRef.current;
-    const aspect = img.width / img.height;
-    let dw = size * scale;
-    let dh = (size / aspect) * scale;
-    if (aspect < 1) {
-      dh = size * scale;
-      dw = size * aspect * scale;
-    }
-    const dx = cx - dw / 2 + pan.x;
-    const dy = cy - dh / 2 + pan.y;
-    ctx.drawImage(img, dx, dy, dw, dh);
-    ctx.restore();
-
-    if (caption.trim()) {
-      ctx.save();
-      const textY = captionPos === 'top' ? cy - radius * 0.65 : cy + radius * 0.72;
-      ctx.font = 'bold 20px "DM Sans", system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
-      const metrics = ctx.measureText(caption);
-      const bgW = metrics.width + 22;
-      const bgH = 32;
-      ctx.fillStyle = 'rgba(23, 72, 62, 0.9)';
-      ctx.beginPath();
-      ctx.roundRect(cx - bgW / 2, textY - bgH / 2, bgW, bgH, 12);
-      ctx.fill();
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = '#ffffff';
-      ctx.stroke();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(caption, cx, textY);
-      ctx.restore();
-    }
-  }, [shape, borderWidth, borderColor, caption, captionPos, filter, scale, pan]);
-
-  useEffect(() => {
-    renderSticker();
-  }, [renderSticker]);
-
-  const handleMouseDown = (e) => {
-    if (!imageSrc) return;
-    setIsDragging(true);
-    dragStartRef.current = { x: e.clientX, y: e.clientY };
-    panStartRef.current = { ...pan };
-  };
-
-  const handleMouseMove = (e) => {
-    if (!isDragging) return;
-    const dx = e.clientX - dragStartRef.current.x;
-    const dy = e.clientY - dragStartRef.current.y;
-    setPan({
-      x: panStartRef.current.x + dx,
-      y: panStartRef.current.y + dy,
-    });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleSend = () => {
-    const canvas = canvasRef.current;
-    if (!canvas || !imageSrc) return;
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const dataUrl = canvas.toDataURL('image/png');
-      onSendSticker(blob, dataUrl);
-      onClose();
-    }, 'image/png');
-  };
-
-  const handleSave = () => {
-    const canvas = canvasRef.current;
-    if (!canvas || !imageSrc) return;
-    const dataUrl = canvas.toDataURL('image/png');
-    onSaveToLibrary(dataUrl);
-  };
-
-  const quickCaptions = ['Missing You ❤️', 'Habibi ✨', 'Polichu 🔥', 'Nakupenda 💚', 'Uff 🤩', 'Bestie 🤝'];
-
-  return (
-    <Modal title="Sticker Studio 🎨" onClose={onClose} wide>
-      <div className="sticker-studio">
-        <div className="sticker-studio-canvas-col">
-          <div
-            className={`sticker-canvas-stage ${imageSrc ? 'has-image' : ''}`}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-          >
-            {imageSrc ? (
-              <canvas ref={canvasRef} className="sticker-canvas" />
-            ) : (
-              <div
-                className="sticker-upload-empty"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <div className="empty-icon-wrap">
-                  <ImageIcon size={38} />
-                </div>
-                <strong>Drop a photo or click to browse</strong>
-                <p>JPG, PNG, WebP or paste from clipboard (Ctrl+V)</p>
-                <button type="button" className="upload-select-btn">
-                  <Upload size={14} /> Select Photo
-                </button>
-              </div>
-            )}
-          </div>
-
-          {imageSrc && (
-            <div className="canvas-adjustments">
-              <div className="zoom-control">
-                <span>Zoom</span>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="2.5"
-                  step="0.05"
-                  value={scale}
-                  onChange={(e) => setScale(Number(e.target.value))}
-                />
-                <small>{Math.round(scale * 100)}%</small>
-              </div>
-              <button
-                type="button"
-                className="reset-btn"
-                title="Reset position"
-                onClick={() => {
-                  setScale(1);
-                  setPan({ x: 0, y: 0 });
-                }}
-              >
-                <RotateCcw size={13} /> Reset
-              </button>
-              <button
-                type="button"
-                className="change-photo-btn"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Change Photo
-              </button>
-            </div>
-          )}
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={(e) => {
-              if (e.target.files?.[0]) handleFile(e.target.files[0]);
-              e.target.value = '';
-            }}
-          />
-        </div>
-
-        <div className="sticker-studio-controls-col">
-          <div className="control-section">
-            <label className="section-label">
-              <Scissors size={14} /> Cutout Shape
-            </label>
-            <div className="shape-options">
-              {[
-                { id: 'circle', label: 'Circle', icon: '🔵' },
-                { id: 'rounded', label: 'Squircle', icon: '⬛' },
-                { id: 'heart', label: 'Heart', icon: '💖' },
-                { id: 'star', label: 'Star', icon: '⭐' },
-                { id: 'original', label: 'Card', icon: '🖼️' },
-              ].map((s) => (
-                <button
-                  type="button"
-                  key={s.id}
-                  className={`shape-btn ${shape === s.id ? 'active' : ''}`}
-                  onClick={() => setShape(s.id)}
-                >
-                  <span className="shape-icon">{s.icon}</span>
-                  <span>{s.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="control-section">
-            <label className="section-label">
-              <Palette size={14} /> Sticker Border Outline
-            </label>
-            <div className="border-controls">
-              <div className="border-width-pills">
-                {[
-                  { w: 0, label: 'None' },
-                  { w: 5, label: 'Thin' },
-                  { w: 8, label: 'Medium' },
-                  { w: 14, label: 'Thick' },
-                ].map((b) => (
-                  <button
-                    type="button"
-                    key={b.w}
-                    className={`width-pill ${borderWidth === b.w ? 'active' : ''}`}
-                    onClick={() => setBorderWidth(b.w)}
-                  >
-                    {b.label}
-                  </button>
-                ))}
-              </div>
-              {borderWidth > 0 && (
-                <div className="color-palette">
-                  {['#ffffff', '#ffeaa7', '#ff7675', '#55efc4', '#74b9ff', '#17483e'].map((c) => (
-                    <button
-                      type="button"
-                      key={c}
-                      className={`color-dot ${borderColor === c ? 'active' : ''}`}
-                      style={{ backgroundColor: c }}
-                      onClick={() => setBorderColor(c)}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="control-section">
-            <label className="section-label">
-              <Type size={14} /> Caption & Stamp
-            </label>
-            <div className="caption-input-row">
-              <input
-                type="text"
-                placeholder="Add text (e.g. Love You, Uff, Habibi)..."
-                maxLength={30}
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                className="sticker-caption-input"
-              />
-              {caption && (
-                <button
-                  type="button"
-                  className="pos-toggle"
-                  onClick={() => setCaptionPos(captionPos === 'top' ? 'bottom' : 'top')}
-                >
-                  {captionPos === 'top' ? 'Top' : 'Bottom'}
-                </button>
-              )}
-            </div>
-            <div className="quick-tags">
-              {quickCaptions.map((q) => (
-                <button
-                  type="button"
-                  key={q}
-                  className="quick-tag-chip"
-                  onClick={() => setCaption(q)}
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="control-section">
-            <label className="section-label">Filters</label>
-            <div className="filter-chips">
-              {[
-                { id: 'none', label: 'Original' },
-                { id: 'vibrant', label: 'Vibrant' },
-                { id: 'warm', label: 'Warm' },
-                { id: 'noir', label: 'B&W' },
-              ].map((f) => (
-                <button
-                  type="button"
-                  key={f.id}
-                  className={`filter-chip ${filter === f.id ? 'active' : ''}`}
-                  onClick={() => setFilter(f.id)}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="sticker-actions-footer">
-            <button
-              type="button"
-              className="save-library-btn"
-              disabled={!imageSrc}
-              onClick={handleSave}
-            >
-              <Plus size={14} /> Save to My Stickers
-            </button>
-            <button
-              type="button"
-              className="send-sticker-btn"
-              disabled={!imageSrc}
-              onClick={handleSend}
-            >
-              <Sparkles size={15} /> Send as Sticker
-            </button>
-          </div>
-        </div>
-      </div>
-    </Modal>
-  );
-}
+export { StickerCreatorModal } from './StickerCreator.jsx';
 
 export function ConversationPicker({ conversations, onSelect, onCancel, messagePreview }) {
   const [search, setSearch] = useState('');

@@ -67,6 +67,30 @@ try {
       await c.query(await readFile(new URL('./message-status-schema.sql', import.meta.url), 'utf8'));
       await c.query('INSERT INTO schema_migrations(version) VALUES(15)');
     }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=16')).rowCount) {
+      await c.query(await readFile(new URL('./threads-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(16)');
+    }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=17')).rowCount) {
+      await c.query(await readFile(new URL('./relationship-story-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(17)');
+    }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=18')).rowCount) {
+      await c.query(await readFile(new URL('./view-once-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(18)');
+    }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=19')).rowCount) {
+      await c.query(await readFile(new URL('./calendar-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(19)');
+    }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=20')).rowCount) {
+      await c.query(await readFile(new URL('./time-capsule-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(20)');
+    }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=21')).rowCount) {
+      await c.query(await readFile(new URL('./mood-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(21)');
+    }
   });
   console.log('Database migrations complete.');
 } finally {

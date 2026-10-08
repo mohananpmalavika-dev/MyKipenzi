@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
+import { MessageThread } from './MessageThread.jsx';
 import { useDraftManager } from './useDraftManager.js';
 import {
   ArrowLeft,
@@ -33,21 +34,30 @@ import {
   Sun,
   Type,
   Heart,
+  HeartHandshake,
+  Hand,
   Headphones,
   Film,
+  Camera,
+  Gift,
 } from 'lucide-react';
 import { DisappearingSettings } from './DisappearingSettings.jsx';
 import { ScheduledMessages } from './ScheduledMessages.jsx';
 import { useMessageOutbox } from './useMessageOutbox.js';
 import { OutgoingMessage } from './MessageStatus.jsx';
 import { messageExpiryOptions } from '../shared/messageStatus.js';
+import { supportsViewOnce } from '../shared/viewOnce.js';
 import { expiryOptions, hasExpired } from '../shared/disappearing.js';
 import { firstUnreadMessage, isNearLatest, unreadMessageCount } from '../shared/unread.js';
 import { api, setCsrf } from './api.js';
 import { Avatar, ButtonIcon, CallOverlay, Message, Modal, Settings, StickerCreatorModal } from './components.jsx';
 import { LiveDoodleModal } from './LiveDoodle.jsx';
 import { LiveHeartbeatModal } from './LiveHeartbeat.jsx';
+import { VirtualTouchModal } from './VirtualTouchModal.jsx';
 import { DailyPromptModal } from './DailyPromptModal.jsx';
+import { MoodWidget } from './MoodWidget.jsx';
+import { RelationshipStoryModal } from './RelationshipStoryModal.jsx';
+import { TimeCapsuleModal } from './TimeCapsuleModal.jsx';
 import {
   ListenTogetherModal,
   ListenTogetherMiniPlayer,
@@ -61,6 +71,7 @@ import {
 import { CURATED_TRACKS, musicEngine } from './musicEngine.js';
 import { CURATED_VIDEOS } from './videoEngine.js';
 import { playHeartbeatSound, triggerHeartbeatHaptics } from './heartbeatAudio.js';
+import { playTouchSound, triggerTouchHaptics } from './touchAudio.js';
 import { useCall } from './useCall.js';
 import { languages, stickers, stickerCategories } from '../shared/constants.js';
 import { ReactionOverlay, detectReaction } from './ReactionOverlay.jsx';
@@ -74,8 +85,12 @@ import { ChatLibrary } from './ChatLibrary.jsx';
 import { GlobalSearch } from './GlobalSearch.jsx';
 import { GroupSettingsModal, GroupMembersList } from './GroupManagement.jsx';
 import { UserDirectory } from './UserDirectory.jsx';
+import { ContactManagement } from './ContactManagement.jsx';
 import { usePushNotifications } from './usePushNotifications.js';
+import { AppLock } from './AppLock.jsx';
 import { useThemeAndFontSize } from './useThemeAndFontSize.js';
+import { MediaVaultModal } from './MediaVault.jsx';
+import { addStickerToLibrary, loadStickerLibrary, persistStickerLibrary } from './stickerTools.js';
 
 function formatLastSeen(lastSeen) {
   if (!lastSeen) return null;
@@ -303,9 +318,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
   const { theme, setTheme, isDark, toggleTheme, fontSize, setFontSize, cycleFontSize, currentFontConfig } = themeControls;
   const { user, csrf } = session;
   const push = usePushNotifications(user.id, onError);
-  const outbox = useMessageOutbox();
+  const outbox = useMessageOutbox(user.id);
+  const [online, setOnline] = useState(navigator.onLine);
   const [messageExpiry, setMessageExpiry] = useState(0);
-  const { preview, dismiss, receive, update: updateAlert, soundEnabled, setSoundEnabled, playSound } = useMessageAlerts(user.id);
+  const { preview, dismiss, receive, receiveMood, update: updateAlert, soundEnabled, setSoundEnabled, playSound } = useMessageAlerts(user.id, user.language);
   const [socket, setSocket] = useState(null),
     [connected, setConnected] = useState(false),
     [conversations, setConversations] = useState([]),
@@ -348,6 +364,8 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     [doodleInvite, setDoodleInvite] = useState(null),
     [showHeartbeat, setShowHeartbeat] = useState(false),
     [heartbeatInvite, setHeartbeatInvite] = useState(null),
+    [showVirtualTouch, setShowVirtualTouch] = useState(false),
+    [virtualTouchInvite, setVirtualTouchInvite] = useState(null),
     [showDailyPrompt, setShowDailyPrompt] = useState(false),
     [dailyPromptInvite, setDailyPromptInvite] = useState(null),
     [showMusicModal, setShowMusicModal] = useState(false),
@@ -360,16 +378,15 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     [watchPartyInvite, setWatchPartyInvite] = useState(null),
     [watchPartyVideo, setWatchPartyVideo] = useState(null),
     [isWatchPartyPlaying, setIsWatchPartyPlaying] = useState(true),
+    [showStory, setShowStory] = useState(false),
+    [storyInvite, setStoryInvite] = useState(null),
+    [showTimeCapsule, setShowTimeCapsule] = useState(false),
+    [selectedCapsuleId, setSelectedCapsuleId] = useState(null),
+    [timeCapsuleInvite, setTimeCapsuleInvite] = useState(null),
+    [showMediaVault, setShowMediaVault] = useState(false),
     [stickerCategory, setStickerCategory] = useState('all'),
     [stickerSearch, setStickerSearch] = useState(''),
-    [customStickers, setCustomStickers] = useState(() => {
-      try {
-        const stored = localStorage.getItem('kipenzi_custom_stickers');
-        return stored ? JSON.parse(stored) : [];
-      } catch {
-        return [];
-      }
-    }),
+    [customStickers, setCustomStickers] = useState(() => loadStickerLibrary(localStorage, user.id)),
     [voiceNoteForFilter, setVoiceNoteForFilter] = useState(null),
     [preselectedVoiceFilter, setPreselectedVoiceFilter] = useState('normal'),
     [showVoiceFilterPicker, setShowVoiceFilterPicker] = useState(false);
@@ -389,8 +406,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     messagesRef = useRef([]),
     lastProcessedMsgRef = useRef(null),
     lastTriggeredMsgIdRef = useRef(null),
-    showHeartbeatRef = useRef(false);
+    showHeartbeatRef = useRef(false),
+    showVirtualTouchRef = useRef(false);
   showHeartbeatRef.current = showHeartbeat;
+  showVirtualTouchRef.current = showVirtualTouch;
   const triggerReaction = useCallback((type) => {
     if (!type) return;
     setReaction({ type, id: Date.now() });
@@ -493,6 +512,29 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     if (before || initial) setHasMore(result.has_more);
   }, []);
   useEffect(() => {
+    const refresh = async () => {
+      setOnline(navigator.onLine);
+      try {
+        if (navigator.onLine) {
+          const fresh = await api('/auth/session');
+          if (fresh.user?.id !== user.id) return onSession(fresh);
+          setCsrf(fresh.csrf);
+        }
+        await loadConversations();
+        if (selectedRef.current) await loadMessages(selectedRef.current);
+      } catch (error) { if (navigator.onLine) onError(error.message); }
+    };
+    const offline = () => setOnline(false);
+    window.addEventListener('online', refresh);
+    window.addEventListener('offline', offline);
+    window.addEventListener('kipenzi:outbox-synced', refresh);
+    return () => {
+      window.removeEventListener('online', refresh);
+      window.removeEventListener('offline', offline);
+      window.removeEventListener('kipenzi:outbox-synced', refresh);
+    };
+  }, [user.id, loadConversations, loadMessages, onSession, onError]);
+  useEffect(() => {
     const connection = io({ transports: ['websocket'], auth: { csrf }, autoConnect: false });
     setSocket(connection);
     const refresh = async () => {
@@ -517,7 +559,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         if (message_id) {
           if (selectedRef.current === conversation_id) {
             const updated = await api(`/messages/${message_id}`);
-            if (selectedRef.current === conversation_id) setMessages(old => mergeMessages(old, [updated]));
+            if (selectedRef.current === conversation_id) {
+              const parent = updated.reply_to_id ? await api(`/messages/${updated.reply_to_id}`).catch(() => null) : null;
+              if (selectedRef.current === conversation_id) setMessages(old => mergeMessages(old, parent ? [updated, parent] : [updated]));
+            }
           }
           void updateAlert(message_id);
         }
@@ -556,6 +601,26 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         }
       }
     };
+    const handleTouchInvite = (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setVirtualTouchInvite(payload);
+        triggerTouchHaptics([60, 50, 70]);
+        playTouchSound(payload.touch_mode || 'gentle', 0.35);
+      }
+    };
+    const handleTouchPulse = (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        if (!showVirtualTouchRef.current) {
+          setVirtualTouchInvite({
+            conversation_id: payload.conversation_id,
+            sender_name: payload.sender_name,
+            touch_mode: payload.touch_mode,
+          });
+          triggerTouchHaptics(payload.type === 'hug' ? [100, 60, 160] : [50, 60]);
+          playTouchSound(payload.touch_mode || 'gentle', 0.3);
+        }
+      }
+    };
     connection.on('connect', refresh);
     connection.on('disconnect', () => setConnected(false));
     connection.on('connect_error', (e) => {
@@ -568,12 +633,15 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     });
     connection.on('message:changed', changed);
     connection.on('message:arrived', receive);
+    connection.on('mood:changed', receiveMood);
     connection.on('conversation:changed', changed);
     connection.on('receipt:changed', changed);
     connection.on('typing', handleTyping);
     connection.on('doodle:invite', handleDoodleInvite);
     connection.on('heartbeat:invite', handleHeartbeatInvite);
     connection.on('heartbeat:pulse', handleHeartbeatPulse);
+    connection.on('touch:invite', handleTouchInvite);
+    connection.on('touch:pulse', handleTouchPulse);
     connection.on('daily_prompt:answered', (payload) => {
       if (selectedRef.current === payload.conversation_id) {
         setDailyPromptInvite({
@@ -619,13 +687,31 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         triggerHeartbeatHaptics([40, 50, 60]);
       }
     });
+    connection.on('story:nudge', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setStoryInvite(payload);
+        triggerHeartbeatHaptics([60, 60, 90]);
+      }
+    });
+    connection.on('time_capsule:sealed', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setTimeCapsuleInvite(payload.capsule);
+        triggerHeartbeatHaptics([60, 60, 90]);
+      }
+    });
+    connection.on('time_capsule:nudge', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setTimeCapsuleInvite(payload);
+        triggerHeartbeatHaptics([60, 60, 90]);
+      }
+    });
     connection.connect();
     void loadConversations().catch((e) => onError(e.message));
     return () => {
       connection.disconnect();
       clearTimeout(typingTimer.current);
     };
-  }, [csrf, loadConversations, loadMessages, onError, receive, updateAlert, dismiss]);
+  }, [csrf, loadConversations, loadMessages, onError, receive, receiveMood, updateAlert, dismiss]);
   useEffect(() => {
     if (selectedRef.current) {
       setMessages([]);
@@ -656,6 +742,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
   }, [messages, atLatest, unreadBoundary, user.id]);
   const markRead = useCallback(async () => {
     if (
+      !online ||
       !selected ||
       !messages.length ||
       loading ||
@@ -677,7 +764,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       lastRead.current = 0;
       onError(e.message);
     }
-  }, [selected, messages, loading, atLatest, tab, loadConversations, onError]);
+  }, [online, selected, messages, loading, atLatest, tab, loadConversations, onError]);
   useEffect(() => {
     void markRead();
     const seen = () => void markRead();
@@ -741,7 +828,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           if (page.messages.length) after = Number(page.messages.at(-1).seq);
         }
       }
-      const history = await api(`/conversations/${cid}/calls`);
+      const history = navigator.onLine ? await api(`/conversations/${cid}/calls`) : [];
       if (version === generation.current) setCalls(history);
     } catch (e) {
       onError(e.message);
@@ -814,19 +901,22 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         text: outgoing?.caption ?? draft,
         source_language: source,
         expires_in_seconds: messageExpiry,
+        view_once: Boolean(outgoing?.view_once),
         ...(replyTo ? { reply_to_id: replyTo.id } : {}),
         ...(sticker ? { sticker } : {}),
         ...(outgoing?.attachment ? { attachment_id: outgoing.attachment.id } : {}),
       };
       // Each queued message owns an immutable snapshot and one retry identifier.
-      const delivery = outbox.enqueue(cid, input, outgoing?.file);
-      setDraft('');
-      setReplyTo(null);
-      setFile(null);
-      setPicker(false);
-      setMessageExpiry(0);
-      stickToBottom.current = true;
-      void clearDraft().catch((error) => onError(error.message));
+      const delivery = outbox.enqueue(cid, input, outgoing?.file, () => {
+        setDraft('');
+        setReplyTo(null);
+        setFile(null);
+        setPicker(false);
+        setMessageExpiry(0);
+        stickToBottom.current = true;
+        outgoing?.onQueued?.();
+        void clearDraft().catch((error) => { if (navigator.onLine) onError(error.message); });
+      });
       const result = await delivery;
       if (!result) return false;
       if (selectedRef.current === cid) await loadMessages(cid);
@@ -848,37 +938,37 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
   };
 
   const saveCustomSticker = (dataUrl) => {
-    const item = { id: crypto.randomUUID(), dataUrl, createdAt: Date.now() };
-    setCustomStickers((prev) => {
-      const updated = [item, ...prev].slice(0, 50);
-      try {
-        localStorage.setItem('kipenzi_custom_stickers', JSON.stringify(updated));
-      } catch (err) {
-        onError?.(err.message);
-      }
-      return updated;
-    });
+    const updated = addStickerToLibrary(customStickers, dataUrl);
+    persistStickerLibrary(localStorage, user.id, updated);
+    setCustomStickers(updated);
+    return true;
   };
 
-  const deleteCustomSticker = (id, e) => {
-    e.stopPropagation();
-    setCustomStickers((prev) => {
-      const updated = prev.filter((s) => s.id !== id);
-      try {
-        localStorage.setItem('kipenzi_custom_stickers', JSON.stringify(updated));
-      } catch (err) {
-        onError?.(err.message);
-      }
-      return updated;
-    });
+  const deleteCustomSticker = (id, event) => {
+    event.stopPropagation();
+    try {
+      const updated = customStickers.filter(sticker => sticker.id !== id);
+      persistStickerLibrary(localStorage, user.id, updated);
+      setCustomStickers(updated);
+    } catch (error) { onError(error.message); }
   };
 
   const sendCustomSticker = async (blob, dataUrl) => {
-    if (!selectedRef.current || sending) return;
-    if (dataUrl) saveCustomSticker(dataUrl);
-    const queued = { file: new File([blob], 'sticker-' + Date.now() + '.png', { type: blob.type || 'image/png' }), caption: '' };
-    setShowStickerCreator(false);
+    if (!selectedRef.current || sending) throw new Error('Wait for the current message before sending your sticker.');
+    let accepted = false;
+    const queued = {
+      file: new File([blob], 'sticker-' + Date.now() + '.png', { type: 'image/png' }),
+      caption: '',
+      onQueued: () => {
+        accepted = true;
+        if (dataUrl) {
+          try { saveCustomSticker(dataUrl); } catch (error) { onError(error.message); }
+        }
+        setShowStickerCreator(false);
+      },
+    };
     await sendMessage(null, queued);
+    if (!accepted) throw new Error('Your sticker could not be queued. Please try again.');
   };
 
   const sendDoodleToChat = async (blob, caption = '') => {
@@ -901,6 +991,30 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       });
       setMessageExpiry(0);
       setShowHeartbeat(false);
+      setReplyTo(null);
+      stickToBottom.current = true;
+      await loadMessages(cid);
+      await loadConversations();
+    } catch (e) {
+      onError(e.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const sendVirtualTouchToChat = async (text) => {
+    const cid = selectedRef.current;
+    if (!cid) return;
+    setSending(true);
+    try {
+      await outbox.enqueue(cid, {
+        text,
+        source_language: user.language || 'ml',
+        expires_in_seconds: messageExpiry,
+        ...(replyTo ? { reply_to_id: replyTo.id } : {}),
+      });
+      setMessageExpiry(0);
+      setShowVirtualTouch(false);
       setReplyTo(null);
       stickToBottom.current = true;
       await loadMessages(cid);
@@ -982,6 +1096,29 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     }
   };
 
+  const sendStoryToChat = async (text) => {
+    const cid = selectedRef.current;
+    if (!cid) return;
+    setSending(true);
+    try {
+      await outbox.enqueue(cid, {
+        text,
+        source_language: user.language || 'ml',
+        expires_in_seconds: messageExpiry,
+        ...(replyTo ? { reply_to_id: replyTo.id } : {}),
+      });
+      setMessageExpiry(0);
+      setReplyTo(null);
+      stickToBottom.current = true;
+      await loadMessages(cid);
+      await loadConversations();
+    } catch (e) {
+      onError(e.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
   const sendSavedCustomSticker = async (sticker) => {
     if (!selectedRef.current || sending) return;
     try {
@@ -1036,12 +1173,13 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
   };
   const logout = async () => {
     try {
-      if (call.call) await call.end();
+      if (call.call) await call.end().catch(() => {});
       await api('/auth/logout', { method: 'POST' });
+    } catch (e) {
+      if (navigator.onLine) onError(e.message);
+    } finally {
       await push.clearNotifications();
       onSession({ user: null, csrf: null });
-    } catch (e) {
-      onError(e.message);
     }
   };
   const chosen = conversations.find((c) => c.id === selected),
@@ -1149,7 +1287,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         <div className="list-label">
           OUR SAFE HAVEN
           <span className={connected ? 'connection-indicator online' : 'connection-indicator'}>
-            {connected ? 'Close & connected' : 'Reconnecting...'}
+            {!online ? 'Offline · messages saved on this device' : outbox.entries.some(entry => entry.status === 'queued') ? 'Waiting to sync…' : connected ? 'Close & connected' : 'Reconnecting...'}
           </span>
         </div>
         <div className="conversation-list">
@@ -1183,7 +1321,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     {c.draft && c.draft.text ? (
                       <span style={{ color: '#ef4444', fontStyle: 'italic' }}>📝 Draft: {c.draft.text.slice(0, 50)}{c.draft.text.length > 50 ? '...' : ''}</span>
                     ) : (
-                      c.last_message?.text ||
+                      (c.last_message?.view_once ? (c.last_message.view_once_opened_at ? '① Opened' : '① View-once media') : '') || c.last_message?.text ||
                       (c.last_message?.sticker
                         ? `${stickers[c.last_message.sticker]} Sticker`
                         : c.last_message?.attachment
@@ -1276,6 +1414,12 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 {!chosen.is_group && <ButtonIcon label="Block or report user" onClick={() => setShowSafety(true)}><ShieldCheck size={20} /></ButtonIcon>}
                 <ButtonIcon label="Search this chat" onClick={() => setLibraryKind("messages")}><Search size={20} /></ButtonIcon>
                 <ButtonIcon label="Shared photos and documents" onClick={() => setLibraryKind("photos")}><Paperclip size={20} /></ButtonIcon>
+                <ButtonIcon
+                  label="Shared Media Vault & Scrapbook 📸 (പോളറോയ്ഡ് പ്രണയ ആൽബം)"
+                  onClick={() => setShowMediaVault(true)}
+                >
+                  <Camera size={20} />
+                </ButtonIcon>
                 <InstallApp compact />
                 <ButtonIcon
                   label="Start voice call"
@@ -1312,6 +1456,17 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                   }}
                 >
                   <Heart size={20} className="heartbeat-action-pulse" />
+                </ButtonIcon>
+                <ButtonIcon
+                  label="Virtual Touch / Haptic Hug 🫂 (സ്പർശന സാമീപ്യം)"
+                  disabled={!connected || chosen.contact_blocked || chosen.is_group}
+                  onClick={() => {
+                    setShowVirtualTouch(true);
+                    setVirtualTouchInvite(null);
+                    socket?.emit('touch:invite', { conversation_id: selected, touch_mode: 'gentle' });
+                  }}
+                >
+                  <HeartHandshake size={20} className="virtual-touch-action-pulse" />
                 </ButtonIcon>
                 <ButtonIcon
                   label="Listen to Music Together 🎧 (വാച്ച് & ലിസൺ ടുഗെതർ)"
@@ -1353,6 +1508,27 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 >
                   <Film size={20} className="watch-party-action-icon" />
                 </ButtonIcon>
+                <ButtonIcon
+                  label="Our Story & Milestones 💕 (നമ്മുടെ കഥ & നാഴികക്കല്ലുകൾ)"
+                  disabled={!connected || chosen.is_group}
+                  onClick={() => {
+                    setShowStory(true);
+                    setStoryInvite(null);
+                  }}
+                >
+                  <Sparkles size={20} className="our-story-action-icon" />
+                </ButtonIcon>
+                <ButtonIcon
+                  label="Digital Time Capsule ⏳ (ഭാവിയിലേക്കുള്ള പ്രണയലേഖനങ്ങൾ)"
+                  disabled={!connected || chosen.is_group}
+                  onClick={() => {
+                    setShowTimeCapsule(true);
+                    setSelectedCapsuleId(null);
+                    setTimeCapsuleInvite(null);
+                  }}
+                >
+                  <Gift size={20} className="time-capsule-action-icon" />
+                </ButtonIcon>
                 <span className="header-divider" />
                 <button
                   type="button"
@@ -1376,6 +1552,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 </ButtonIcon>
               </div>
             </header>
+            {!online && <div className="expiry-banner offline-banner" role="status">Offline · Read your saved chats. New messages will send when you reconnect.</div>}
             {chosen.disappearing_seconds > 0 && <div className="expiry-banner" role="status">New messages disappear after {expiryOptions[chosen.disappearing_seconds]}. <button type="button" className="text-btn" onClick={() => setShowDisappearing(true)}>Change</button></div>}
             <div className="translation-banner">
               <Globe2 size={15} />
@@ -1436,6 +1613,31 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     Touch Back 💓
                   </button>
                   <ButtonIcon label="Dismiss" onClick={() => setHeartbeatInvite(null)}>
+                    <X size={15} />
+                  </ButtonIcon>
+                </div>
+              </div>
+            )}
+            {virtualTouchInvite && (
+              <div className="virtual-touch-invite-banner" role="alert">
+                <div className="virtual-touch-invite-left">
+                  <span className="virtual-touch-pulse-icon">🫂</span>
+                  <span>
+                    <strong>{virtualTouchInvite.sender_name || 'Your partner'}</strong> is touching the screen! (തത്സമയ സ്പർശനം അയക്കുന്നു · സ്പർശിക്കാൻ തൊടൂ)
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="virtual-touch-invite-join-btn"
+                    onClick={() => {
+                      setShowVirtualTouch(true);
+                      setVirtualTouchInvite(null);
+                    }}
+                  >
+                    Touch Back 🫂
+                  </button>
+                  <ButtonIcon label="Dismiss" onClick={() => setVirtualTouchInvite(null)}>
                     <X size={15} />
                   </ButtonIcon>
                 </div>
@@ -1532,6 +1734,61 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                   </ButtonIcon>
                 </div>
               </div>
+            )}
+            {storyInvite && (
+              <div className="story-invite-banner" role="alert">
+                <div className="story-invite-left">
+                  <span className="story-pulse-icon">📖</span>
+                  <span>
+                    <strong>{storyInvite.sender_name || 'Your partner'}</strong> sent a sweet reminder to view &ldquo;{storyInvite.title || 'Our Story'}&rdquo;! 💕 (നമ്മുടെ ഓർമ്മകൾ കാണാൻ ഓർമ്മിപ്പിച്ചു!)
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="story-invite-join-btn"
+                    onClick={() => {
+                      setShowStory(true);
+                      setStoryInvite(null);
+                    }}
+                  >
+                    Open Our Story 📖
+                  </button>
+                  <ButtonIcon label="Dismiss" onClick={() => setStoryInvite(null)}>
+                    <X size={15} />
+                  </ButtonIcon>
+                </div>
+              </div>
+            )}
+            {timeCapsuleInvite && (
+              <div className="story-invite-banner" role="alert" style={{ background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)', borderColor: '#f43f5e' }}>
+                <div className="story-invite-left">
+                  <span className="story-pulse-icon">💌</span>
+                  <span>
+                    <strong>{timeCapsuleInvite.sender_name || 'Your partner'}</strong> sealed a secret Time Capsule: &ldquo;{timeCapsuleInvite.title || 'Love Letter'}&rdquo;! 💕 (ഭാവിയിലേക്കായി ഒരു രഹസ്യ കത്ത് പൂട്ടിവെച്ചു!)
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="story-invite-join-btn"
+                    style={{ background: '#f43f5e' }}
+                    onClick={() => {
+                      setSelectedCapsuleId(timeCapsuleInvite.id || null);
+                      setShowTimeCapsule(true);
+                      setTimeCapsuleInvite(null);
+                    }}
+                  >
+                    View Capsule ⏳
+                  </button>
+                  <ButtonIcon label="Dismiss" onClick={() => setTimeCapsuleInvite(null)}>
+                    <X size={15} />
+                  </ButtonIcon>
+                </div>
+              </div>
+            )}
+            {!chosen.is_group && !chosen.contact_blocked && tab !== 'calls' && (
+              <MoodWidget key={selected} conversationId={selected} user={user} peer={chosen.peer} socket={socket} online={online} />
             )}
             {tab === 'calls' ? (
               <div className="history">
@@ -1648,7 +1905,18 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                               setShowWatchPartyModal(true);
                               setIsWatchPartyMinimized(false);
                             }}
+                            onOpenStory={() => {
+                              setShowStory(true);
+                            }}
+                            onOpenTouch={() => {
+                              setShowVirtualTouch(true);
+                            }}
+                            onOpenTimeCapsule={(capsuleId) => {
+                              setSelectedCapsuleId(capsuleId);
+                              setShowTimeCapsule(true);
+                            }}
                           />
+                          <MessageThread message={{ ...m, reply_count: Math.max(m.reply_count || 0, messages.filter(row => row.reply_to_id === m.id && !row.deleted_at && !hasExpired(row)).length) }} revision={messages} onReply={sending || recording || chosen.contact_blocked ? undefined : setReplyTo} />
                         </div>
                       ))}
                       {outbox.entries.filter((entry) => entry.conversation_id === selected && !messages.some((message) => message.client_id === entry.input.client_id)).map((entry) => <OutgoingMessage key={entry.input.client_id} entry={entry} retryDisabled={sending || !!chosen.contact_blocked || outbox.entries.some((row) => row.status === 'sending')} onRetry={(key) => void retryMessage(key)} />)}
@@ -1760,7 +2028,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     <VoiceFilterStudio
                       rawVoiceBlob={voiceNoteForFilter}
                       initialFilter={preselectedVoiceFilter}
-                      onSend={async (filteredFile, filterId) => {
+                      onSend={async (filteredFile, _filterId) => {
                         setVoiceNoteForFilter(null);
                         await sendMessage(null, { file: filteredFile, caption: draft });
                       }}
@@ -1783,6 +2051,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                         {file.error && <span role="alert">{file.error}</span>}
                         {file.error && <button type="button" disabled={sending} onClick={() => void sendMessage()}>Retry {file.attachment ? 'send' : 'upload'}</button>}
                       </span>
+                      {!chosen.is_group && supportsViewOnce(file.file) && <label className="view-once-toggle"><input type="checkbox" aria-label="View once" checked={Boolean(file.view_once)} disabled={sending || (!file.view_once && Boolean(draft.trim()))} onChange={event => setFile(old => ({ ...old, view_once: event.target.checked }))} /><span>① View once<small>{draft.trim() ? 'Remove the caption to use view once.' : 'Your partner can open this photo or video once.'}</small></span></label>}
                       <ButtonIcon
                         label="Remove attachment"
                         disabled={sending}
@@ -1817,7 +2086,8 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                         <button
                           type="button"
                           className="create-sticker-btn"
-                          title="Create custom sticker from photo"
+                          title="Create a couple sticker from a photo or meme"
+                          aria-label="Create a couple sticker from a photo or meme"
                           onClick={() => {
                             setShowStickerCreator(true);
                           }}
@@ -1864,29 +2134,21 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                               onClick={() => setShowStickerCreator(true)}
                             >
                               <Plus size={20} />
-                              <span>Create from Photo</span>
+                              <span>Create from Photo / Meme</span>
                             </button>
                             {customStickers.map((s) => (
-                              <div
-                                key={s.id}
-                                className="custom-sticker-item"
-                                onClick={() => void sendSavedCustomSticker(s)}
-                                title="Click to send sticker"
-                              >
-                                <img src={s.dataUrl} alt="Custom sticker" />
-                                <button
-                                  type="button"
-                                  className="del-sticker-btn"
-                                  title="Delete sticker"
-                                  onClick={(e) => deleteCustomSticker(s.id, e)}
-                                >
+                              <div key={s.id} className="custom-sticker-item">
+                                <button type="button" className="custom-sticker-send" disabled={sending || recording} aria-label="Send saved custom sticker" onClick={() => void sendSavedCustomSticker(s)}>
+                                  <img src={s.dataUrl} alt="Custom sticker" />
+                                </button>
+                                <button type="button" className="del-sticker-btn" aria-label="Delete saved custom sticker" title="Delete sticker" onClick={(event) => deleteCustomSticker(s.id, event)}>
                                   <Trash2 size={11} />
                                 </button>
                               </div>
                             ))}
                             {customStickers.length === 0 && (
                               <p className="no-custom-msg">
-                                No custom stickers yet. Tap &apos;Create from Photo&apos; to make your first!
+                                No custom stickers yet. Tap &apos;Create from Photo / Meme&apos; to make your first!
                               </p>
                             )}
                           </div>
@@ -1955,6 +2217,17 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                       <Heart size={21} className="heartbeat-action-pulse" />
                     </ButtonIcon>
                     <ButtonIcon
+                      label="Virtual Touch / Haptic Hug 🫂 (സ്പർശന സാമീപ്യം)"
+                      disabled={sending || recording || chosen.is_group}
+                      onClick={() => {
+                        setShowVirtualTouch(true);
+                        setVirtualTouchInvite(null);
+                        socket?.emit('touch:invite', { conversation_id: selected, touch_mode: 'gentle' });
+                      }}
+                    >
+                      <HeartHandshake size={21} className="virtual-touch-action-pulse" />
+                    </ButtonIcon>
+                    <ButtonIcon
                       label="Daily 'Us' Prompt ✨ (ഇന്നത്തെ ചോദ്യം)"
                       disabled={sending || recording || chosen.is_group}
                       onClick={() => {
@@ -1997,10 +2270,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     ) : (
                       <textarea
                         aria-label="Message"
-                        placeholder="Spill the tea... or just say you miss me 💬"
+                        placeholder={file?.view_once ? 'View-once media has no caption' : 'Spill the tea... or just say you miss me 💬'}
                         rows={1}
                         value={draft}
-                        disabled={sending}
+                        disabled={sending || Boolean(file?.view_once)}
                         maxLength={5000}
                         onChange={(e) => {
                           setDraft(e.target.value);
@@ -2082,6 +2355,16 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                       {recording ? <StopCircle size={22} /> : <Mic size={21} />}
                     </ButtonIcon>
                     <ButtonIcon label="Scheduled messages" disabled={sending || recording} onClick={() => setShowScheduled(true)}><Clock size={21} /></ButtonIcon>
+                    <ButtonIcon
+                      label="Digital Time Capsule ⏳ (ഭാവിയിലേക്കുള്ള പ്രണയലേഖനങ്ങൾ)"
+                      disabled={sending || recording || !chosen || chosen.is_group}
+                      onClick={() => {
+                        setShowTimeCapsule(true);
+                        setSelectedCapsuleId(null);
+                      }}
+                    >
+                      <Gift size={21} />
+                    </ButtonIcon>
                     <button
                       type="submit"
                       className="send-btn"
@@ -2182,7 +2465,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           } catch (e) { onError(e.message); }
         }}
       />}
-      {libraryKind && selected && <ChatLibrary conversationId={selected} initialKind={libraryKind} onClose={() => setLibraryKind(null)} onOpen={async message => {
+      {libraryKind && selected && <ChatLibrary conversationId={selected} initialKind={libraryKind} onClose={() => setLibraryKind(null)} onOpenVault={() => setShowMediaVault(true)} onOpen={async message => {
         const cid = selectedRef.current;
         try {
           const page = await api(`/conversations/${cid}/messages?before=${Number(message.seq)+1}`);
@@ -2251,6 +2534,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onClose={() => setShowStickerCreator(false)}
           onSendSticker={sendCustomSticker}
           onSaveToLibrary={saveCustomSticker}
+          sendDisabled={sending || recording}
           onError={onError}
         />
       )}
@@ -2276,6 +2560,17 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onError={onError}
         />
       )}
+      {showVirtualTouch && chosen && (
+        <VirtualTouchModal
+          conversationId={selected}
+          user={user}
+          peer={chosen.peer}
+          socket={socket}
+          onClose={() => setShowVirtualTouch(false)}
+          onSendToChat={sendVirtualTouchToChat}
+          onError={onError}
+        />
+      )}
       {showDailyPrompt && chosen && !chosen.is_group && (
         <DailyPromptModal
           conversationId={selected}
@@ -2284,6 +2579,81 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           socket={socket}
           onClose={() => setShowDailyPrompt(false)}
           onSendToChat={sendDailyPromptToChat}
+          onError={onError}
+        />
+      )}
+      {showStory && chosen && !chosen.is_group && (
+        <RelationshipStoryModal
+          conversationId={selected}
+          user={user}
+          peer={chosen.peer}
+          socket={socket}
+          onClose={() => setShowStory(false)}
+          onSendToChat={sendStoryToChat}
+          onError={onError}
+        />
+      )}
+      {showTimeCapsule && chosen && !chosen.is_group && (
+        <TimeCapsuleModal
+          conversationId={selected}
+          user={user}
+          peer={chosen.peer}
+          socket={socket}
+          initialCapsuleId={selectedCapsuleId}
+          onClose={() => {
+            setShowTimeCapsule(false);
+            setSelectedCapsuleId(null);
+          }}
+          onSendToChat={sendStoryToChat}
+          onError={onError}
+        />
+      )}
+      {showMediaVault && chosen && (
+        <MediaVaultModal
+          conversation={chosen}
+          user={user}
+          onClose={() => setShowMediaVault(false)}
+          onOpenMessage={async (message) => {
+            const cid = selectedRef.current;
+            try {
+              const page = await api(`/conversations/${cid}/messages?before=${Number(message.seq) + 1}`);
+              if (selectedRef.current !== cid) return;
+              stickToBottom.current = false;
+              setAtLatest(false);
+              setMessages((old) => mergeMessages(old, page.messages));
+              setHasMore(page.has_more);
+              setTab('chats');
+              setHighlightMessage(message.id);
+              setShowMediaVault(false);
+              requestAnimationFrame(() =>
+                requestAnimationFrame(() =>
+                  document.getElementById('message-' + message.id)?.scrollIntoView({
+                    block: 'center',
+                    behavior: 'smooth',
+                  })
+                )
+              );
+            } catch (e) {
+              onError(e.message);
+            }
+          }}
+          onSendToChat={async (text) => {
+            try {
+              await api(`/conversations/${selected}/messages`, {
+                method: 'POST',
+                body: {
+                  client_id: crypto.randomUUID(),
+                  text: text.trim(),
+                  source_language: user.language || 'ml',
+                },
+              });
+              stickToBottom.current = true;
+              loadMessages(selected);
+              loadConversations();
+            } catch (e) {
+              onError(e.message);
+            }
+          }}
           onError={onError}
         />
       )}
@@ -2452,7 +2822,8 @@ export default function App() {
   const initialize = useCallback(async () => {
     setFailed(false);
     try {
-      const [result, features] = await Promise.all([api('/auth/session'), api('/capabilities')]);
+      const result = await api('/auth/session');
+      const features = await api('/capabilities');
       onSession(result);
       setCapabilities(features);
     } catch (e) {
@@ -2483,13 +2854,13 @@ export default function App() {
           )}
         </div>
       ) : session.user ? (
-        <Chat
+        <AppLock key={session.user.id} user={session.user}><Chat
           session={session}
           capabilities={capabilities}
           onSession={onSession}
           onError={onError}
           themeControls={themeControls}
-        />
+        /></AppLock>
       ) : (
         <Auth capabilities={capabilities} onSession={onSession} onError={onError} />
       )}{' '}

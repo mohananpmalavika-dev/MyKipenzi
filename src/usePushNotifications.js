@@ -6,7 +6,7 @@ function keyBytes(key) {
   return Uint8Array.from(decoded, character => character.charCodeAt(0));
 }
 async function registration() {
-  const worker = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
+  const worker = await navigator.serviceWorker.register('/sw.js', { type: 'module', updateViaCache: 'none' });
   await worker.update();
   if (worker.waiting) worker.waiting.postMessage({ type: 'ACTIVATE_PUSH' });
   await Promise.race([navigator.serviceWorker.ready, new Promise((_, reject) => setTimeout(() => reject(new Error('App setup is still loading. Please try again.')), 15000))]);

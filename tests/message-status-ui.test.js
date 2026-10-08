@@ -3,11 +3,16 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { mkdir } from 'node:fs/promises';
 import { createServer } from 'vite';
+import { createServer as createPortServer } from 'node:net';
 import { chromium, expect } from '@playwright/test';
 
 test('failed attachment retries preserve the message ID and uploaded file; history is readable', async () => {
   const cid = randomUUID(), attachmentId = randomUUID(), mid = randomUUID();
-  const server = await createServer({ server: { host: '127.0.0.1', port: 0 } });
+  const portServer = createPortServer();
+  await new Promise(resolve => portServer.listen(0, '127.0.0.1', resolve));
+  const port = portServer.address().port;
+  await new Promise(resolve => portServer.close(resolve));
+  const server = await createServer({ server: { host: '127.0.0.1', port, strictPort: true } });
   server.middlewares.use('/status-fixture', (_request, response) => {
     response.setHeader('Content-Type', 'text/html');
     response.end(`<link rel="stylesheet" href="/src/styles.css"><div id="root"></div><script type="module">
@@ -18,6 +23,8 @@ test('failed attachment retries preserve the message ID and uploaded file; histo
       window.$RefreshSig$ = () => (type) => type; window.__vite_plugin_react_preamble_installed__ = true;
       const { useMessageOutbox } = await import('/src/useMessageOutbox.js');
       const { OutgoingMessage, MessageHistory } = await import('/src/MessageStatus.jsx');
+      const { api } = await import('/src/api.js');
+      await api('/auth/session');
       function Fixture() {
         const outbox = useMessageOutbox();
         const [sent, setSent] = React.useState(false), [history, setHistory] = React.useState(false);
@@ -39,10 +46,13 @@ test('failed attachment retries preserve the message ID and uploaded file; histo
     browser = await chromium.launch({ headless: true });
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     let uploads = 0;
+    let rejectUpload = false;
     const attempts = [];
     await page.route('**/api/**', async (route) => {
+      if (route.request().url().endsWith('/auth/session')) return route.fulfill({ json: { user: { id: 'fixture-user' }, csrf: 'fixture-token' } });
       if (route.request().url().endsWith('/uploads')) {
         uploads++;
+        if (rejectUpload) return route.fulfill({ status: 400, json: { error: 'File type not allowed' } });
         return route.fulfill({ json: { id: attachmentId } });
       }
       if (route.request().url().endsWith('/history')) return route.fulfill({ json: { history: [{ id: '1', text: 'Original version', edited_at: new Date().toISOString() }], current: { text: 'Current version text', edited_at: new Date().toISOString() } } });
@@ -52,8 +62,8 @@ test('failed attachment retries preserve the message ID and uploaded file; histo
     });
     await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/status-fixture`);
     await page.getByRole('button', { name: 'Send fixture' }).click();
-    await expect(page.getByRole('article', { name: 'Failed message' })).toContainText('Original retry text');
-    await expect(page.getByRole('article', { name: 'Failed message' })).toContainText('Connection lost');
+    await expect(page.getByRole('article', { name: 'Queued message' })).toContainText('Original retry text');
+    await expect(page.getByRole('article', { name: 'Queued message' })).toContainText('Connection lost');
     await mkdir('test-results', { recursive: true });
     await page.screenshot({ path: 'test-results/message-failed-mobile.png' });
     await page.getByRole('button', { name: 'Retry message' }).click();
@@ -63,10 +73,20 @@ test('failed attachment retries preserve the message ID and uploaded file; histo
     assert.deepEqual(attempts[1], attempts[0]);
     assert.equal(attempts[1].attachment_id, attachmentId);
     assert.equal(attempts[1].expires_in_seconds, 300);
-    await expect(page.getByRole('article', { name: 'Failed message' })).toHaveCount(0);
+    await expect(page.getByRole('article', { name: 'Queued message' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Open history' }).click();
     await expect(page.getByRole('dialog', { name: 'Message editing history' })).toContainText('Original version');
     await expect(page.getByRole('dialog', { name: 'Message editing history' })).toContainText('Current version text');
     await page.screenshot({ path: 'test-results/message-history-mobile.png' });
+    await page.getByRole('dialog', { name: 'Message editing history' }).getByRole('button', { name: 'Close', exact: true }).click();
+    rejectUpload = true;
+    await page.getByRole('button', { name: 'Send fixture' }).click();
+    await expect(page.getByRole('article', { name: 'Failed message' })).toContainText('File type not allowed');
+    const uploadsBeforeSync = uploads;
+    await page.evaluate(async () => {
+      const { flushOutbox } = await import('/shared/offline-sync.js');
+      await flushOutbox('fixture-user');
+    });
+    assert.equal(uploads, uploadsBeforeSync, 'permanent upload failures must not retry automatically');
   } finally { await browser?.close(); await server.close(); }
 });

@@ -313,6 +313,23 @@ export function useCall(socket, user, onError) {
       if (e.name !== 'NotAllowedError') onError(e.message);
     }
   };
+  const replaceVideoTrack = useCallback(
+    async (customTrack) => {
+      try {
+        if (pc.current && videoSender.current) {
+          const trackToUse =
+            customTrack || (cameraOff ? null : stream.current?.getVideoTracks()[0] || null);
+          await videoSender.current.replaceTrack(trackToUse);
+        }
+      } catch (e) {
+        onError?.(e.message);
+      }
+    },
+    [cameraOff, onError],
+  );
+  const updateLocalStream = useCallback((newStream) => {
+    setLocal(newStream);
+  }, []);
   return {
     call,
     local,
@@ -321,6 +338,7 @@ export function useCall(socket, user, onError) {
     muted,
     cameraOff,
     sharing,
+    rawStream: stream.current,
     start,
     accept,
     decline,
@@ -328,5 +346,7 @@ export function useCall(socket, user, onError) {
     toggleMute,
     toggleCamera,
     share,
+    replaceVideoTrack,
+    updateLocalStream,
   };
 }

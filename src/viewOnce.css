@@ -1,0 +1,18 @@
+.queued-file:has(.view-once-toggle) {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 32px;
+  align-items: center;
+}
+.queued-file:has(.view-once-toggle) > svg { grid-column: 1; grid-row: 1; }
+.queued-file:has(.view-once-toggle) > span { grid-column: 2; grid-row: 1; min-width: 0; }
+.queued-file:has(.view-once-toggle) > button { grid-column: 3; grid-row: 1; }
+.queued-file .view-once-toggle { grid-column: 1 / -1; grid-row: 2; display: flex; flex-direction: row; align-items: center; gap: 10px; padding: 8px 0; }
+.view-once-toggle input { width: auto; flex: 0 0 auto; }
+.view-once-toggle span, .view-once-card { display: flex; flex-direction: column; gap: 5px; }
+.view-once-toggle small, .view-once-card small { font-size: 12px; opacity: .8; }
+.view-once-card { max-width: 290px; padding: 8px 0; }
+.view-once-card > button { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid currentColor; border-radius: 14px; color: inherit; background: transparent; }
+.view-once-symbol { font-size: 26px; }
+.view-once-viewer .photo-viewer-toolbar span { font-size: 12px; margin-left: auto; }
+.view-once-viewer video { max-width: 100%; max-height: 100%; }
+@media (max-width: 600px) { .view-once-viewer .photo-viewer-toolbar span { display: none; } }

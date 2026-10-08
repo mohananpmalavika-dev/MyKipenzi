@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from './api.js';
 import { messagePreview } from '../shared/notifications.js';
+import { currentMood, moodNotification } from '../shared/moods.js';
 
-export function useMessageAlerts(userId) {
+export function useMessageAlerts(userId, language = 'en') {
   const [preview, setPreview] = useState(null);
   const [soundEnabled, setSound] = useState(() => {
     try { return localStorage.getItem(`kipenzi-alert-sound:${userId}`) !== 'off'; }
@@ -11,6 +12,7 @@ export function useMessageAlerts(userId) {
   const sound = useRef(soundEnabled);
   const context = useRef(null);
   const seen = useRef(new Set());
+  const latestMoodRevision = useRef(new Map());
   const timer = useRef(null);
   const active = useRef(true);
   const unseen = useRef(0);
@@ -94,6 +96,33 @@ export function useMessageAlerts(userId) {
       }
     } catch { seen.current.delete(message_id); }
   }, [userId, playSound]);
+  const receiveMood = useCallback(async (payload) => {
+    if (payload.user_id === userId || !currentMood(payload)) return;
+    const key = `${payload.conversation_id}:${payload.user_id}`;
+    const revision = Number(payload.revision);
+    if (revision < (latestMoodRevision.current.get(key) || 0)) return;
+    latestMoodRevision.current.set(key, revision);
+    if (latestMoodRevision.current.size > 200) latestMoodRevision.current.delete(latestMoodRevision.current.keys().next().value);
+    const id = `mood:${payload.conversation_id}:${payload.user_id}:${payload.revision}`;
+    if (seen.current.has(id)) return;
+    seen.current.add(id);
+    if (seen.current.size > 200) seen.current.delete(seen.current.values().next().value);
+    try {
+      const result = await api(`/conversations/${payload.conversation_id}/moods`);
+      const status = result.statuses.find(s => s.user_id === payload.user_id && s.revision === payload.revision);
+      if (!active.current || !currentMood(status) || latestMoodRevision.current.get(key) !== revision) return;
+      const notification = moodNotification(status.mood, status.sender_name, language);
+      if (!notification) return;
+      setPreview({ id, conversation_id: payload.conversation_id, name: notification.title, body: notification.body, kind: 'mood' });
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setPreview(null), 9000);
+      playSound();
+      if (document.visibilityState !== 'visible') {
+        unseen.current += 1;
+        document.title = `(${unseen.current}) Mood check-in · Kipenzi`;
+      }
+    } catch { seen.current.delete(id); }
+  }, [userId, language, playSound]);
   const update = useCallback(async (messageId) => {
     if (!seen.current.has(messageId)) return;
     try {
@@ -101,5 +130,5 @@ export function useMessageAlerts(userId) {
       if (active.current) setPreview(current => current?.id === message.id ? { ...current, body: messagePreview(message) } : current);
     } catch { /* Keep the existing preview if translation refresh fails. */ }
   }, []);
-  return { preview, dismiss, receive, update, soundEnabled, setSoundEnabled, playSound };
+  return { preview, dismiss, receive, receiveMood, update, soundEnabled, setSoundEnabled, playSound };
 }

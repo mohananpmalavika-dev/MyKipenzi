@@ -31,6 +31,8 @@ await db.query(await readFile(new URL('../../server/group-features-migration.sql
 await db.query(await readFile(new URL('../../server/saved-messages-schema.sql', import.meta.url), 'utf8'));
 await db.query(await readFile(new URL('../../server/daily-prompt-schema.sql', import.meta.url), 'utf8'));
 await db.query(await readFile(new URL('../../server/disappearing-schema.sql', import.meta.url), 'utf8'));
+await db.query(await readFile(new URL('../../server/view-once-schema.sql', import.meta.url), 'utf8'));
+await db.query(await readFile(new URL('../../server/relationship-story-schema.sql', import.meta.url), 'utf8'));
 const { expireMessages } = await import('../../server/disappearing.js');
 await db.query(await readFile(new URL('../../server/scheduled-schema.sql', import.meta.url), 'utf8'));
 const { processSchedules } = await import('../../server/scheduled.js');
@@ -290,6 +292,82 @@ test('API integration against an isolated PostgreSQL schema', async (t) => {
         assert.ok((await bytes.arrayBuffer()).byteLength > 0);
       },
     );
+    await t.test('view-once media is delivered to the partner once and excluded from other access paths', async () => {
+      const apiRateKey = user => schema + ':limit:api:' + user.user.id;
+      const priorRequests = await Promise.all([redis.get(apiRateKey(alice)), redis.get(apiRateKey(bob))]);
+      const messageRateKey = user => schema + ':limit:messages:' + user.user.id;
+      const priorMessages = await Promise.all([redis.get(messageRateKey(alice)), redis.get(messageRateKey(bob))]);
+      try {
+      const uploadPhoto = async () => {
+        const form = new FormData();
+        form.append('file', new Blob([Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000b49444154789c636000020000050001a5f645400000000049454e44ae426082', 'hex')], { type: 'image/png' }), 'once.png');
+        const uploaded = await request('/conversations/' + conversation + '/uploads', form, alice);
+        assert.equal(uploaded.status, 201);
+        return uploaded.data.id;
+      };
+      const aid = await uploadPhoto();
+      const input = { client_id: randomUUID(), attachment_id: aid, view_once: true };
+      const sent = await request('/conversations/' + conversation + '/messages', input, alice);
+      assert.equal(sent.status, 201, JSON.stringify(sent.data));
+      assert.equal(sent.data.view_once, true);
+      const mid = sent.data.id, path = '/messages/' + mid + '/view-once';
+      assert.equal((await request('/conversations/' + conversation + '/messages', input, alice)).data.id, mid);
+      assert.equal((await request(path, {}, eve)).status, 404);
+      assert.equal((await request(path, {}, alice)).status, 403);
+      for (const user of [alice, bob]) {
+        assert.equal((await request('/attachments/' + aid, undefined, user)).status, 403);
+        assert.equal((await request('/attachments/' + aid + '/content', undefined, user)).status, 403);
+      }
+      assert.equal((await request('/messages/' + mid + '/star', {}, bob, 'PUT')).status, 403);
+      assert.equal((await request('/messages/' + mid + '/pin', {}, bob, 'PUT')).status, 403);
+      assert.equal((await request('/messages/' + mid + '/forward', { conversation_id: conversation }, bob)).status, 403);
+      const exported = await request('/conversations/' + conversation + '/export', undefined, bob);
+      assert.ok(!exported.data.messages.some(m => m.id === mid));
+      const open = () => fetch(base + '/api' + path, { method: 'POST', headers: { origin, cookie: bob.cookie, 'x-csrf-token': bob.csrf } });
+      const responses = await Promise.all([open(), open()]);
+      assert.deepEqual(responses.map(r => r.status).sort(), [200, 410]);
+      const success = responses.find(r => r.status === 200);
+      assert.equal(success.headers.get('cache-control'), 'no-store');
+      assert.equal(success.headers.get('content-type'), 'image/png');
+      assert.ok((await success.arrayBuffer()).byteLength > 0);
+      const current = await request('/messages/' + mid, undefined, bob);
+      assert.ok(current.data.view_once_opened_at);
+      assert.equal(current.data.attachment, null);
+      assert.equal((await request(path, {}, bob)).status, 410);
+      assert.equal((await request('/attachments/' + aid, undefined, alice)).status, 404);
+      assert.equal((await request('/attachments/' + aid + '/content', undefined, bob)).status, 404);
+      assert.ok((await db.query("SELECT 1 FROM outbox WHERE kind='delete_object' AND payload->>'key'=(SELECT object_key FROM attachments WHERE id=$1)", [aid])).rowCount);
+      const form = new FormData();
+      form.append('file', new Blob(['private document'], { type: 'text/plain' }), 'private.txt');
+      const doc = await request('/conversations/' + conversation + '/uploads', form, alice);
+      assert.equal((await request('/conversations/' + conversation + '/messages', { client_id: randomUUID(), attachment_id: doc.data.id, view_once: true }, alice)).status, 400);
+      const videoForm = new FormData();
+      videoForm.append('file', new Blob([Buffer.from('000000186674797069736f6d0000000069736f6d6d703432', 'hex')], { type: 'video/mp4' }), 'once.mp4');
+      const video = await request('/conversations/' + conversation + '/uploads', videoForm, alice);
+      assert.equal(video.status, 201, JSON.stringify(video.data));
+      const videoMessage = await request('/conversations/' + conversation + '/messages', { client_id: randomUUID(), attachment_id: video.data.id, view_once: true }, alice);
+      assert.equal(videoMessage.status, 201);
+      const videoResponse = await fetch(base + '/api/messages/' + videoMessage.data.id + '/view-once', { method: 'POST', headers: { origin, cookie: bob.cookie, 'x-csrf-token': bob.csrf } });
+      assert.equal(videoResponse.status, 200);
+      assert.equal(videoResponse.headers.get('content-type'), 'video/mp4');
+      await videoResponse.arrayBuffer();
+      assert.equal((await request('/messages/' + videoMessage.data.id + '/view-once', {}, bob)).status, 410);
+      const expiringAid = await uploadPhoto();
+      const expiring = await request('/conversations/' + conversation + '/messages', { client_id: randomUUID(), attachment_id: expiringAid, view_once: true, expires_in_seconds: 300 }, alice);
+      await db.query("UPDATE messages SET expires_at=now()-interval '1 second' WHERE id=$1", [expiring.data.id]);
+      assert.equal((await request('/messages/' + expiring.data.id + '/view-once', {}, bob)).status, 404);
+      assert.equal((await request('/attachments/' + expiringAid + '/content', undefined, bob)).status, 404);
+      } finally {
+      // This additional privacy scenario has its own request budget; keep the
+      // existing integration scenarios below within their original API quota.
+      for (const [index, user] of [alice, bob].entries()) {
+        const key = apiRateKey(user), ttl = await redis.pttl(key);
+        if (ttl > 0) await redis.set(key, priorRequests[index] || '0', 'PX', ttl);
+        const messageKey = messageRateKey(user), messageTtl = await redis.pttl(messageKey);
+        if (messageTtl > 0) await redis.set(messageKey, priorMessages[index] || '0', 'PX', messageTtl);
+      }
+      }
+    });
     await t.test(
       'reconnect cursors recover every missed message across multiple pages',
       async () => {
@@ -390,6 +468,15 @@ test('API integration against an isolated PostgreSQL schema', async (t) => {
       const mid = original.data.id;
       const reply = await request(`/conversations/${conversation}/messages`, { client_id: randomUUID(), text: 'A specific reply', reply_to_id: mid }, bob);
       assert.equal(reply.status, 201);
+      const nested = await request(`/conversations/${conversation}/messages`, { client_id: randomUUID(), text: 'Nested reply', reply_to_id: reply.data.id }, alice);
+      const threadPath = `/conversations/${conversation}/threads/${nested.data.id}`;
+      const thread = await request(threadPath, undefined, bob);
+      assert.equal(thread.status, 200);
+      assert.deepEqual(thread.data.messages.map(m => m.id), [mid, reply.data.id, nested.data.id]);
+      assert.equal(thread.data.messages[0].reply_count, 1);
+      assert.equal((await request(threadPath, undefined, eve)).status, 404);
+      assert.equal((await request(threadPath + '?after=invalid', undefined, bob)).status, 400);
+      assert.deepEqual((await request(threadPath + '?after=' + reply.data.seq, undefined, bob)).data.messages.map(m => m.id), [nested.data.id]);
       assert.equal((await request(`/messages/${reply.data.id}`, undefined, bob)).data.reply.text, 'Original message');
       assert.equal((await request(`/messages/${mid}`, { text: 'Unauthorized' }, bob, 'PATCH')).status, 403);
       assert.equal((await request(`/messages/${mid}`, undefined, eve, 'DELETE')).status, 404);
@@ -644,6 +731,104 @@ test('API integration against an isolated PostgreSQL schema', async (t) => {
         await processSchedules();
         assert.equal((await db.query('SELECT status FROM scheduled_messages WHERE id=$1', [denied.id])).rows[0].status, 'failed');
       } finally { await db.query('DELETE FROM user_blocks WHERE blocker_id=$1 AND blocked_id=$2', [bob.user.id, alice.user.id]); }
+    });
+    await t.test('relationship timeline and milestone counter API', async () => {
+      // 1. Initial GET seeds defaults and calculates days together
+      const getRes = await request(`/conversations/${conversation}/relationship-story`, undefined, alice);
+      assert.equal(getRes.status, 200);
+      assert.ok(getRes.data.profile);
+      assert.ok(getRes.data.daysTogether);
+      assert.ok(Array.isArray(getRes.data.memories));
+      assert.ok(getRes.data.memories.length > 0);
+      assert.ok(Array.isArray(getRes.data.milestones));
+
+      // 2. Update relationship profile dates
+      const putRes = await request(
+        `/conversations/${conversation}/relationship-story/profile`,
+        {
+          start_date: '2024-02-14',
+          anniversary_date: '2024-10-24',
+          first_date: '2024-01-20',
+          story_title: 'Alice & Bob Our Story 💕',
+        },
+        alice,
+        'PUT',
+      );
+      assert.equal(putRes.status, 200);
+      assert.ok(putRes.data.ok);
+      assert.ok(putRes.data.daysTogether.totalDays > 0);
+
+      // Verify profile is updated and automatic anniversary milestone is created
+      const storyAfterProfile = (await request(`/conversations/${conversation}/relationship-story`, undefined, alice)).data;
+      assert.equal(storyAfterProfile.profile.start_date, '2024-02-14');
+      assert.equal(storyAfterProfile.profile.anniversary_date, '2024-10-24');
+      assert.equal(storyAfterProfile.profile.story_title, 'Alice & Bob Our Story 💕');
+      assert.ok(storyAfterProfile.milestones.some((m) => m.category === 'anniversary'));
+
+      // 3. Add a new memory
+      const addMemRes = await request(
+        `/conversations/${conversation}/relationship-story/memories`,
+        {
+          title: 'Sunset at Fort Kochi 🌅',
+          memory_date: '2024-05-15',
+          category: 'trip',
+          description: 'Watched the golden waves and held hands for the first time.',
+          emoji: '🌅',
+        },
+        alice,
+      );
+      assert.equal(addMemRes.status, 200);
+      assert.ok(addMemRes.data.ok);
+      assert.equal(addMemRes.data.memory.title, 'Sunset at Fort Kochi 🌅');
+      const memId = addMemRes.data.memory.id;
+
+      // 4. React to the memory
+      const reactRes = await request(
+        `/conversations/${conversation}/relationship-story/memories/${memId}/react`,
+        { emoji: '❤️' },
+        bob,
+      );
+      assert.equal(reactRes.status, 200);
+      assert.ok(reactRes.data.reactions.includes('❤️'));
+
+      // 5. Add a custom milestone countdown
+      const addMilestoneRes = await request(
+        `/conversations/${conversation}/relationship-story/milestones`,
+        {
+          title: 'Winter Trip to Munnar 🏔️',
+          target_date: '2026-12-25',
+          category: 'trip',
+          is_annual: false,
+          emoji: '🏔️',
+          note: 'Tea gardens and cozy foggy mornings!',
+        },
+        alice,
+      );
+      assert.equal(addMilestoneRes.status, 200);
+      assert.ok(addMilestoneRes.data.ok);
+      assert.equal(addMilestoneRes.data.milestone.title, 'Winter Trip to Munnar 🏔️');
+      assert.ok(addMilestoneRes.data.milestone.countdown);
+      const msId = addMilestoneRes.data.milestone.id;
+
+      // 6. Delete custom milestone
+      const delMsRes = await request(
+        `/conversations/${conversation}/relationship-story/milestones/${msId}`,
+        undefined,
+        alice,
+        'DELETE',
+      );
+      assert.equal(delMsRes.status, 200);
+      assert.ok(delMsRes.data.ok);
+
+      // 7. Delete memory
+      const delMemRes = await request(
+        `/conversations/${conversation}/relationship-story/memories/${memId}`,
+        undefined,
+        alice,
+        'DELETE',
+      );
+      assert.equal(delMemRes.status, 200);
+      assert.ok(delMemRes.data.ok);
     });
     await t.test('logout invalidates the session', async () => {
       await request('/notifications/subscription', { endpoint: 'https://fcm.googleapis.com/fcm/send/logout-test', keys: { p256dh: testPushKeys.publicKey, auth: 'A'.repeat(22) } }, alice);

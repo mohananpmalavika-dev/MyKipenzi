@@ -10,12 +10,30 @@ import { db, one, transaction } from './db.js';
 import { authenticate, getSession, issueSession, publicUser, requireOrigin } from './auth.js';
 import { hashPassword, verifyPassword, HttpError, turnCredentials } from './security.js';
 import { limit, aiLimit, redis, logger } from './infra.js';
-import { inspectFile, putObject, removeObject, getObject, storageReady } from './storage.js';
+import { inspectFile, putObject, removeObject, getObject, readObject, storageReady } from './storage.js';
 import { cloneVoice, voiceVerified } from './providers.js';
 import { pushEnabled } from './push.js';
+import { readMoods, shareMood } from './moods.js';
 import { createSchedule, changeSchedule } from './scheduled.js';
 import { scheduleInput, scheduleEdit } from '../shared/scheduling.js';
 import { pushEndpoint, pushSubscription } from '../shared/push.js';
+import { validateCapsuleInput } from '../shared/timeCapsule.js';
+import {
+  getCalendarEvents,
+  createCalendarEvent,
+  updateCalendarEvent,
+  deleteCalendarEvent,
+  respondToEvent,
+  getTodoLists,
+  createTodoList,
+  updateTodoList,
+  deleteTodoList,
+  getTodoItems,
+  createTodoItem,
+  updateTodoItem,
+  toggleTodoItem,
+  deleteTodoItem,
+} from './calendar.js';
 import {
   membership,
   assertCanContact,
@@ -50,17 +68,39 @@ import {
   getGroupActivity,
 } from './group-management.js';
 import {
+  getContacts,
+  addContact,
+  removeContact,
+  updateContact,
+  getLabels,
+  createLabel,
+  updateLabel,
+  deleteLabel,
+  addContactToLabel,
+  removeContactFromLabel,
+  getContactNote,
+  setContactNote,
+  exportContacts,
+  importContacts,
+} from './contact-management.js';
+
+import {
   registration,
   login,
   profile,
   messageInput,
   messageEdit,
   id,
-  language,
   targetLanguage,
   stickers,
 } from '../shared/contracts.js';
 import { getPromptForDate, getTodayDateKey } from '../shared/dailyPrompts.js';
+import {
+  calculateDaysTogether,
+  calculateMilestoneCountdown,
+  buildDefaultMemories,
+  formatDateKey,
+} from '../shared/relationshipStory.js';
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 25 * 1024 * 1024, files: 1, fields: 4, fieldSize: 1000 },
@@ -438,6 +478,175 @@ export function createApp(io) {
     });
     res.json({ users, has_more: result.rows.length > 50 });
   });
+  
+  // ========================================
+  // Contact Management Endpoints
+  // ========================================
+  
+  // Get user's contacts (favorites)
+  app.get('/api/contacts', async (req, res) => {
+    const query = z.object({
+      favorite_only: z.coerce.boolean().default(false),
+      label_id: z.string().uuid().optional(),
+      search: z.string().max(80).default(''),
+      offset: z.coerce.number().int().min(0).max(1000000).default(0),
+      limit: z.coerce.number().int().min(1).max(100).default(50),
+    }).parse(req.query);
+    
+    const result = await getContacts(req.user.id, query);
+    res.json(result);
+  });
+  
+  // Add a contact
+  app.post('/api/contacts', async (req, res) => {
+    await limit(`contacts:${req.user.id}`, 30, 60);
+    const input = z.object({
+      contact_id: z.string().uuid(),
+      nickname: z.string().trim().max(80).optional(),
+      is_favorite: z.boolean().default(true),
+    }).parse(req.body);
+    
+    const contact = await addContact(req.user.id, input.contact_id, {
+      nickname: input.nickname || null,
+      is_favorite: input.is_favorite,
+    });
+    res.status(201).json(contact);
+  });
+  
+  // Update a contact
+  app.patch('/api/contacts/:contactId', async (req, res) => {
+    await limit(`contacts:${req.user.id}`, 60, 60);
+    const contactId = id.parse(req.params.contactId);
+    const updates = z.object({
+      nickname: z.string().trim().max(80).nullable().optional(),
+      is_favorite: z.boolean().optional(),
+    }).parse(req.body);
+    
+    const contact = await updateContact(req.user.id, contactId, updates);
+    res.json(contact);
+  });
+  
+  // Remove a contact
+  app.delete('/api/contacts/:contactId', async (req, res) => {
+    const contactId = id.parse(req.params.contactId);
+    const result = await removeContact(req.user.id, contactId);
+    res.json(result);
+  });
+  
+  // Get contact labels/groups
+  app.get('/api/contacts/labels', async (req, res) => {
+    const labels = await getLabels(req.user.id);
+    res.json(labels);
+  });
+  
+  // Create a contact label
+  app.post('/api/contacts/labels', async (req, res) => {
+    await limit(`contact-labels:${req.user.id}`, 20, 60);
+    const input = z.object({
+      name: z.string().trim().min(1).max(40),
+      color: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
+      icon: z.string().max(10).nullable().optional(), // emoji or icon name
+    }).parse(req.body);
+    
+    const label = await createLabel(req.user.id, input);
+    res.status(201).json(label);
+  });
+  
+  // Update a contact label
+  app.patch('/api/contacts/labels/:labelId', async (req, res) => {
+    await limit(`contact-labels:${req.user.id}`, 40, 60);
+    const labelId = id.parse(req.params.labelId);
+    const updates = z.object({
+      name: z.string().trim().min(1).max(40).optional(),
+      color: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
+      icon: z.string().max(10).nullable().optional(),
+      position: z.number().int().min(0).optional(),
+    }).parse(req.body);
+    
+    const label = await updateLabel(req.user.id, labelId, updates);
+    res.json(label);
+  });
+  
+  // Delete a contact label
+  app.delete('/api/contacts/labels/:labelId', async (req, res) => {
+    const labelId = id.parse(req.params.labelId);
+    const result = await deleteLabel(req.user.id, labelId);
+    res.json(result);
+  });
+  
+  // Add contact to label
+  app.put('/api/contacts/labels/:labelId/members/:contactId', async (req, res) => {
+    await limit(`contact-labels:${req.user.id}`, 60, 60);
+    const labelId = id.parse(req.params.labelId);
+    const contactId = id.parse(req.params.contactId);
+    
+    const result = await addContactToLabel(req.user.id, labelId, contactId);
+    res.json(result);
+  });
+  
+  // Remove contact from label
+  app.delete('/api/contacts/labels/:labelId/members/:contactId', async (req, res) => {
+    const labelId = id.parse(req.params.labelId);
+    const contactId = id.parse(req.params.contactId);
+    
+    const result = await removeContactFromLabel(req.user.id, labelId, contactId);
+    res.json(result);
+  });
+  
+  // Get contact note
+  app.get('/api/contacts/:contactId/note', async (req, res) => {
+    const contactId = id.parse(req.params.contactId);
+    const note = await getContactNote(req.user.id, contactId);
+    res.json(note);
+  });
+  
+  // Set/update contact note
+  app.put('/api/contacts/:contactId/note', async (req, res) => {
+    await limit(`contact-notes:${req.user.id}`, 60, 60);
+    const contactId = id.parse(req.params.contactId);
+    const input = z.object({
+      note: z.string().max(5000),
+    }).parse(req.body);
+    
+    const result = await setContactNote(req.user.id, contactId, input.note);
+    res.json(result);
+  });
+  
+  // Export contacts
+  app.get('/api/contacts/export', async (req, res) => {
+    await limit(`contact-export:${req.user.id}`, 5, 3600); // 5 exports per hour
+    const format = z.enum(['json', 'csv', 'vcard']).default('json').parse(req.query.format);
+    
+    const result = await exportContacts(req.user.id, format);
+    const filename = `kipenzi-contacts-${new Date().toISOString().split('T')[0]}.${format === 'vcard' ? 'vcf' : format}`;
+    
+    res.set({
+      'Content-Type': result.mimeType,
+      'Content-Disposition': `attachment; filename="${filename}"`,
+    });
+    res.send(result.data);
+  });
+  
+  // Import contacts
+  app.post('/api/contacts/import', async (req, res) => {
+    await limit(`contact-import:${req.user.id}`, 3, 3600); // 3 imports per hour
+    const input = z.object({
+      contacts: z.array(z.object({
+        handle: z.string().optional(),
+        nickname: z.string().optional(),
+        is_favorite: z.boolean().optional(),
+        note: z.string().optional(),
+      })).max(1000), // Max 1000 contacts per import
+    }).parse(req.body);
+    
+    const result = await importContacts(req.user.id, input.contacts);
+    res.json(result);
+  });
+  
+  // ========================================
+  // End Contact Management Endpoints
+  // ========================================
+  
   app.post('/api/conversations', async (req, res) => {
     const { handle } = z.object({ handle: z.string().regex(/^[a-z0-9_]{3,30}$/) }).parse(req.body);
     const peer = await one('SELECT id FROM users WHERE handle=$1', [handle]);
@@ -493,7 +702,7 @@ export function createApp(io) {
       (SELECT jsonb_agg(jsonb_build_object('id',gu.id,'name',gu.name,'handle',gu.handle,'language',gu.language,'is_admin',gm.is_admin) ORDER BY gm.is_admin DESC, gu.name) FROM members gm JOIN users gu ON gu.id=gm.user_id WHERE gm.conversation_id=c.id) AS members,
       jsonb_build_object('id',u.id,'name',u.name,'handle',u.handle,'language',u.language,'avatar_id',u.avatar_id,'last_seen',u.last_seen,'online_status_visibility',u.online_status_visibility,'last_seen_visibility',u.last_seen_visibility) AS peer,
       (SELECT count(*)::int FROM messages m WHERE (m.expires_at IS NULL OR m.expires_at>now()) AND m.conversation_id=c.id AND m.seq>me.read_seq AND m.sender_id<>$1) AS unread,
-      (SELECT jsonb_build_object('text',m.text,'sticker',m.sticker,'attachment',m.attachment_id IS NOT NULL,'created_at',m.created_at) FROM messages m WHERE (m.expires_at IS NULL OR m.expires_at>now()) AND m.conversation_id=c.id ORDER BY m.seq DESC LIMIT 1) AS last_message,
+      (SELECT jsonb_build_object('text',m.text,'sticker',m.sticker,'attachment',m.attachment_id IS NOT NULL,'view_once',m.view_once,'view_once_opened_at',m.view_once_opened_at,'created_at',m.created_at) FROM messages m WHERE (m.expires_at IS NULL OR m.expires_at>now()) AND m.conversation_id=c.id ORDER BY m.seq DESC LIMIT 1) AS last_message,
       (SELECT coalesce(max(m.created_at),c.created_at) FROM messages m WHERE (m.expires_at IS NULL OR m.expires_at>now()) AND m.conversation_id=c.id) AS updated_at,
       (SELECT min(read_seq) FROM members WHERE conversation_id=c.id AND user_id<>$1) AS peer_read_seq FROM conversations c JOIN members me ON me.conversation_id=c.id AND me.user_id=$1 JOIN LATERAL (SELECT user_id FROM members WHERE conversation_id=c.id AND user_id<>$1 ORDER BY user_id LIMIT 1) other ON true JOIN users u ON u.id=other.user_id WHERE c.deleted_at IS NULL ORDER BY updated_at DESC LIMIT 200`,
       [req.user.id],
@@ -601,6 +810,17 @@ export function createApp(io) {
       [req.user.id]
     );
     res.json(result.rows);
+  });
+
+  app.get('/api/conversations/:id/moods', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json({ statuses: await readMoods(req.user.id, id.parse(req.params.id)) });
+  });
+  app.post('/api/conversations/:id/moods', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await limit(`mood:${req.user.id}:${cid}`, 30, 60);
+    res.json(await shareMood(req.user, cid, req.body));
   });
 
   // Daily "Us" Prompts endpoints (Question of the Day with double-blind mutual reveal)
@@ -830,6 +1050,615 @@ export function createApp(io) {
     }
     res.json({ history });
   });
+
+  // Relationship Timeline & Milestone Counter ("Our Story") Endpoints
+  app.get('/api/conversations/:id/relationship-story', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+
+    const peer = await one(
+      'SELECT u.id as user_id, u.name, u.handle FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+
+    let profile = await one(
+      "SELECT conversation_id, to_char(start_date, 'YYYY-MM-DD') as start_date, to_char(anniversary_date, 'YYYY-MM-DD') as anniversary_date, to_char(first_date, 'YYYY-MM-DD') as first_date, story_title, cover_photo FROM relationship_profiles WHERE conversation_id=$1",
+      [cid],
+    );
+
+    // If no profile exists yet, seed one using conversation or earliest message date
+    if (!profile) {
+      const earliestMsg = await one(
+        'SELECT min(created_at) as earliest FROM messages WHERE conversation_id=$1',
+        [cid],
+      );
+      const convRow = await one('SELECT created_at FROM conversations WHERE id=$1', [cid]);
+      const baseDate = earliestMsg?.earliest || convRow?.created_at || new Date();
+      const defaultStartDate = formatDateKey(baseDate);
+
+      await db.query(
+        'INSERT INTO relationship_profiles(conversation_id, start_date, story_title) VALUES($1, $2, $3) ON CONFLICT (conversation_id) DO NOTHING',
+        [cid, defaultStartDate, 'Our Story'],
+      );
+
+      profile = {
+        conversation_id: cid,
+        start_date: defaultStartDate,
+        anniversary_date: null,
+        first_date: null,
+        story_title: 'Our Story',
+        cover_photo: null,
+      };
+
+      // Seed starter memories if empty
+      const existingMemCount = await one(
+        'SELECT count(*)::int as count FROM relationship_memories WHERE conversation_id=$1',
+        [cid],
+      );
+      if (!existingMemCount || existingMemCount.count === 0) {
+        const defaultMems = buildDefaultMemories(defaultStartDate, peer ? peer.name : 'Sweetheart');
+        for (const mem of defaultMems) {
+          await db.query(
+            'INSERT INTO relationship_memories(id, conversation_id, user_id, title, memory_date, category, description, emoji, reactions) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+            [
+              randomUUID(),
+              cid,
+              req.user.id,
+              mem.title,
+              mem.memory_date,
+              mem.category,
+              mem.description,
+              mem.emoji,
+              JSON.stringify(mem.reactions || []),
+            ],
+          );
+        }
+      }
+    }
+
+    const memoriesRows = (
+      await db.query(
+        `SELECT m.id, m.conversation_id, m.user_id, m.title, to_char(m.memory_date, 'YYYY-MM-DD') as memory_date, m.category, m.description, m.photo_url, m.emoji, m.reactions, m.created_at, u.name as author_name
+         FROM relationship_memories m
+         JOIN users u ON u.id=m.user_id
+         WHERE m.conversation_id=$1
+         ORDER BY m.memory_date ASC, m.created_at ASC`,
+        [cid],
+      )
+    ).rows;
+
+    const milestonesRows = (
+      await db.query(
+        `SELECT ms.id, ms.conversation_id, ms.user_id, ms.title, to_char(ms.target_date, 'YYYY-MM-DD') as target_date, ms.category, ms.is_annual, ms.emoji, ms.note, ms.created_at, u.name as author_name
+         FROM relationship_milestones ms
+         JOIN users u ON u.id=ms.user_id
+         WHERE ms.conversation_id=$1
+         ORDER BY ms.target_date ASC`,
+        [cid],
+      )
+    ).rows;
+
+    // Build milestone list, including dynamic anniversary & first date from profile if not already in custom milestones
+    const allMilestones = [...milestonesRows];
+    if (profile.anniversary_date && !allMilestones.some((m) => m.category === 'anniversary')) {
+      allMilestones.unshift({
+        id: 'profile_anniversary',
+        conversation_id: cid,
+        user_id: req.user.id,
+        title: 'Wedding / Love Anniversary (വിവാഹവാർഷികം)',
+        target_date: profile.anniversary_date,
+        category: 'anniversary',
+        is_annual: true,
+        emoji: '🥂',
+        note: 'Our official annual milestone of eternal togetherness.',
+      });
+    }
+    if (profile.first_date && !allMilestones.some((m) => m.category === 'first_date')) {
+      allMilestones.push({
+        id: 'profile_first_date',
+        conversation_id: cid,
+        user_id: req.user.id,
+        title: 'First Date (ആദ്യ കൂടിക്കാഴ്ച)',
+        target_date: profile.first_date,
+        category: 'first_date',
+        is_annual: true,
+        emoji: '☕',
+        note: 'The day our hearts met across the table.',
+      });
+    }
+
+    // Attach countdown calculations to each milestone
+    const milestonesWithCountdowns = allMilestones
+      .map((ms) => {
+        const countdown = calculateMilestoneCountdown(ms.target_date, ms.is_annual);
+        return {
+          ...ms,
+          countdown,
+        };
+      })
+      .sort((a, b) => {
+        const aSec = a.countdown?.totalSecondsRemaining ?? 999999999;
+        const bSec = b.countdown?.totalSecondsRemaining ?? 999999999;
+        return aSec - bSec;
+      });
+
+    const daysTogether = calculateDaysTogether(profile.start_date);
+
+    res.json({
+      profile,
+      daysTogether,
+      memories: memoriesRows,
+      milestones: milestonesWithCountdowns,
+      partner: peer ? { id: peer.user_id, name: peer.name, handle: peer.handle } : null,
+    });
+  });
+
+  app.put('/api/conversations/:id/relationship-story/profile', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await assertCanContact(req.user.id, cid);
+
+    const schema = z.object({
+      start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      anniversary_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+      first_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+      story_title: z.string().max(100).optional(),
+    });
+    const parsed = schema.parse(req.body);
+
+    await db.query(
+      `INSERT INTO relationship_profiles(conversation_id, start_date, anniversary_date, first_date, story_title, updated_at)
+       VALUES($1, $2, $3, $4, $5, now())
+       ON CONFLICT (conversation_id) DO UPDATE SET
+         start_date = EXCLUDED.start_date,
+         anniversary_date = EXCLUDED.anniversary_date,
+         first_date = EXCLUDED.first_date,
+         story_title = COALESCE(EXCLUDED.story_title, relationship_profiles.story_title),
+         updated_at = now()`,
+      [
+        cid,
+        parsed.start_date,
+        parsed.anniversary_date || null,
+        parsed.first_date || null,
+        parsed.story_title || 'Our Story',
+      ],
+    );
+
+    const peer = await one(
+      'SELECT u.id as user_id FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('story:update', {
+        conversation_id: cid,
+        updated_by: req.user.id,
+      });
+    }
+
+    res.json({ ok: true, daysTogether: calculateDaysTogether(parsed.start_date) });
+  });
+
+  app.post('/api/conversations/:id/relationship-story/memories', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await assertCanContact(req.user.id, cid);
+
+    const schema = z.object({
+      title: z.string().min(1).max(200),
+      memory_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      category: z.string().default('sweet_moment'),
+      description: z.string().max(3000).optional().default(''),
+      photo_url: z.string().nullable().optional(),
+      emoji: z.string().default('✨'),
+    });
+    const parsed = schema.parse(req.body);
+    const newId = randomUUID();
+
+    const inserted = await one(
+      `INSERT INTO relationship_memories(id, conversation_id, user_id, title, memory_date, category, description, photo_url, emoji, reactions)
+       VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, '[]'::jsonb)
+       RETURNING id, conversation_id, user_id, title, to_char(memory_date, 'YYYY-MM-DD') as memory_date, category, description, photo_url, emoji, reactions, created_at`,
+      [
+        newId,
+        cid,
+        req.user.id,
+        parsed.title,
+        parsed.memory_date,
+        parsed.category,
+        parsed.description,
+        parsed.photo_url || null,
+        parsed.emoji,
+      ],
+    );
+
+    const peer = await one(
+      'SELECT u.id as user_id FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('story:update', {
+        conversation_id: cid,
+        type: 'memory_added',
+        memory: inserted,
+      });
+    }
+
+    res.json({ ok: true, memory: { ...inserted, author_name: req.user.name } });
+  });
+
+  app.delete('/api/conversations/:id/relationship-story/memories/:memoryId', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const memId = id.parse(req.params.memoryId);
+    await membership(req.user.id, cid);
+
+    await db.query('DELETE FROM relationship_memories WHERE id=$1 AND conversation_id=$2', [
+      memId,
+      cid,
+    ]);
+
+    const peer = await one(
+      'SELECT u.id as user_id FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('story:update', {
+        conversation_id: cid,
+        type: 'memory_deleted',
+        memory_id: memId,
+      });
+    }
+
+    res.json({ ok: true });
+  });
+
+  app.post('/api/conversations/:id/relationship-story/memories/:memoryId/react', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const memId = id.parse(req.params.memoryId);
+    await membership(req.user.id, cid);
+    const emojiInput = z.string().min(1).max(10).parse(req.body?.emoji || '❤️');
+
+    const memory = await one(
+      'SELECT id, reactions FROM relationship_memories WHERE id=$1 AND conversation_id=$2',
+      [memId, cid],
+    );
+    if (!memory) throw new HttpError(404, 'Memory not found');
+
+    let reactions = Array.isArray(memory.reactions) ? memory.reactions : [];
+    const existingIndex = reactions.indexOf(emojiInput);
+    if (existingIndex > -1) {
+      reactions = reactions.filter((r) => r !== emojiInput);
+    } else {
+      reactions = [...reactions, emojiInput];
+    }
+
+    await db.query('UPDATE relationship_memories SET reactions=$1 WHERE id=$2', [
+      JSON.stringify(reactions),
+      memId,
+    ]);
+
+    const peer = await one(
+      'SELECT u.id as user_id FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('story:update', {
+        conversation_id: cid,
+        type: 'memory_reacted',
+        memory_id: memId,
+        reactions,
+      });
+    }
+
+    res.json({ ok: true, reactions });
+  });
+
+  app.post('/api/conversations/:id/relationship-story/milestones', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await assertCanContact(req.user.id, cid);
+
+    const schema = z.object({
+      title: z.string().min(1).max(200),
+      target_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      category: z.string().default('milestone'),
+      is_annual: z.boolean().default(false),
+      emoji: z.string().default('💖'),
+      note: z.string().max(1000).optional().default(''),
+    });
+    const parsed = schema.parse(req.body);
+    const newId = randomUUID();
+
+    const inserted = await one(
+      `INSERT INTO relationship_milestones(id, conversation_id, user_id, title, target_date, category, is_annual, emoji, note)
+       VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING id, conversation_id, user_id, title, to_char(target_date, 'YYYY-MM-DD') as target_date, category, is_annual, emoji, note, created_at`,
+      [
+        newId,
+        cid,
+        req.user.id,
+        parsed.title,
+        parsed.target_date,
+        parsed.category,
+        parsed.is_annual,
+        parsed.emoji,
+        parsed.note,
+      ],
+    );
+
+    const peer = await one(
+      'SELECT u.id as user_id FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('story:update', {
+        conversation_id: cid,
+        type: 'milestone_added',
+        milestone: inserted,
+      });
+    }
+
+    res.json({
+      ok: true,
+      milestone: {
+        ...inserted,
+        author_name: req.user.name,
+        countdown: calculateMilestoneCountdown(inserted.target_date, inserted.is_annual),
+      },
+    });
+  });
+
+  app.delete('/api/conversations/:id/relationship-story/milestones/:milestoneId', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const msId = id.parse(req.params.milestoneId);
+    await membership(req.user.id, cid);
+
+    await db.query('DELETE FROM relationship_milestones WHERE id=$1 AND conversation_id=$2', [
+      msId,
+      cid,
+    ]);
+
+    const peer = await one(
+      'SELECT u.id as user_id FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('story:update', {
+        conversation_id: cid,
+        type: 'milestone_deleted',
+        milestone_id: msId,
+      });
+    }
+
+    res.json({ ok: true });
+  });
+
+  // Digital Time Capsule (Love Letters for Future) Endpoints
+  app.get('/api/conversations/:id/time-capsules', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+
+    const rows = (
+      await db.query(
+        `SELECT c.id, c.conversation_id, c.user_id, c.recipient_id, c.title, c.occasion,
+                c.unlock_at, c.theme, c.seal_symbol, c.letter_text, c.audio_url, c.photo_url,
+                c.status, c.opened_at, c.reactions, c.created_at,
+                u.name as author_name, r.name as recipient_name
+         FROM time_capsules c
+         JOIN users u ON u.id = c.user_id
+         JOIN users r ON r.id = c.recipient_id
+         WHERE c.conversation_id = $1
+         ORDER BY c.unlock_at ASC, c.created_at ASC`,
+        [cid],
+      )
+    ).rows;
+
+    const now = new Date();
+
+    // Security & Surprise Enforcement:
+    // If the requesting user is the recipient AND the capsule unlock time has not arrived yet,
+    // mask the secret content (letter_text, audio_url, photo_url) so they cannot sneak-peek in devtools!
+    const sanitized = rows.map((capsule) => {
+      const isAuthor = capsule.user_id === req.user.id;
+      const isUnlocked = new Date(capsule.unlock_at).getTime() <= now.getTime();
+
+      if (!isAuthor && !isUnlocked) {
+        return {
+          ...capsule,
+          letter_text: null,
+          audio_url: null,
+          photo_url: null,
+          is_locked: true,
+          status: 'sealed',
+        };
+      }
+
+      return {
+        ...capsule,
+        is_locked: !isUnlocked,
+      };
+    });
+
+    res.json({ capsules: sanitized });
+  });
+
+  app.post('/api/conversations/:id/time-capsules', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await assertCanContact(req.user.id, cid);
+
+    const peer = await one(
+      'SELECT u.id as user_id, u.name FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+    if (!peer) throw new HttpError(400, 'Time Capsules require a direct conversation with your partner.');
+
+    const validated = validateCapsuleInput(req.body);
+    const capsuleId = randomUUID();
+
+    const inserted = await one(
+      `INSERT INTO time_capsules(id, conversation_id, user_id, recipient_id, title, occasion, unlock_at, theme, seal_symbol, letter_text, audio_url, photo_url, status, reactions)
+       VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'sealed', '[]'::jsonb)
+       RETURNING *`,
+      [
+        capsuleId,
+        cid,
+        req.user.id,
+        peer.user_id,
+        validated.title,
+        validated.occasion,
+        validated.unlock_at,
+        validated.theme,
+        validated.seal_symbol,
+        validated.letter_text,
+        validated.audio_url,
+        validated.photo_url,
+      ],
+    );
+
+    if (io) {
+      // Send masked version to recipient
+      io.to(`user:${peer.user_id}`).emit('time_capsule:sealed', {
+        conversation_id: cid,
+        capsule: {
+          ...inserted,
+          letter_text: null,
+          audio_url: null,
+          photo_url: null,
+          author_name: req.user.name,
+          recipient_name: peer.name,
+          is_locked: true,
+        },
+      });
+    }
+
+    res.status(201).json({
+      ok: true,
+      capsule: {
+        ...inserted,
+        author_name: req.user.name,
+        recipient_name: peer.name,
+        is_locked: false,
+      },
+    });
+  });
+
+  app.post('/api/conversations/:id/time-capsules/:capsuleId/open', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const capId = id.parse(req.params.capsuleId);
+    await membership(req.user.id, cid);
+
+    const capsule = await one(
+      'SELECT * FROM time_capsules WHERE id=$1 AND conversation_id=$2',
+      [capId, cid],
+    );
+    if (!capsule) throw new HttpError(404, 'Time capsule not found');
+
+    const now = new Date();
+    if (new Date(capsule.unlock_at).getTime() > now.getTime()) {
+      throw new HttpError(403, 'This time capsule is still locked until ' + capsule.unlock_at);
+    }
+
+    const updated = await one(
+      "UPDATE time_capsules SET status='opened', opened_at=coalesce(opened_at, now()), updated_at=now() WHERE id=$1 RETURNING *",
+      [capId],
+    );
+
+    const peer = await one(
+      'SELECT u.id as user_id FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('time_capsule:opened', {
+        conversation_id: cid,
+        capsule_id: capId,
+        opened_by_name: req.user.name,
+        opened_at: updated.opened_at,
+      });
+    }
+
+    res.json({ ok: true, capsule: updated });
+  });
+
+  app.post('/api/conversations/:id/time-capsules/:capsuleId/react', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const capId = id.parse(req.params.capsuleId);
+    await membership(req.user.id, cid);
+
+    const emojiInput = z.string().min(1).max(20).parse(req.body?.emoji || '❤️');
+    const noteInput = req.body?.note ? z.string().max(500).parse(req.body.note) : null;
+
+    const capsule = await one(
+      'SELECT id, reactions, user_id, recipient_id FROM time_capsules WHERE id=$1 AND conversation_id=$2',
+      [capId, cid],
+    );
+    if (!capsule) throw new HttpError(404, 'Time capsule not found');
+
+    let reactions = Array.isArray(capsule.reactions) ? capsule.reactions : [];
+    reactions.push({
+      user_id: req.user.id,
+      user_name: req.user.name,
+      emoji: emojiInput,
+      note: noteInput,
+      created_at: new Date().toISOString(),
+    });
+
+    await db.query('UPDATE time_capsules SET reactions=$1 WHERE id=$2', [
+      JSON.stringify(reactions),
+      capId,
+    ]);
+
+    const peer = await one(
+      'SELECT u.id as user_id FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('time_capsule:reaction', {
+        conversation_id: cid,
+        capsule_id: capId,
+        reactions,
+        reaction: {
+          user_id: req.user.id,
+          user_name: req.user.name,
+          emoji: emojiInput,
+          note: noteInput,
+        },
+      });
+    }
+
+    res.json({ ok: true, reactions });
+  });
+
+  app.delete('/api/conversations/:id/time-capsules/:capsuleId', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const capId = id.parse(req.params.capsuleId);
+    await membership(req.user.id, cid);
+
+    const capsule = await one(
+      'SELECT user_id, recipient_id FROM time_capsules WHERE id=$1 AND conversation_id=$2',
+      [capId, cid],
+    );
+    if (!capsule) throw new HttpError(404, 'Time capsule not found');
+
+    if (capsule.user_id !== req.user.id) {
+      throw new HttpError(403, 'Only the author can delete this time capsule');
+    }
+
+    await db.query('DELETE FROM time_capsules WHERE id=$1 AND conversation_id=$2', [capId, cid]);
+
+    const peer = await one(
+      'SELECT u.id as user_id FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('time_capsule:deleted', {
+        conversation_id: cid,
+        capsule_id: capId,
+      });
+    }
+
+    res.json({ ok: true });
+  });
+
   app.patch('/api/conversations/:id/disappearing', async (req,res) => {
     const cid=id.parse(req.params.id);
     const {seconds}=z.object({seconds:z.union([z.literal(0),z.literal(3600),z.literal(86400),z.literal(604800),z.literal(2592000)])}).parse(req.body);
@@ -859,7 +1688,7 @@ export function createApp(io) {
        FROM messages m JOIN users u ON u.id=m.sender_id LEFT JOIN attachments a ON a.id=m.attachment_id
        LEFT JOIN translations t ON t.message_id=m.id AND t.language=$4
        WHERE m.conversation_id=$1 AND m.seq>$2::bigint AND m.seq<=$3::bigint
-       AND m.deleted_at IS NULL AND (m.expires_at IS NULL OR m.expires_at>now())
+       AND m.deleted_at IS NULL AND NOT m.view_once AND (m.expires_at IS NULL OR m.expires_at>now())
        ORDER BY m.seq ASC LIMIT 201`, [cid,input.after,through,req.user.language],
     );
     res.set('Cache-Control','no-store');
@@ -870,7 +1699,7 @@ export function createApp(io) {
     await membership(req.user.id, cid);
     const input = z.object({ q: z.string().trim().max(200).default(''), kind: z.enum(['messages','photos','documents','media','starred','pinned']).default('messages'), before: z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER).optional() }).parse(req.query);
     const result = await db.query(
-      `${messageSelect} WHERE m.conversation_id=$1 AND m.deleted_at IS NULL
+      `${messageSelect} WHERE m.conversation_id=$1 AND m.deleted_at IS NULL AND NOT m.view_once
        AND ($4::bigint IS NULL OR m.seq<$4)
        AND ($5='' OR strpos(lower(m.text),lower($5))>0 OR strpos(lower(a.name),lower($5))>0 OR strpos(lower(t.text),lower($5))>0)
        AND ($6='messages' OR ($6='starred' AND EXISTS(SELECT 1 FROM message_stars ms WHERE ms.message_id=m.id AND ms.user_id=$3)) OR ($6='pinned' AND EXISTS(SELECT 1 FROM message_pins mp WHERE mp.message_id=m.id)) OR ($6='photos' AND a.mime LIKE 'image/%') OR ($6='media' AND (a.mime LIKE 'image/%' OR a.mime LIKE 'video/%' OR a.mime LIKE 'audio/%')) OR ($6='documents' AND a.id IS NOT NULL AND a.mime NOT LIKE 'image/%' AND a.mime NOT LIKE 'video/%' AND a.mime NOT LIKE 'audio/%'))
@@ -879,6 +1708,58 @@ export function createApp(io) {
     );
     await ensureReaderTranslations(req.user, result.rows.slice(0,30));
     res.json({ messages: result.rows.slice(0,30), has_more: result.rows.length>30 });
+  });
+  app.get('/api/conversations/:id/vault', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    const input = z.object({
+      q: z.string().trim().max(200).default(''),
+      type: z.enum(['all', 'photos', 'videos']).default('all'),
+      sender_id: z.string().uuid().optional(),
+      before: z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER).optional(),
+      limit: z.coerce.number().int().min(1).max(100).default(60),
+    }).parse(req.query);
+
+    const result = await db.query(
+      `${messageSelect} WHERE m.conversation_id=$1 AND m.deleted_at IS NULL AND NOT m.view_once
+       AND a.id IS NOT NULL AND a.expired_at IS NULL
+       AND (a.mime LIKE 'image/%' OR a.mime LIKE 'video/%')
+       AND NOT (a.name LIKE 'sticker-%' OR lower(a.name) LIKE '%sticker%')
+       AND NOT (a.name LIKE 'voice-note-%' AND a.mime = 'video/webm')
+       AND ($4::bigint IS NULL OR m.seq < $4)
+       AND ($5 = '' OR strpos(lower(m.text), lower($5)) > 0 OR strpos(lower(a.name), lower($5)) > 0)
+       AND ($6 = 'all' OR ($6 = 'photos' AND a.mime LIKE 'image/%') OR ($6 = 'videos' AND a.mime LIKE 'video/%'))
+       AND ($7::uuid IS NULL OR m.sender_id = $7)
+       ORDER BY m.seq DESC LIMIT $8`,
+      [cid, req.user.language, req.user.id, input.before || null, input.q, input.type, input.sender_id || null, input.limit + 1],
+    );
+
+    const statsResult = await db.query(
+      `SELECT
+         COUNT(*)::int as total,
+         COUNT(CASE WHEN a.mime LIKE 'image/%' THEN 1 END)::int as photos,
+         COUNT(CASE WHEN a.mime LIKE 'video/%' THEN 1 END)::int as videos,
+         MIN(m.created_at) as oldest_date,
+         MAX(m.created_at) as newest_date
+       FROM (SELECT * FROM messages WHERE expires_at IS NULL OR expires_at > now()) m
+       JOIN attachments a ON a.id = m.attachment_id
+       WHERE m.conversation_id = $1 AND m.deleted_at IS NULL AND NOT m.view_once
+         AND a.expired_at IS NULL
+         AND (a.mime LIKE 'image/%' OR a.mime LIKE 'video/%')
+         AND NOT (a.name LIKE 'sticker-%' OR lower(a.name) LIKE '%sticker%')
+         AND NOT (a.name LIKE 'voice-note-%' AND a.mime = 'video/webm')`,
+      [cid],
+    );
+
+    const hasMore = result.rows.length > input.limit;
+    const messages = result.rows.slice(0, input.limit);
+    await ensureReaderTranslations(req.user, messages);
+
+    res.json({
+      messages,
+      has_more: hasMore,
+      stats: statsResult.rows[0] || { total: 0, photos: 0, videos: 0, oldest_date: null, newest_date: null },
+    });
   });
   app.get('/api/messages/search', async (req, res) => {
     await limit(`search:${req.user.id}`, 60, 60);
@@ -893,7 +1774,7 @@ export function createApp(io) {
     }).parse(req.query);
 
     // Build WHERE conditions
-    const conditions = ['m.deleted_at IS NULL'];
+    const conditions = ['m.deleted_at IS NULL', 'NOT m.view_once'];
     const params = [req.user.language, req.user.id];
     let paramIndex = 3;
 
@@ -971,6 +1852,29 @@ export function createApp(io) {
       offset: input.offset,
     });
   });
+  app.get('/api/conversations/:id/threads/:messageId', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const mid = id.parse(req.params.messageId);
+    await membership(req.user.id, cid);
+    const after = z.coerce.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).parse(req.query.after || 0);
+    const anchor = await one('SELECT id FROM messages WHERE id=$1 AND conversation_id=$2 AND (expires_at IS NULL OR expires_at>now())', [mid, cid]);
+    if (!anchor) throw new HttpError(404, 'Thread message is unavailable.');
+    const result = await db.query(`WITH RECURSIVE ancestors AS (
+      SELECT id,reply_to_id,seq FROM messages WHERE id=$4 AND conversation_id=$1
+      UNION
+      SELECT p.id,p.reply_to_id,p.seq FROM messages p JOIN ancestors a ON p.id=a.reply_to_id
+      WHERE p.conversation_id=$1 AND (p.expires_at IS NULL OR p.expires_at>now())
+    ), thread AS (
+      SELECT id FROM ancestors WHERE seq=(SELECT min(seq) FROM ancestors)
+      UNION
+      SELECT child.id FROM messages child JOIN thread parent ON child.reply_to_id=parent.id
+      WHERE child.conversation_id=$1 AND (child.expires_at IS NULL OR child.expires_at>now())
+    ) ${messageSelect} WHERE m.conversation_id=$1 AND m.id IN (SELECT id FROM thread) AND m.seq>$5 ORDER BY m.seq LIMIT 51`,
+    [cid, req.user.language, req.user.id, mid, after]);
+    const messages = result.rows.slice(0, 50);
+    await ensureReaderTranslations(req.user, messages);
+    res.json({ messages, has_more: result.rows.length > 50 });
+  });
   app.get('/api/conversations/:id/messages', async (req, res) => {
     // Update last_seen timestamp on activity
     await db.query('UPDATE users SET last_seen=now() WHERE id=$1', [req.user.id]);
@@ -1019,6 +1923,187 @@ export function createApp(io) {
     await limit(`schedules:${req.user.id}`, 40, 60);
     res.json(await changeSchedule(req.user, id.parse(req.params.id), null));
   });
+
+  // ========================================
+  // Calendar & To-Do Lists Endpoints
+  // ========================================
+
+  // Get calendar events for date range
+  app.get('/api/conversations/:id/calendar/events', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const input = z.object({
+      start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    }).parse(req.query);
+
+    const events = await getCalendarEvents(req.user.id, cid, input.start_date, input.end_date);
+    res.json(events);
+  });
+
+  // Create calendar event
+  app.post('/api/conversations/:id/calendar/events', async (req, res) => {
+    await limit(`calendar:${req.user.id}`, 60, 60);
+    const cid = id.parse(req.params.id);
+    const input = z.object({
+      title: z.string().trim().min(1).max(200),
+      description: z.string().trim().max(2000).optional(),
+      event_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+      event_time: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
+      all_day: z.boolean().default(true),
+      category: z.enum(['anniversary', 'birthday', 'date_night', 'special_date', 'trip', 'appointment', 'other']).default('special_date'),
+      emoji: z.string().max(10).default('📅'),
+      location: z.string().trim().max(500).nullable().optional(),
+      is_recurring: z.boolean().default(false),
+      recurrence_pattern: z.enum(['daily', 'weekly', 'monthly', 'yearly']).nullable().optional(),
+      recurrence_end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+      reminder_minutes: z.enum([0, 15, 30, 60, 120, 1440, 2880, 10080]).default(1440),
+    }).parse(req.body);
+
+    const event = await createCalendarEvent(req.user.id, cid, input);
+    res.status(201).json(event);
+  });
+
+  // Update calendar event
+  app.patch('/api/conversations/:id/calendar/events/:eventId', async (req, res) => {
+    await limit(`calendar:${req.user.id}`, 60, 60);
+    const eventId = id.parse(req.params.eventId);
+    const input = z.object({
+      title: z.string().trim().min(1).max(200).optional(),
+      description: z.string().trim().max(2000).nullable().optional(),
+      event_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      event_time: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
+      all_day: z.boolean().optional(),
+      category: z.enum(['anniversary', 'birthday', 'date_night', 'special_date', 'trip', 'appointment', 'other']).optional(),
+      emoji: z.string().max(10).optional(),
+      location: z.string().trim().max(500).nullable().optional(),
+      is_recurring: z.boolean().optional(),
+      recurrence_pattern: z.enum(['daily', 'weekly', 'monthly', 'yearly']).nullable().optional(),
+      recurrence_end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+      reminder_minutes: z.enum([0, 15, 30, 60, 120, 1440, 2880, 10080]).optional(),
+    }).parse(req.body);
+
+    const event = await updateCalendarEvent(req.user.id, eventId, input);
+    res.json(event);
+  });
+
+  // Delete calendar event
+  app.delete('/api/conversations/:id/calendar/events/:eventId', async (req, res) => {
+    const eventId = id.parse(req.params.eventId);
+    const result = await deleteCalendarEvent(req.user.id, eventId);
+    res.json(result);
+  });
+
+  // Respond to event (going/maybe/excited)
+  app.post('/api/conversations/:id/calendar/events/:eventId/respond', async (req, res) => {
+    await limit(`calendar:${req.user.id}`, 120, 60);
+    const eventId = id.parse(req.params.eventId);
+    const input = z.object({
+      response: z.enum(['going', 'maybe', 'excited']),
+      note: z.string().trim().max(500).nullable().optional(),
+    }).parse(req.body);
+
+    const response = await respondToEvent(req.user.id, eventId, input.response, input.note);
+    res.json(response);
+  });
+
+  // Get to-do lists
+  app.get('/api/conversations/:id/calendar/todos', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const lists = await getTodoLists(req.user.id, cid);
+    res.json(lists);
+  });
+
+  // Create to-do list
+  app.post('/api/conversations/:id/calendar/todos', async (req, res) => {
+    await limit(`calendar:${req.user.id}`, 60, 60);
+    const cid = id.parse(req.params.id);
+    const input = z.object({
+      title: z.string().trim().min(1).max(100),
+      description: z.string().trim().max(1000).nullable().optional(),
+      emoji: z.string().max(10).default('✓'),
+      color: z.string().regex(/^#[0-9a-fA-F]{6}$/).default('#8b5cf6'),
+    }).parse(req.body);
+
+    const list = await createTodoList(req.user.id, cid, input);
+    res.status(201).json(list);
+  });
+
+  // Update to-do list
+  app.patch('/api/conversations/:id/calendar/todos/:listId', async (req, res) => {
+    await limit(`calendar:${req.user.id}`, 60, 60);
+    const listId = id.parse(req.params.listId);
+    const input = z.object({
+      title: z.string().trim().min(1).max(100).optional(),
+      description: z.string().trim().max(1000).nullable().optional(),
+      emoji: z.string().max(10).optional(),
+      color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+    }).parse(req.body);
+
+    const list = await updateTodoList(req.user.id, listId, input);
+    res.json(list);
+  });
+
+  // Delete to-do list
+  app.delete('/api/conversations/:id/calendar/todos/:listId', async (req, res) => {
+    const listId = id.parse(req.params.listId);
+    const result = await deleteTodoList(req.user.id, listId);
+    res.json(result);
+  });
+
+  // Get to-do items
+  app.get('/api/conversations/:id/calendar/todos/:listId/items', async (req, res) => {
+    const listId = id.parse(req.params.listId);
+    const items = await getTodoItems(req.user.id, listId);
+    res.json(items);
+  });
+
+  // Create to-do item
+  app.post('/api/conversations/:id/calendar/todos/:listId/items', async (req, res) => {
+    await limit(`calendar:${req.user.id}`, 120, 60);
+    const listId = id.parse(req.params.listId);
+    const input = z.object({
+      text: z.string().trim().min(1).max(500),
+      due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+      priority: z.enum(['low', 'normal', 'high']).default('normal'),
+    }).parse(req.body);
+
+    const item = await createTodoItem(req.user.id, listId, input);
+    res.status(201).json(item);
+  });
+
+  // Update to-do item
+  app.patch('/api/conversations/:id/calendar/todos/:listId/items/:itemId', async (req, res) => {
+    await limit(`calendar:${req.user.id}`, 120, 60);
+    const itemId = id.parse(req.params.itemId);
+    const input = z.object({
+      text: z.string().trim().min(1).max(500).optional(),
+      due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+      priority: z.enum(['low', 'normal', 'high']).optional(),
+    }).parse(req.body);
+
+    const item = await updateTodoItem(req.user.id, itemId, input);
+    res.json(item);
+  });
+
+  // Toggle to-do item completion
+  app.post('/api/conversations/:id/calendar/todos/:listId/items/:itemId/toggle', async (req, res) => {
+    await limit(`calendar:${req.user.id}`, 200, 60);
+    const itemId = id.parse(req.params.itemId);
+    const item = await toggleTodoItem(req.user.id, itemId);
+    res.json(item);
+  });
+
+  // Delete to-do item
+  app.delete('/api/conversations/:id/calendar/todos/:listId/items/:itemId', async (req, res) => {
+    const itemId = id.parse(req.params.itemId);
+    const result = await deleteTodoItem(req.user.id, itemId);
+    res.json(result);
+  });
+
+  // ========================================
+  // End Calendar & To-Do Lists Endpoints
+  // ========================================
+
   app.post('/api/conversations/:id/messages', async (req, res) => {
     await limit(`messages:${req.user.id}`, 40, 60);
     const cid = id.parse(req.params.id),
@@ -1077,6 +2162,8 @@ export function createApp(io) {
       id.parse(req.params.id),
     ]);
     if (!attachment || attachment.expired_at || await one('SELECT 1 FROM messages WHERE attachment_id=$1 AND expires_at<=now()',[attachment.id])) throw new HttpError(404, 'File not found.');
+    if (await one('SELECT 1 FROM messages WHERE attachment_id=$1 AND view_once', [attachment.id]))
+      throw new HttpError(403, 'View-once media must be opened from the message.');
     if (attachment.owner_id !== req.user.id) {
       if (attachment.purpose === 'chat') {
         await membership(req.user.id, attachment.conversation_id);
@@ -1092,6 +2179,29 @@ export function createApp(io) {
     }
     return attachment;
   };
+  app.post('/api/messages/:id/view-once', async (req, res) => {
+    const mid = id.parse(req.params.id);
+    const result = await transaction(async c => {
+      const message = await one('SELECT * FROM messages WHERE id=$1 FOR UPDATE', [mid], c);
+      if (!message || !message.view_once || message.deleted_at || hasExpired(message))
+        throw new HttpError(404, 'View-once media is unavailable.');
+      await membership(req.user.id, message.conversation_id, c);
+      if (message.sender_id === req.user.id) throw new HttpError(403, 'Only your partner can open this media.');
+      if (message.view_once_opened_at) throw new HttpError(410, 'This media has already been opened.');
+      const attachment = await one('SELECT * FROM attachments WHERE id=$1 FOR UPDATE', [message.attachment_id], c);
+      if (!attachment || attachment.expired_at) throw new HttpError(410, 'This media is no longer available.');
+      // Read before consuming so storage failures leave the message available. The row lock
+      // ensures concurrent requests from another tab/device cannot receive a second copy.
+      const bytes = Buffer.from(await readObject(attachment.object_key));
+      await c.query('UPDATE messages SET view_once_opened_at=clock_timestamp() WHERE id=$1', [mid]);
+      await c.query('UPDATE attachments SET expired_at=now() WHERE id=$1', [attachment.id]);
+      await enqueue(c, 'delete_object', { key: attachment.object_key });
+      await conversationEvent(c, message.conversation_id, 'message:changed', { conversation_id: message.conversation_id, message_id: mid });
+      return { bytes, mime: attachment.mime };
+    });
+    res.set({ 'Content-Type': result.mime, 'Cache-Control': 'no-store', 'Content-Length': String(result.bytes.length) });
+    res.end(result.bytes);
+  });
   app.get('/api/attachments/:id', async (req, res) => {
     const attachment = await authorizedAttachment(req);
     res.json({ url: `/api/attachments/${attachment.id}/content`, mime: attachment.mime });

@@ -1,17 +1,51 @@
-const OFFLINE_CACHE = 'kipenzi-offline-v1';
+import { offlineStore } from './offline-store.js';
+import { flushOutbox, refreshOfflineHistory, SYNC_TAG } from './offline-sync.js';
+
+const OFFLINE_CACHE = 'kipenzi-shell-v2';
+const PRECACHE = [];
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(OFFLINE_CACHE).then((cache) => cache.add('/offline.html')));
+  event.waitUntil(caches.open(OFFLINE_CACHE).then(async cache => {
+    await cache.addAll(PRECACHE.length ? PRECACHE : ['/', '/offline.html', '/icons/icon-192.png']);
+    await self.skipWaiting();
+  }));
 });
 self.addEventListener('message', event => {
   if (event.data?.type === 'ACTIVATE_PUSH') void self.skipWaiting();
 });
 self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith('kipenzi-offline-') && key !== OFFLINE_CACHE).map((key) => caches.delete(key)))));
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => (key.startsWith('kipenzi-offline-') || key.startsWith('kipenzi-shell-')) && key !== OFFLINE_CACHE).map((key) => caches.delete(key)))));
   event.waitUntil(self.clients.claim());
 });
 self.addEventListener('fetch', (event) => {
-  if (event.request.mode !== 'navigate' || new URL(event.request.url).origin !== self.location.origin) return;
-  event.respondWith(fetch(event.request).catch(() => caches.match('/offline.html')));
+  const url = new URL(event.request.url);
+  if (event.request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/') || url.pathname.startsWith('/socket.io/')) return;
+  if (event.request.mode === 'navigate') {
+    event.respondWith(fetch(event.request).catch(async () => (await caches.open(OFFLINE_CACHE)).match('/')
+      .then(response => response || caches.match('/offline.html'))));
+  } else if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/icons/')) {
+    event.respondWith((async () => {
+      const cache = await caches.open(OFFLINE_CACHE);
+      const cached = await cache.match(event.request);
+      if (cached) return cached;
+      const response = await fetch(event.request);
+      if (response.ok && response.type !== 'opaque') await cache.put(event.request, response.clone());
+      return response;
+    })());
+  }
+});
+self.addEventListener('sync', event => {
+  if (event.tag !== SYNC_TAG) return;
+  event.waitUntil((async () => {
+    try {
+      const session = await offlineStore.session();
+      if (session?.user) {
+        await flushOutbox(session.user.id);
+        await refreshOfflineHistory(session.user.id);
+      }
+    } finally {
+      for (const client of await self.clients.matchAll({ type: 'window' })) client.postMessage({ type: 'OUTBOX_SYNCED' });
+    }
+  })());
 });
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 self.addEventListener('push', event => {
@@ -29,6 +63,7 @@ self.addEventListener('push', event => {
       tag: String(payload.tag || 'kipenzi-message').slice(0, 100),
       data: payload.data, renotify: false,
     });
+    await refreshOfflineHistory(payload.data.user_id).catch(() => {});
   })());
 });
 self.addEventListener('notificationclick', event => {

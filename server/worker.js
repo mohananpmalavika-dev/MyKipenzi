@@ -14,7 +14,9 @@ import {
 } from './providers.js';
 import { putObject, providerObject, readObject, removeObject } from './storage.js';
 import { enqueue, conversationEvent } from './service.js';
-import { deliverMessagePush, deliverSchedulePush } from './push.js';
+import { deliverMessagePush, deliverSchedulePush, deliverCalendarReminderPush } from './push.js';
+import { processSchedules } from './scheduled.js';
+import { processEventReminders } from './calendar.js';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function translation(data) {
   const { message_id, language, requester_id, requester_ids } = data;
@@ -184,6 +186,7 @@ const worker = new Worker(
     else if (job.name === 'delete_voice') await deleteVoice(job.data.voice_id);
     else if (job.name === 'push') await deliverMessagePush(job.data, job.attemptsMade);
     else if (job.name === 'schedule_push') await deliverSchedulePush(job.data);
+    else if (job.name === 'calendar_reminder_push') await deliverCalendarReminderPush(job.data);
   },
   { connection: queueConnection, concurrency: 6 },
 );
@@ -236,3 +239,12 @@ async function shutdown() {
 }
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
+
+
+// Periodic tasks for scheduled messages and calendar reminders
+const periodic = [
+  () => processSchedules().catch((e) => logger.error('processSchedules error:', e.message, e)),
+  () => processEventReminders().catch((e) => logger.error('processEventReminders error:', e.message, e)),
+];
+for (const fn of periodic) fn();
+setInterval(() => void Promise.all(periodic.map((fn) => fn())), 60000);

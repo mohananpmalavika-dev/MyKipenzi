@@ -1,3 +1,4 @@
+import { supportsViewOnce } from '../shared/viewOnce.js';
 import { hasExpired } from '../shared/disappearing.js';
 import { canDeleteForEveryone } from '../shared/messageStatus.js';
 import { randomUUID } from 'node:crypto';
@@ -40,9 +41,10 @@ export async function conversationEvent(client, conversationId, event, data) {
   await enqueue(client, 'event', { users: members.map((m) => m.user_id), event, data });
 }
 export const messageSelect = `SELECT m.*,
+ (SELECT count(*)::int FROM messages children WHERE children.reply_to_id=m.id AND children.conversation_id=m.conversation_id AND children.deleted_at IS NULL AND (children.expires_at IS NULL OR children.expires_at>now())) AS reply_count,
  EXISTS(SELECT 1 FROM message_stars ms WHERE ms.message_id=m.id AND ms.user_id=$3::uuid) AS starred,
  EXISTS(SELECT 1 FROM message_pins mp WHERE mp.message_id=m.id) AS pinned,jsonb_build_object('id',u.id,'name',u.name,'handle',u.handle) AS sender,
- CASE WHEN a.id IS NOT NULL THEN jsonb_build_object('id',a.id,'name',a.name,'mime',a.mime,'size',a.size) ELSE NULL END AS attachment,
+ CASE WHEN a.id IS NOT NULL AND a.expired_at IS NULL THEN jsonb_build_object('id',a.id,'name',a.name,'mime',a.mime,'size',a.size,'view_once',m.view_once) ELSE NULL END AS attachment,
  CASE WHEN t.message_id IS NOT NULL THEN jsonb_build_object('language',t.language,'status',t.status,'text',t.text) ELSE NULL END AS translation,
  (SELECT COALESCE(jsonb_object_agg(t_all.language, jsonb_build_object('status', t_all.status, 'text', t_all.text)), '{}'::jsonb)
   FROM translations t_all WHERE t_all.message_id=m.id) AS translations,
@@ -108,6 +110,8 @@ export async function sendMessage(user, input, conversationId, client) {
       const reply = await one('SELECT id FROM messages WHERE id=$1 AND conversation_id=$2 AND deleted_at IS NULL AND (expires_at IS NULL OR expires_at>now()) FOR UPDATE', [input.reply_to_id, conversationId], c);
       if (!reply) throw new HttpError(400, 'Reply message is unavailable in this conversation.');
     }
+    if (input.view_once && (member.is_group || !input.attachment_id || input.text || input.sticker))
+      throw new HttpError(400, 'View-once photos and videos are available in partner chats without captions or stickers.');
     let isVoiceNote = false;
     if (input.attachment_id) {
       const attachment = await one(
@@ -119,17 +123,19 @@ export async function sendMessage(user, input, conversationId, client) {
         !attachment ||
         attachment.owner_id !== user.id ||
         attachment.conversation_id !== conversationId ||
-        attachment.purpose !== 'chat'
+        attachment.purpose !== 'chat' || attachment.expired_at
       )
         throw new HttpError(400, 'Invalid attachment.');
       if (await one('SELECT 1 FROM messages WHERE attachment_id=$1', [input.attachment_id], c))
         throw new HttpError(409, 'Attachment already sent.');
+      if (input.view_once && !supportsViewOnce(attachment))
+        throw new HttpError(400, 'View once supports photos and videos only.');
       isVoiceNote =
         attachment.mime?.startsWith('audio/') ||
         (/^voice-note-/.test(attachment.name || '') && attachment.mime === 'video/webm');
     }
     const m = await one(
-      `INSERT INTO messages(id,conversation_id,sender_id,client_id,text,source_language,sticker,attachment_id,reply_to_id,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,(SELECT CASE WHEN seconds=0 THEN NULL ELSE now()+make_interval(secs=>seconds) END FROM (SELECT CASE WHEN disappearing_seconds>0 AND $10::int>0 THEN least(disappearing_seconds,$10::int) ELSE coalesce(nullif($10::int,0),disappearing_seconds) END AS seconds FROM conversations WHERE id=$2) timer)) RETURNING *`,
+      `INSERT INTO messages(id,conversation_id,sender_id,client_id,text,source_language,sticker,attachment_id,reply_to_id,view_once,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$11,(SELECT CASE WHEN seconds=0 THEN NULL ELSE now()+make_interval(secs=>seconds) END FROM (SELECT CASE WHEN disappearing_seconds>0 AND $10::int>0 THEN least(disappearing_seconds,$10::int) ELSE coalesce(nullif($10::int,0),disappearing_seconds) END AS seconds FROM conversations WHERE id=$2) timer)) RETURNING *`,
       [
         randomUUID(),
         conversationId,
@@ -141,6 +147,7 @@ export async function sendMessage(user, input, conversationId, client) {
         input.attachment_id || null,
         input.reply_to_id || null,
         input.expires_in_seconds || null,
+        input.view_once || false,
       ],
       c,
     );
@@ -297,6 +304,7 @@ export async function saveMessage(user, messageId, kind, enabled) {
     if (!message || hasExpired(message)) throw new HttpError(404,'Message not found.');
     await membership(user.id,message.conversation_id,c);
     if (message.deleted_at) throw new HttpError(409,'Deleted messages cannot be saved.');
+    if (message.view_once) throw new HttpError(403, 'View-once media cannot be starred or pinned.');
     if (kind==='pin') {
       await assertCanContact(user.id,message.conversation_id,c);
       if (enabled) await c.query('INSERT INTO message_pins(message_id,pinned_by) VALUES($1,$2) ON CONFLICT DO NOTHING',[messageId,user.id]);
@@ -320,6 +328,7 @@ export async function forwardMessage(user, messageId, targetConversationId, capt
     
     // Check user has access to original message
     await membership(user.id, original.conversation_id, c);
+    if (original.view_once) throw new HttpError(403, 'View-once media cannot be forwarded.');
     
     // Check user has access to target conversation and can send messages
     await membership(user.id, targetConversationId, c);

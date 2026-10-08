@@ -44,13 +44,14 @@ export function MessageHistory({ message, onClose }) {
 
 export function OutgoingMessage({ entry, retryDisabled, onRetry }) {
   const failed = entry.status === 'failed';
-  return <article className={`message mine outgoing-message ${failed ? 'message-failed' : ''}`} aria-label={failed ? 'Failed message' : 'Sending message'}>
+  const queued = entry.status === 'queued';
+  return <article className={`message mine outgoing-message ${failed ? 'message-failed' : ''}`} aria-label={failed ? 'Failed message' : queued ? 'Queued message' : 'Sending message'}>
     <div className="bubble">
       {entry.input.text && <p dir="auto">{entry.input.text}</p>}
       {entry.input.sticker && <p>Sticker: {entry.input.sticker}</p>}
       {entry.file && <small>{entry.file.name}</small>}
-      <div className="outgoing-status" role="status">{failed ? <AlertCircle size={15} /> : <LoaderCircle size={15} className="spin" />}<span>{failed ? 'Message failed to send' : entry.file && !entry.input.attachment_id ? `Uploading ${entry.progress}%` : 'Sending…'}</span></div>
-      {failed && <><small>{entry.error}</small><button className="message-retry" type="button" disabled={retryDisabled} onClick={() => onRetry(entry.input.client_id)}><RefreshCw size={14} />Retry message</button></>}
+      <div className="outgoing-status" role="status">{failed || queued ? <AlertCircle size={15} /> : <LoaderCircle size={15} className="spin" />}<span>{queued ? 'Saved on this device · will send automatically' : failed ? 'Message failed to send' : entry.file && !entry.input.attachment_id ? `Uploading ${entry.progress}%` : 'Sending…'}</span></div>
+      {(failed || queued) && <><small>{entry.error}</small><button className="message-retry" type="button" disabled={retryDisabled} onClick={() => onRetry(entry.input.client_id)}><RefreshCw size={14} />Retry message</button></>}
     </div>
   </article>;
 }

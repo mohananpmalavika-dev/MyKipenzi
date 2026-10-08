@@ -220,6 +220,68 @@ io.on('connection', (socket) => {
       /* heartbeat status is best effort */
     }
   });
+  socket.on('touch:pulse', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const peer = await one(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [cid, user.id],
+      );
+      if (peer) {
+        io.to(`user:${peer.user_id}`).emit('touch:pulse', {
+          ...payload,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* touch pulse is best effort */
+    }
+  });
+  socket.on('touch:invite', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const peer = await one(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [cid, user.id],
+      );
+      if (peer) {
+        io.to(`user:${peer.user_id}`).emit('touch:invite', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          touch_mode: payload.touch_mode || 'gentle',
+        });
+      }
+    } catch {
+      /* touch invite is best effort */
+    }
+  });
+  socket.on('touch:status', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const peer = await one(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [cid, user.id],
+      );
+      if (peer) {
+        io.to(`user:${peer.user_id}`).emit('touch:status', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          active: Boolean(payload.active),
+        });
+      }
+    } catch {
+      /* touch status is best effort */
+    }
+  });
   socket.on('daily_prompt:nudge', async (payload) => {
     try {
       if (!(await getSession(socket.request.headers.cookie))) return;
@@ -239,6 +301,49 @@ io.on('connection', (socket) => {
       }
     } catch {
       /* daily prompt nudge is best effort */
+    }
+  });
+  socket.on('story:nudge', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const peer = await one(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [cid, user.id],
+      );
+      if (peer) {
+        io.to(`user:${peer.user_id}`).emit('story:nudge', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          title: payload.title || 'Our Story',
+        });
+      }
+    } catch {
+      /* story nudge is best effort */
+    }
+  });
+  socket.on('time_capsule:nudge', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const peer = await one(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [cid, user.id],
+      );
+      if (peer) {
+        io.to(`user:${peer.user_id}`).emit('time_capsule:nudge', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          capsule_id: payload.capsule_id,
+          title: payload.title || 'Digital Time Capsule',
+        });
+      }
+    } catch {
+      /* time capsule nudge is best effort */
     }
   });
   socket.on('music:sync', async (payload) => {
@@ -452,7 +557,7 @@ async function flush() {
           await queue.add(row.kind, row.payload, {
             jobId: `outbox-${row.id}`,
             priority: row.kind === 'translate' ? 1 : 5,
-            ...(row.kind === 'push' ? { delay: 2000 } : {}),
+            ...(['push', 'mood_push'].includes(row.kind) ? { delay: 2000 } : {}),
           });
         await c.query('DELETE FROM outbox WHERE id=$1', [row.id]);
       }

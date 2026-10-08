@@ -19,6 +19,6 @@ createRoot(document.getElementById('root')).render(
 );
 if (window.isSecureContext && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    void navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(() => {});
+    void navigator.serviceWorker.register('/sw.js', { type: 'module', updateViaCache: 'none' }).catch(() => {});
   });
 }

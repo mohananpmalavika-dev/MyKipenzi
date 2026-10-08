@@ -63,14 +63,15 @@ try {
   await page.reload();
   assert.equal(await page.evaluate(() => Boolean(navigator.serviceWorker.controller)), true);
   const cachesUsed = await page.evaluate(async () => Promise.all((await caches.keys()).map(async key => (await (await caches.open(key)).keys()).map(req => new URL(req.url).pathname))));
-  assert.deepEqual(cachesUsed.flat(), ['/offline.html']);
+  assert.ok(cachesUsed.flat().includes('/') && cachesUsed.flat().some(path => path.startsWith('/assets/')));
+  assert.ok(!cachesUsed.flat().some(path => path.startsWith('/api/')));
   const cdp = await page.context().newCDPSession(page);
   const installability = await cdp.send('Page.getInstallabilityErrors');
   console.log('Installability:', JSON.stringify(installability));
   assert.equal(installability.installabilityErrors.length, 0);
   await page.context().setOffline(true);
   await page.reload();
-  await page.getByText('You’re offline', { exact: true }).waitFor();
+  await page.getByText('We couldn’t reach Kipenzi.', { exact: true }).waitFor();
   assert.deepEqual(errors, []);
-  console.log('PASS: login/chat install UI, native prompt, iPhone instructions, standalone hiding, mobile layout, manifest/icons, installability, offline fallback, no private cache.');
+  console.log('PASS: login/chat install UI, native prompt, iPhone instructions, standalone hiding, mobile layout, manifest/icons, installability, offline shell, no API data in Cache Storage.');
 } finally { await browser.close(); }

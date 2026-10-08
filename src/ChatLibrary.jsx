@@ -3,7 +3,7 @@ import { hasExpired } from '../shared/disappearing.js';
 import { api } from './api.js';
 import { Attachment, Modal } from './components.jsx';
 import { stickers } from '../shared/constants.js';
-export function ChatLibrary({ conversationId, initialKind, onClose, onOpen }) {
+export function ChatLibrary({ conversationId, initialKind, onClose, onOpen, onOpenVault }) {
   const [revision, setRevision] = useState(0);
   const [saving, setSaving] = useState(null);
   const [kind, setKind] = useState(initialKind);
@@ -48,6 +48,18 @@ export function ChatLibrary({ conversationId, initialKind, onClose, onOpen }) {
     <div className="library-controls">
       <label>Find in this chat<input autoFocus aria-label="Search chat history" placeholder="Search messages or filenames" maxLength={200} value={query} onChange={e => setQuery(e.target.value)} /></label>
       <div className="library-tabs" role="group" aria-label="Filter shared items">{Object.entries({ messages:'Messages', photos:'Photos', documents:'Documents', media:'All media', starred:'Starred', pinned:'Pinned' }).map(([value,label]) => <button key={value} type="button" aria-pressed={kind===value} onClick={() => setKind(value)}>{label}</button>)}</div>
+      {(kind === 'photos' || kind === 'media') && onOpenVault && (
+        <button
+          type="button"
+          className="library-vault-shortcut-btn"
+          onClick={() => {
+            onClose();
+            onOpenVault();
+          }}
+        >
+          📸 Open in Polaroid Scrapbook (പോളറോയ്ഡ് പ്രണയ ആൽബം)
+        </button>
+      )}
     </div>
     {(kind==='starred' || kind==='pinned') && <p className="library-description">{kind==='starred'?'Starred messages are saved just for you.':'Pinned messages are visible to everyone in this chat.'}</p>}
     {error && <p role="alert">{error}</p>}

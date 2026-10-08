@@ -37,10 +37,12 @@ export const messageInput = z
     source_language: z.enum(['auto', 'en', 'ml', 'manglish', 'sw']).default('auto'),
     sticker: z.enum(Object.keys(stickers)).optional(),
     attachment_id: id.optional(),
+    view_once: z.boolean().default(false),
     reply_to_id: id.optional(),
     expires_in_seconds: z.union([z.literal(0), z.literal(300), z.literal(3600), z.literal(86400), z.literal(604800), z.literal(2592000)]).optional(),
   })
-  .refine((v) => v.text || v.sticker || v.attachment_id, { message: 'Message is empty' });
+  .refine((v) => v.text || v.sticker || v.attachment_id, { message: 'Message is empty' })
+  .refine((v) => !v.view_once || (v.attachment_id && !v.text && !v.sticker), { message: 'View-once messages require a photo or video without a caption or sticker.' });
 export const messageEdit = z.object({ text: z.string().trim().min(1).max(5000) });
 export const reactionEmojis = ['❤️','😂','👍','😮','😢','🙏'];
 export const reactionInput = z.object({ emoji: z.enum(reactionEmojis) });
