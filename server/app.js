@@ -183,7 +183,7 @@ export function createApp(io) {
   });
   app.get('/api/messages/:id', async (req, res) => {
     const mid = id.parse(req.params.id);
-    const message = await one(`${messageSelect} WHERE m.id=$1`, [mid, req.user.id, req.user.language]);
+    const message = await one(`${messageSelect} WHERE m.id=$1`, [mid, req.user.language, req.user.id]);
     if (!message) throw new HttpError(404, 'Message not found.');
     await membership(req.user.id, message.conversation_id);
     await ensureReaderTranslations(req.user, [message]);

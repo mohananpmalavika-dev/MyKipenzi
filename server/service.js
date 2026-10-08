@@ -60,7 +60,7 @@ export const messageSelect = `SELECT m.*,jsonb_build_object('id',u.id,'name',u.n
   FROM (
     SELECT r.emoji, COUNT(*)::int AS count,
            jsonb_agg(jsonb_build_object('id', ru.id, 'name', ru.name) ORDER BY r.created_at) AS users,
-           bool_or(r.user_id = $2) AS reacted
+           bool_or(r.user_id = $3::uuid) AS reacted
     FROM reactions r
     JOIN users ru ON ru.id = r.user_id
     WHERE r.message_id = m.id
@@ -68,7 +68,7 @@ export const messageSelect = `SELECT m.*,jsonb_build_object('id',u.id,'name',u.n
   ) react
  ) AS reactions
  FROM messages m JOIN users u ON u.id=m.sender_id LEFT JOIN attachments a ON a.id=m.attachment_id
- LEFT JOIN translations t ON t.message_id=m.id AND t.language=$3`;
+ LEFT JOIN translations t ON t.message_id=m.id AND t.language=$2::text`;
 export async function sendMessage(user, input, conversationId) {
   return transaction(async (c) => {
     await membership(user.id, conversationId, c);

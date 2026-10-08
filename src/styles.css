@@ -5232,3 +5232,813 @@ small {
   transform: rotate(15deg);
 }
 
+/* ==========================================================================
+   💓 LIVE HEARTBEAT & TOUCH PULSE (ലൈവ് ഹൃദയസ്പന്ദനം)
+   ========================================================================== */
+
+/* Heart icon pulsing animations in Header and Composer */
+.heartbeat-action-pulse {
+  color: #f43f5e;
+  animation: heartThrob 1.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes heartThrob {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 2px rgba(244, 63, 94, 0.4));
+  }
+  14% {
+    transform: scale(1.22);
+    filter: drop-shadow(0 0 8px rgba(244, 63, 94, 0.8));
+  }
+  28% {
+    transform: scale(1.08);
+  }
+  42% {
+    transform: scale(1.28);
+    filter: drop-shadow(0 0 10px rgba(244, 63, 94, 0.9));
+  }
+  70% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 2px rgba(244, 63, 94, 0.3));
+  }
+}
+
+/* Fullscreen Backdrop & Screen Cardiac Pulse */
+.heartbeat-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(8, 6, 11, 0.88);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: hbFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  touch-action: none;
+}
+
+@keyframes hbFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Fullscreen Ambient Cardiac Aura Vignette */
+.heartbeat-ambient-aura {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 40%, rgba(225, 29, 72, 0.12) 80%, rgba(159, 18, 57, 0.32) 100%);
+  transition: opacity 0.25s ease, background 0.3s ease;
+  opacity: 0.6;
+}
+
+.heartbeat-modal-backdrop.screen-pulse-active .heartbeat-ambient-aura {
+  opacity: 1;
+  background: radial-gradient(circle at center, rgba(244, 63, 94, 0.16) 20%, rgba(225, 29, 72, 0.32) 65%, rgba(190, 18, 60, 0.58) 100%);
+  animation: cardiacFlash 0.38s ease-out;
+}
+
+@keyframes cardiacFlash {
+  0% {
+    transform: scale(0.96);
+    filter: brightness(1.4);
+  }
+  50% {
+    transform: scale(1.02);
+    filter: brightness(1.6);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+.heartbeat-ambient-aura.synced-golden-aura {
+  background: radial-gradient(circle at center, rgba(251, 191, 36, 0.16) 15%, rgba(245, 158, 11, 0.35) 60%, rgba(217, 119, 6, 0.6) 100%) !important;
+  opacity: 1;
+}
+
+/* Modal Main Container */
+.heartbeat-modal-container {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  max-height: 94vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(28, 15, 24, 0.96) 0%, rgba(16, 10, 15, 0.98) 100%);
+  border: 1px solid rgba(244, 63, 94, 0.28);
+  border-radius: 28px;
+  box-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.8), 0 0 50px rgba(225, 29, 72, 0.2);
+  color: #fff;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* Header */
+.heartbeat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid rgba(244, 63, 94, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.heartbeat-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heartbeat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #f43f5e;
+}
+
+.heartbeat-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f43f5e;
+  box-shadow: 0 0 10px #f43f5e;
+  animation: liveDotPulse 1.2s infinite;
+}
+
+@keyframes liveDotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+.heartbeat-presence-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #cbd5e1;
+}
+
+.partner-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.partner-status-dot.online {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.partner-status-dot.waiting {
+  background: #f59e0b;
+}
+
+.heartbeat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hb-tool-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.hb-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.hb-tool-btn.active {
+  background: rgba(244, 63, 94, 0.22);
+  border-color: rgba(244, 63, 94, 0.5);
+  color: #fda4af;
+}
+
+/* Touch Sync Banner */
+.touch-sync-banner {
+  background: linear-gradient(90deg, #d97706, #ec4899, #f59e0b);
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+  animation: bannerSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sparkle-spin {
+  animation: spinSlow 3s linear infinite;
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Touch Pad Interactive Surface */
+.heartbeat-touch-pad {
+  position: relative;
+  width: 100%;
+  height: 340px;
+  background: radial-gradient(circle at center, rgba(46, 19, 36, 0.6) 0%, rgba(14, 8, 15, 0.95) 85%);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.heartbeat-touch-pad.touching-local {
+  background: radial-gradient(circle at center, rgba(74, 23, 49, 0.75) 0%, rgba(14, 8, 15, 0.95) 85%);
+}
+
+/* Central Beating Heart Graphic */
+.central-beating-heart {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+}
+
+.central-beating-heart.heart-beat-scale {
+  transform: scale(1.18);
+}
+
+.heart-svg {
+  color: #f43f5e;
+  filter: drop-shadow(0 0 25px rgba(244, 63, 94, 0.65));
+  transition: filter 0.2s ease, color 0.3s ease;
+}
+
+.heart-svg.synced-gold {
+  color: #fbbf24;
+  filter: drop-shadow(0 0 35px rgba(251, 191, 36, 0.85));
+}
+
+.bpm-center-text {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  pointer-events: none;
+  margin-top: 4px;
+}
+
+.bpm-number {
+  font-size: 26px;
+  font-weight: 850;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.bpm-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  opacity: 0.85;
+}
+
+/* Instructions & Prompts */
+.heartbeat-touch-prompt {
+  position: absolute;
+  bottom: 24px;
+  left: 20px;
+  right: 20px;
+  text-align: center;
+  pointer-events: none;
+  animation: promptFloat 2s ease-in-out infinite;
+}
+
+@keyframes promptFloat {
+  0%, 100% { transform: translateY(0); opacity: 0.95; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+
+.prompt-title-ml {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fbcfe8;
+  margin-bottom: 3px;
+}
+
+.prompt-subtitle {
+  font-size: 12.5px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* Finger Indicators */
+.touch-finger-indicator {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 15;
+}
+
+.finger-halo {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 3px solid #f43f5e;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.4) 0%, transparent 70%);
+  box-shadow: 0 0 24px rgba(244, 63, 94, 0.8);
+  animation: fingerHaloPulse 0.9s infinite alternate;
+}
+
+.partner-halo {
+  border-color: #38bdf8;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.4) 0%, transparent 70%);
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.8);
+}
+
+@keyframes fingerHaloPulse {
+  from { transform: scale(0.92); opacity: 0.8; }
+  to { transform: scale(1.18); opacity: 1; }
+}
+
+.finger-label {
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.local-label {
+  color: #fda4af;
+}
+
+.partner-label {
+  color: #bae6fd;
+}
+
+/* Connection Laser SVG */
+.finger-connection-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 12;
+}
+
+.connection-laser {
+  stroke: #fbbf24;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 6 3;
+  animation: dashMove 0.8s linear infinite;
+  filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.9));
+}
+
+@keyframes dashMove {
+  to { stroke-dashoffset: -18; }
+}
+
+/* Pulse Ripples */
+.pulse-ripple {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  border: 2px solid #f43f5e;
+  animation: hbRippleExpand 1.1s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+  z-index: 11;
+}
+
+.partner-ripple {
+  border-color: #38bdf8;
+}
+
+@keyframes hbRippleExpand {
+  0% {
+    width: 20px;
+    height: 20px;
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  100% {
+    width: 260px;
+    height: 260px;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.6);
+  }
+}
+
+/* Flying Hearts & Particles */
+.flying-heart-particle {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: heartFly 1.2s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+  z-index: 20;
+}
+
+@keyframes heartFly {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.6) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--vx, 0px)), calc(-50% + var(--vy, -60px))) scale(1.3) rotate(15deg);
+  }
+}
+
+/* ECG / EKG Cardiac Monitor Wave */
+.heartbeat-ecg-container {
+  padding: 12px 20px 8px;
+  background: rgba(15, 9, 16, 0.92);
+  border-top: 1px solid rgba(244, 63, 94, 0.15);
+  border-bottom: 1px solid rgba(244, 63, 94, 0.15);
+}
+
+.ecg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.ecg-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: #f43f5e;
+}
+
+.ecg-icon {
+  animation: ecgBlink 1.4s infinite;
+}
+
+@keyframes ecgBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.ecg-tempo-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.ecg-canvas {
+  width: 100%;
+  height: 65px;
+  display: block;
+  border-radius: 8px;
+  background: rgba(225, 29, 72, 0.04);
+}
+
+/* Tempo Presets Bar */
+.heartbeat-presets-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.heartbeat-presets-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.hb-preset-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.16s ease;
+}
+
+.hb-preset-chip:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.hb-preset-chip.active {
+  background: rgba(244, 63, 94, 0.24);
+  border-color: rgba(244, 63, 94, 0.6);
+  color: #fda4af;
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.35);
+}
+
+/* Footer & Note Sharing */
+.heartbeat-footer {
+  padding: 14px 20px 16px;
+  background: rgba(18, 10, 18, 0.98);
+}
+
+.hb-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hb-footer-tip {
+  font-size: 11.5px;
+  color: #94a3b8;
+  line-height: 1.35;
+  flex: 1;
+}
+
+.hb-share-chat-action {
+  background: linear-gradient(135deg, #e11d48, #be123c);
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  box-shadow: 0 3px 12px rgba(225, 29, 72, 0.35);
+}
+
+.hb-share-chat-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(225, 29, 72, 0.5);
+}
+
+.hb-note-composer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hb-note-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 7px 12px;
+  font-size: 13px;
+  color: #fff;
+  outline: none;
+}
+
+.hb-note-input:focus {
+  border-color: #f43f5e;
+}
+
+.hb-send-card-btn {
+  background: #f43f5e;
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.hb-cancel-note-btn {
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* Chat Invite Banner */
+.heartbeat-invite-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: linear-gradient(90deg, #be123c, #9d174d);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  box-shadow: 0 3px 14px rgba(190, 18, 60, 0.35);
+  animation: bannerSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 5;
+}
+
+.heartbeat-invite-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.heartbeat-pulse-icon {
+  animation: heartThrob 1.4s infinite;
+  display: inline-block;
+}
+
+.heartbeat-invite-join-btn {
+  background: #ffffff;
+  color: #be123c;
+  border: none;
+  font-size: 12px;
+  font-weight: 750;
+  padding: 5px 14px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.heartbeat-invite-join-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Chat Message Heartbeat Card */
+.heartbeat-chat-card {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.14) 0%, rgba(225, 29, 72, 0.06) 100%);
+  border: 1.5px solid rgba(244, 63, 94, 0.35);
+  border-radius: 18px;
+  padding: 12px 14px;
+  margin: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.12);
+  transition: all 0.25s ease;
+}
+
+.heartbeat-chat-card.card-beating {
+  border-color: #f43f5e;
+  box-shadow: 0 0 24px rgba(244, 63, 94, 0.45);
+  transform: scale(1.02);
+}
+
+.hb-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hb-card-heart-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(244, 63, 94, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hb-card-heart {
+  color: #f43f5e;
+}
+
+.hb-card-heart.beat-anim {
+  animation: heartThrob 0.8s infinite;
+}
+
+.hb-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.hb-card-meta strong {
+  font-size: 13px;
+  color: #fda4af;
+}
+
+.hb-card-meta span {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.hb-card-message {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #ffffff;
+  margin: 0;
+  font-style: italic;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.hb-feel-pulse-btn {
+  background: #f43f5e;
+  color: #ffffff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.16s ease;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.35);
+}
+
+.hb-feel-pulse-btn:hover {
+  background: #e11d48;
+  transform: translateY(-1px);
+}
+
+.hb-feel-pulse-btn.active {
+  background: #be123c;
+  animation: pulseButton 0.8s infinite alternate;
+}
+
+@keyframes pulseButton {
+  from { transform: scale(0.98); opacity: 0.9; }
+  to { transform: scale(1.02); opacity: 1; }
+}
+
+/* Mobile Responsiveness for Heartbeat Modal */
+@media (max-width: 600px) {
+  .heartbeat-modal-backdrop {
+    padding: 0;
+  }
+  .heartbeat-modal-container {
+    max-width: 100%;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+  .heartbeat-touch-pad {
+    height: calc(100vh - 280px);
+    min-height: 260px;
+  }
+  .hb-footer-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+}
+
+

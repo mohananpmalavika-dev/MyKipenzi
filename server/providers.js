@@ -3,7 +3,28 @@ import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 import { config } from './config.js';
 import { languages } from '../shared/contracts.js';
 import { HttpError } from './security.js';
-import { redis } from './infra.js';
+
+const memoryCache = new Map();
+const MAX_CACHE_SIZE = 2000;
+
+function getCached(key) {
+  const item = memoryCache.get(key);
+  if (!item) return null;
+  if (Date.now() > item.expiresAt) {
+    memoryCache.delete(key);
+    return null;
+  }
+  return item.value;
+}
+
+function setCached(key, value, ttlSeconds = 604800) {
+  if (memoryCache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = memoryCache.keys().next().value;
+    if (oldestKey) memoryCache.delete(oldestKey);
+  }
+  memoryCache.set(key, { value, expiresAt: Date.now() + ttlSeconds * 1000 });
+}
+
 export async function providerFetch(url, options = {}) {
   const response = await fetch(url, {
     ...options,
@@ -22,9 +43,9 @@ export async function translateText(text, source, target) {
   const trimmed = (text || '').trim();
   if (!trimmed) return '';
 
-  const cacheKey = `trans:cache:${source}:${target}:${createHash('sha256').update(trimmed).digest('hex')}`;
-  const cached = await redis.get(cacheKey).catch(() => null);
-  if (cached) return cached;
+  const cacheKey = `trans:${source}:${target}:${createHash('sha256').update(trimmed).digest('hex')}`;
+  const memoryHit = getCached(cacheKey);
+  if (memoryHit) return memoryHit;
 
   const maxTokens = Math.min(2048, Math.max(256, Math.ceil(trimmed.length * 4)));
   const response = await providerFetch(
@@ -53,7 +74,7 @@ export async function translateText(text, source, target) {
   if (!result || result.length > 20000 || data.candidates?.[0]?.finishReason !== 'STOP')
     throw new HttpError(502, 'Translation could not be completed.');
 
-  await redis.set(cacheKey, result, 'EX', 86400 * 7).catch(() => {});
+  setCached(cacheKey, result);
   return result;
 }
 

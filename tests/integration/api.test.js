@@ -442,6 +442,7 @@ test('API integration against an isolated PostgreSQL schema', async (t) => {
       assert.equal((await request(`/conversations/${conversation}/messages`,{client_id:randomUUID(),text:'unblocked'},bob)).status,201);
     });
     await t.test('groups show one conversation and each member’s selected translation', async () => {
+      await db.query('UPDATE users SET ai_consent=true WHERE id=ANY($1::uuid[])', [[alice.user.id, bob.user.id, eve.user.id]]);
       const result = await request('/conversations/groups', { name: 'Our group', handles: [bob.user.handle, eve.user.handle] }, alice);
       assert.equal(result.status, 201, JSON.stringify(result.data));
       const cid = result.data.id;
@@ -469,14 +470,18 @@ test('API integration against an isolated PostgreSQL schema', async (t) => {
       // The two recipients now share a language: sending must still succeed,
       // and translation fan-out must create only one job for that language.
       await db.query("UPDATE users SET language='sw' WHERE id=$1", [eve.user.id]);
-      const shared = await request(`/conversations/${cid}/messages`, { client_id: randomUUID(), text: 'Same language', source_language: 'en' }, alice);
+      const { config } = await import('../../server/config.js');
+      const originalKey = config.GEMINI_API_KEY;
+      config.GEMINI_API_KEY ||= 'integration-test-key';
+      let shared;
+      try {
+        shared = await request(`/conversations/${cid}/messages`, { client_id: randomUUID(), text: 'Same language', source_language: 'en' }, alice);
+      } finally { config.GEMINI_API_KEY = originalKey; }
       assert.equal(shared.status, 201, JSON.stringify(shared.data));
       const jobs = (await db.query("SELECT payload FROM outbox WHERE kind='translate' AND payload->>'message_id'=$1", [shared.data.id])).rows;
-      if (jobs.length) {
-        assert.equal(jobs.length, 1);
-        assert.equal(jobs[0].payload.language, 'sw');
-        assert.equal(jobs[0].payload.requester_ids.length, 2);
-      }
+      assert.equal(jobs.length, 1);
+      assert.equal(jobs[0].payload.language, 'sw');
+      assert.equal(jobs[0].payload.requester_ids.length, 2);
       assert.equal((await request('/conversations/groups', { name: 'Invalid', handles: [bob.user.handle, bob.user.handle] }, alice)).status, 400);
     });
     await t.test('logout invalidates the session', async () => {

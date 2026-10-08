@@ -27,11 +27,14 @@ import {
   RotateCcw,
   Moon,
   Sun,
+  Heart,
+  Activity,
 } from 'lucide-react';
 import { api, fileBlob, downloadFile } from './api.js';
 import { languages, stickers } from '../shared/constants.js';
 import { startLovingRingtone, stopLovingRingtone } from './ringtone.js';
 import { FONT_SIZES } from './useThemeAndFontSize.js';
+import { playHeartbeatSound, triggerHeartbeatHaptics } from './heartbeatAudio.js';
 export function ButtonIcon({ label, children, ...props }) {
   return (
     <button className="icon-btn" type="button" title={label} aria-label={label} {...props}>
@@ -100,7 +103,18 @@ export function Modal({ title, onClose, children, wide = false }) {
     </dialog>
   );
 }
-export function Settings({ user, capabilities, onClose, onUser, onError, messageAlerts }) {
+export function Settings({
+  user,
+  capabilities,
+  onClose,
+  onUser,
+  onError,
+  messageAlerts,
+  theme = 'system',
+  onThemeChange,
+  fontSize = 'comfortable',
+  onFontSizeChange,
+}) {
   const [draft, setDraft] = useState({
       name: user.name,
       language: user.language,
@@ -189,6 +203,90 @@ export function Settings({ user, capabilities, onClose, onUser, onError, message
             Their words, in the language closest to your heart. You each pick your own.
           </small>
         </label>
+
+        {/* Display & Reading Comfort (Dark Mode + Font Size) */}
+        <div className="display-settings-section">
+          <div className="display-section-title">
+            <h3>
+              <Sparkles size={16} /> Display & Reading Comfort
+            </h3>
+            <span className="display-section-badge">
+              {theme === 'dark' ? '🌙 Dark' : theme === 'light' ? '☀️ Light' : '🌓 System'}
+            </span>
+          </div>
+
+          <div className="theme-picker-group">
+            <label>Theme (തീം)</label>
+            <div className="theme-picker" role="radiogroup" aria-label="Theme mode">
+              <button
+                type="button"
+                className={`theme-option-btn ${theme === 'light' ? 'active' : ''}`}
+                onClick={() => onThemeChange?.('light')}
+                aria-pressed={theme === 'light'}
+              >
+                <Sun size={15} /> Light
+              </button>
+              <button
+                type="button"
+                className={`theme-option-btn ${theme === 'dark' ? 'active' : ''}`}
+                onClick={() => onThemeChange?.('dark')}
+                aria-pressed={theme === 'dark'}
+              >
+                <Moon size={15} /> Dark
+              </button>
+              <button
+                type="button"
+                className={`theme-option-btn ${theme === 'system' ? 'active' : ''}`}
+                onClick={() => onThemeChange?.('system')}
+                aria-pressed={theme === 'system'}
+              >
+                <Monitor size={15} /> System
+              </button>
+            </div>
+          </div>
+
+          <div className="font-size-picker-group">
+            <label>
+              Mobile Reading Font Size (ഫോണ്ട് വലുപ്പം)
+              <small>Comfortable reading on mobile screens, especially for Malayalam & long chats.</small>
+            </label>
+            <div className="font-size-picker" role="radiogroup" aria-label="Reading font size">
+              {FONT_SIZES.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`font-size-chip ${fontSize === item.id ? 'active' : ''}`}
+                  onClick={() => onFontSizeChange?.(item.id)}
+                  aria-pressed={fontSize === item.id}
+                >
+                  <span className="font-size-chip-title">{item.label}</span>
+                  <span className="font-size-chip-size">{item.size}</span>
+                  <span className="font-size-chip-ml">{item.labelMl}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Live Reading Comfort Preview */}
+          <div className="reading-preview-card" aria-label="Live reading preview">
+            <span className="reading-preview-label">
+              <Type size={12} /> Live Preview (തത്സമയ പ്രിവ്യൂ)
+            </span>
+            <div className="preview-bubble-sample">
+              <p dir="auto">സുഖമാണോ? നമ്മുടെ വിശേഷങ്ങൾ ഇവിടെ പങ്കുവെക്കാം 🤍</p>
+              <div className="message-meta">
+                <time>10:42 PM</time>
+              </div>
+            </div>
+            <div className="preview-bubble-sample mine">
+              <p dir="auto">Much easier & comfortable to read on mobile now! ✨</p>
+              <div className="message-meta">
+                <time>10:43 PM</time>
+                <CheckCheck size={13} />
+              </div>
+            </div>
+          </div>
+        </div>
         <label className="check-label">
           <input
             type="checkbox"
@@ -405,6 +503,54 @@ export function Attachment({ attachment, onError }) {
     </div>
   );
 }
+
+export function HeartbeatCard({ text }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const bpmMatch = text.match(/\[Heartbeat Pulse · (\d+)\s*BPM\]/i);
+  const bpm = bpmMatch ? parseInt(bpmMatch[1], 10) : 76;
+  const cleanMessage = text.replace(/💓\s*\[Heartbeat Pulse · \d+\s*BPM\]\s*/i, '').trim();
+
+  const handlePlayPulse = () => {
+    setIsPlaying(true);
+    triggerHeartbeatHaptics([60, 70, 80, 180, 60, 70, 80, 180]);
+    playHeartbeatSound(0.5);
+
+    setTimeout(() => {
+      playHeartbeatSound(0.5);
+    }, 780);
+
+    setTimeout(() => {
+      playHeartbeatSound(0.5);
+      setIsPlaying(false);
+    }, 1560);
+  };
+
+  return (
+    <div className={`heartbeat-chat-card ${isPlaying ? 'card-beating' : ''}`}>
+      <div className="hb-card-top">
+        <div className="hb-card-heart-wrap">
+          <Heart size={24} className={`hb-card-heart ${isPlaying ? 'beat-anim' : ''}`} fill="currentColor" />
+        </div>
+        <div className="hb-card-meta">
+          <strong>Heartbeat Pulse (ഹൃദയസ്പന്ദനം)</strong>
+          <span>💓 {bpm} BPM · Sent from the heart</span>
+        </div>
+      </div>
+
+      {cleanMessage && <p className="hb-card-message">{cleanMessage}</p>}
+
+      <button
+        type="button"
+        className={`hb-feel-pulse-btn ${isPlaying ? 'active' : ''}`}
+        onClick={handlePlayPulse}
+      >
+        <Activity size={14} />
+        <span>{isPlaying ? 'Feeling Heartbeat... 💓' : 'Feel Heartbeat (സ്പന്ദനം അനുഭവിക്കൂ)'}</span>
+      </button>
+    </div>
+  );
+}
+
 export function Message({ message, mine, peerRead, user, capabilities, onError, onReply, onChanged, highlighted, group }) {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(message.text);
@@ -632,6 +778,8 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
           </form>
         ) : isAudioNote ? (
           message.text ? <p dir="auto" className="voice-caption">{message.text}</p> : null
+        ) : !message.deleted_at && message.text?.startsWith('💓 [Heartbeat Pulse') ? (
+          <HeartbeatCard text={message.text} />
         ) : (
           <p dir="auto">{message.deleted_at ? 'Message deleted' : translated ? message.translation.text : message.text}</p>
         )}

@@ -24,10 +24,16 @@ import {
   Sparkles,
   Trash2,
   Palette,
+  Moon,
+  Sun,
+  Type,
+  Heart,
 } from 'lucide-react';
 import { api, setCsrf } from './api.js';
 import { Avatar, ButtonIcon, CallOverlay, Message, Modal, Settings, StickerCreatorModal } from './components.jsx';
 import { LiveDoodleModal } from './LiveDoodle.jsx';
+import { LiveHeartbeatModal } from './LiveHeartbeat.jsx';
+import { playHeartbeatSound, triggerHeartbeatHaptics } from './heartbeatAudio.js';
 import { useCall } from './useCall.js';
 import { languages, stickers, stickerCategories } from '../shared/constants.js';
 import { ReactionOverlay, detectReaction } from './ReactionOverlay.jsx';
@@ -37,6 +43,7 @@ import { UserSafety } from './UserSafety.jsx';
 import { ChatLibrary } from './ChatLibrary.jsx';
 import { UserDirectory } from './UserDirectory.jsx';
 import { usePushNotifications } from './usePushNotifications.js';
+import { useThemeAndFontSize } from './useThemeAndFontSize.js';
 
 function formatLastSeen(lastSeen) {
   if (!lastSeen) return null;
@@ -260,7 +267,8 @@ function Auth({ capabilities, onSession, onError }) {
     </main>
   );
 }
-function Chat({ session, capabilities, onSession, onError }) {
+function Chat({ session, capabilities, onSession, onError, themeControls }) {
+  const { theme, setTheme, isDark, toggleTheme, fontSize, setFontSize, cycleFontSize, currentFontConfig } = themeControls;
   const { user, csrf } = session;
   const push = usePushNotifications(user.id, onError);
   const { preview, dismiss, receive, update: updateAlert, soundEnabled, setSoundEnabled, playSound } = useMessageAlerts(user.id);
@@ -297,6 +305,8 @@ function Chat({ session, capabilities, onSession, onError }) {
     [showStickerCreator, setShowStickerCreator] = useState(false),
     [showDoodle, setShowDoodle] = useState(false),
     [doodleInvite, setDoodleInvite] = useState(null),
+    [showHeartbeat, setShowHeartbeat] = useState(false),
+    [heartbeatInvite, setHeartbeatInvite] = useState(null),
     [stickerCategory, setStickerCategory] = useState('all'),
     [stickerSearch, setStickerSearch] = useState(''),
     [customStickers, setCustomStickers] = useState(() => {
@@ -321,7 +331,9 @@ function Chat({ session, capabilities, onSession, onError }) {
     generation = useRef(0),
     messagesRef = useRef([]),
     lastProcessedMsgRef = useRef(null),
-    lastTriggeredMsgIdRef = useRef(null);
+    lastTriggeredMsgIdRef = useRef(null),
+    showHeartbeatRef = useRef(false);
+  showHeartbeatRef.current = showHeartbeat;
   const triggerReaction = useCallback((type) => {
     if (!type) return;
     setReaction({ type, id: Date.now() });
@@ -423,6 +435,25 @@ function Chat({ session, capabilities, onSession, onError }) {
         setDoodleInvite(payload);
       }
     };
+    const handleHeartbeatInvite = (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setHeartbeatInvite(payload);
+        triggerHeartbeatHaptics([60, 60, 80, 180]);
+        playHeartbeatSound(0.35);
+      }
+    };
+    const handleHeartbeatPulse = (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        if (!showHeartbeatRef.current) {
+          setHeartbeatInvite({
+            conversation_id: payload.conversation_id,
+            sender_name: payload.sender_name,
+          });
+          triggerHeartbeatHaptics([50, 60, 70, 160]);
+          playHeartbeatSound(0.3);
+        }
+      }
+    };
     connection.on('connect', refresh);
     connection.on('disconnect', () => setConnected(false));
     connection.on('connect_error', (e) => {
@@ -435,6 +466,8 @@ function Chat({ session, capabilities, onSession, onError }) {
     connection.on('receipt:changed', changed);
     connection.on('typing', handleTyping);
     connection.on('doodle:invite', handleDoodleInvite);
+    connection.on('heartbeat:invite', handleHeartbeatInvite);
+    connection.on('heartbeat:pulse', handleHeartbeatPulse);
     connection.connect();
     void loadConversations().catch((e) => onError(e.message));
     return () => {
@@ -707,6 +740,32 @@ function Chat({ session, capabilities, onSession, onError }) {
     }
   };
 
+  const sendHeartbeatToChat = async (text) => {
+    const cid = selectedRef.current;
+    if (!cid) return;
+    setSending(true);
+    try {
+      await api(`/conversations/${cid}/messages`, {
+        method: 'POST',
+        body: {
+          client_id: crypto.randomUUID(),
+          text,
+          source_language: user.language || 'ml',
+          ...(replyTo ? { reply_to_id: replyTo.id } : {}),
+        },
+      });
+      setShowHeartbeat(false);
+      setReplyTo(null);
+      stickToBottom.current = true;
+      await loadMessages(cid);
+      await loadConversations();
+    } catch (e) {
+      onError(e.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
   const sendSavedCustomSticker = async (sticker) => {
     const cid = selectedRef.current;
     if (!cid || sending) return;
@@ -832,6 +891,13 @@ function Chat({ session, capabilities, onSession, onError }) {
         </div>
         <div className="rail-bottom">
           <InstallApp compact />
+          <ButtonIcon
+            label={isDark ? 'Switch to light theme (ലൈറ്റ്)' : 'Switch to dark theme (ഡാർക്ക്)'}
+            className="rail-btn theme-toggle-icon-btn"
+            onClick={toggleTheme}
+          >
+            {isDark ? <Sun size={21} /> : <Moon size={21} />}
+          </ButtonIcon>
           <ButtonIcon label="Settings" className="rail-btn" onClick={() => setShowSettings(true)}>
             <SettingsIcon size={22} />
           </ButtonIcon>
@@ -1013,7 +1079,35 @@ function Chat({ session, capabilities, onSession, onError }) {
                 >
                   <Palette size={20} />
                 </ButtonIcon>
+                <ButtonIcon
+                  label="Send Live Heartbeat 💓 (ലൈവ് ഹൃദയസ്പന്ദനം)"
+                  disabled={!connected || chosen.contact_blocked || chosen.is_group}
+                  onClick={() => {
+                    setShowHeartbeat(true);
+                    setHeartbeatInvite(null);
+                    socket?.emit('heartbeat:invite', { conversation_id: selected });
+                  }}
+                >
+                  <Heart size={20} className="heartbeat-action-pulse" />
+                </ButtonIcon>
                 <span className="header-divider" />
+                <button
+                  type="button"
+                  className="header-reading-btn"
+                  onClick={cycleFontSize}
+                  title={`Reading font size: ${currentFontConfig.label} (${currentFontConfig.size}) · Tap to change`}
+                  aria-label={`Reading font size: ${currentFontConfig.label} (${currentFontConfig.size})`}
+                >
+                  <Type size={14} />
+                  <span>{currentFontConfig.size}</span>
+                </button>
+                <ButtonIcon
+                  label={isDark ? 'Switch to light theme (ലൈറ്റ്)' : 'Switch to dark theme (ഡാർക്ക്)'}
+                  className="theme-toggle-icon-btn"
+                  onClick={toggleTheme}
+                >
+                  {isDark ? <Sun size={20} /> : <Moon size={20} />}
+                </ButtonIcon>
                 <ButtonIcon label="Chat settings" onClick={() => setShowSettings(true)}>
                   <SettingsIcon size={20} />
                 </ButtonIcon>
@@ -1053,6 +1147,31 @@ function Chat({ session, capabilities, onSession, onError }) {
                     Join Canvas 🎨
                   </button>
                   <ButtonIcon label="Dismiss" onClick={() => setDoodleInvite(null)}>
+                    <X size={15} />
+                  </ButtonIcon>
+                </div>
+              </div>
+            )}
+            {heartbeatInvite && (
+              <div className="heartbeat-invite-banner" role="alert">
+                <div className="heartbeat-invite-left">
+                  <span className="heartbeat-pulse-icon">💓</span>
+                  <span>
+                    <strong>{heartbeatInvite.sender_name || 'Your partner'}</strong> is sending their live heartbeat! (ലൈവ് ഹൃദയമിടിപ്പ് അയക്കുന്നു · സ്പർശിക്കാൻ തൊടൂ)
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="heartbeat-invite-join-btn"
+                    onClick={() => {
+                      setShowHeartbeat(true);
+                      setHeartbeatInvite(null);
+                    }}
+                  >
+                    Touch Back 💓
+                  </button>
+                  <ButtonIcon label="Dismiss" onClick={() => setHeartbeatInvite(null)}>
                     <X size={15} />
                   </ButtonIcon>
                 </div>
@@ -1352,6 +1471,17 @@ function Chat({ session, capabilities, onSession, onError }) {
                       <Palette size={21} />
                     </ButtonIcon>
                     <ButtonIcon
+                      label="Send Live Heartbeat 💓 (ലൈവ് ഹൃദയസ്പന്ദനം)"
+                      disabled={sending || recording || chosen.is_group}
+                      onClick={() => {
+                        setShowHeartbeat(true);
+                        setHeartbeatInvite(null);
+                        socket?.emit('heartbeat:invite', { conversation_id: selected });
+                      }}
+                    >
+                      <Heart size={21} className="heartbeat-action-pulse" />
+                    </ButtonIcon>
+                    <ButtonIcon
                       label="Attach file"
                       disabled={sending || recording}
                       onClick={() => fileInput.current.click()}
@@ -1509,6 +1639,10 @@ function Chat({ session, capabilities, onSession, onError }) {
             </div>
           }
           capabilities={capabilities}
+          theme={theme}
+          onThemeChange={setTheme}
+          fontSize={fontSize}
+          onFontSizeChange={setFontSize}
           onClose={() => setShowSettings(false)}
           onUser={(updated) => onSession({ ...session, user: updated })}
           onError={onError}
@@ -1552,12 +1686,24 @@ function Chat({ session, capabilities, onSession, onError }) {
           onError={onError}
         />
       )}
+      {showHeartbeat && chosen && (
+        <LiveHeartbeatModal
+          conversationId={selected}
+          user={user}
+          peer={chosen.peer}
+          socket={socket}
+          onClose={() => setShowHeartbeat(false)}
+          onSendToChat={sendHeartbeatToChat}
+          onError={onError}
+        />
+      )}
       <CallOverlay controller={call} user={user} peer={callPeer} />
       </div>
     </>
   );
 }
 export default function App() {
+  const themeControls = useThemeAndFontSize();
   const [session, setSession] = useState(null),
     [capabilities, setCapabilities] = useState({}),
     [toast, setToast] = useState(null),
@@ -1611,6 +1757,7 @@ export default function App() {
           capabilities={capabilities}
           onSession={onSession}
           onError={onError}
+          themeControls={themeControls}
         />
       ) : (
         <Auth capabilities={capabilities} onSession={onSession} onError={onError} />

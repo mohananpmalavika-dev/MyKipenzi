@@ -18,7 +18,7 @@ export async function deliverMessagePush({ message_id, user_id }, attempt = 0, s
     'SELECT p.* FROM push_subscriptions p JOIN sessions s ON s.token_hash=p.session_token_hash AND s.user_id=p.user_id WHERE p.user_id=$1 AND s.expires_at>now()', [user_id],
   )).rows;
   if (!subscriptions.length) return;
-  const message = (await db.query(`${messageSelect} WHERE m.id=$1`, [message_id, user_id, recipient.language])).rows[0];
+  const message = (await db.query(`${messageSelect} WHERE m.id=$1`, [message_id, recipient.language, user_id])).rows[0];
   if (!message || message.deleted_at) return;
   if (message.translation?.status === 'pending' && attempt < 2) throw new Error('Waiting for translated notification preview.');
   const payload = JSON.stringify({
