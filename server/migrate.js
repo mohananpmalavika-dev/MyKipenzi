@@ -55,6 +55,18 @@ try {
       await c.query(await readFile(new URL('./privacy-settings-migration.sql', import.meta.url), 'utf8'));
       await c.query('INSERT INTO schema_migrations(version) VALUES(12)');
     }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=13')).rowCount) {
+      await c.query(await readFile(new URL('./scheduled-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(13)');
+    }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=14')).rowCount) {
+      await c.query(await readFile(new URL('./drafts-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(14)');
+    }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=15')).rowCount) {
+      await c.query(await readFile(new URL('./message-status-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(15)');
+    }
   });
   console.log('Database migrations complete.');
 } finally {

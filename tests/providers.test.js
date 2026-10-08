@@ -71,6 +71,47 @@ test('translateAudio transcribes voice note and translates to Malayalam, Manglis
     globalThis.fetch = original;
   }
 });
+test('translateAudio accurately transcribes Malayalam spoken speech into verbatim transcript and translations', async () => {
+  const original = globalThis.fetch;
+  let body;
+  globalThis.fetch = async (_url, options) => {
+    body = JSON.parse(options.body);
+    return new Response(
+      JSON.stringify({
+        candidates: [
+          {
+            finishReason: 'STOP',
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    transcript: 'എവിടെയാ നീ? ഞാൻ ഇവിടെ കാത്തിരിക്കുവാ',
+                    ml: 'എവിടെയാ നീ? ഞാൻ ഇവിടെ കാത്തിരിക്കുവാ',
+                    manglish: 'Evideya nee? Njan ivide kaathirikkuva',
+                    sw: 'Uko wapi? Ninakusubiri hapa',
+                    en: 'Where are you? I am waiting here',
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+      { status: 200 },
+    );
+  };
+  try {
+    const audioBuffer = Buffer.from('voice-bytes-malayalam');
+    const result = await translateAudio(audioBuffer, 'audio/ogg', 'voice-note-ml.ogg');
+    assert.equal(result.transcript, 'എവിടെയാ നീ? ഞാൻ ഇവിടെ കാത്തിരിക്കുവാ');
+    assert.equal(result.ml, 'എവിടെയാ നീ? ഞാൻ ഇവിടെ കാത്തിരിക്കുവാ');
+    assert.equal(result.manglish, 'Evideya nee? Njan ivide kaathirikkuva');
+    assert.equal(result.en, 'Where are you? I am waiting here');
+    assert.match(body.systemInstruction.parts[0].text, /multilingual audio transcriber/);
+  } finally {
+    globalThis.fetch = original;
+  }
+});
 test('translateAudio rejects when provider fails or truncates', async () => {
   const original = globalThis.fetch;
   globalThis.fetch = async () =>

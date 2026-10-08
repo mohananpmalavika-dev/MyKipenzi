@@ -14,7 +14,7 @@ import {
 } from './providers.js';
 import { putObject, providerObject, readObject, removeObject } from './storage.js';
 import { enqueue, conversationEvent } from './service.js';
-import { deliverMessagePush } from './push.js';
+import { deliverMessagePush, deliverSchedulePush } from './push.js';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function translation(data) {
   const { message_id, language, requester_id, requester_ids } = data;
@@ -52,7 +52,7 @@ async function translation(data) {
       if (!current || current.deleted_at || hasExpired(current) || String(current.edited_at) !== String(m.edited_at))
         return;
       for (const [lang, transText] of Object.entries(results)) {
-        if (['ml', 'manglish', 'sw', 'en'].includes(lang) && transText) {
+        if (['ml', 'manglish', 'sw', 'en', 'transcript'].includes(lang) && transText) {
           await c.query(
             "INSERT INTO translations(message_id,language,status,text) VALUES($1,$2,'ready',$3) ON CONFLICT(message_id,language) DO UPDATE SET text=EXCLUDED.text,status='ready'",
             [message_id, lang, transText],
@@ -183,6 +183,7 @@ const worker = new Worker(
     else if (job.name === 'delete_object') await removeObject(job.data.key);
     else if (job.name === 'delete_voice') await deleteVoice(job.data.voice_id);
     else if (job.name === 'push') await deliverMessagePush(job.data, job.attemptsMade);
+    else if (job.name === 'schedule_push') await deliverSchedulePush(job.data);
   },
   { connection: queueConnection, concurrency: 6 },
 );

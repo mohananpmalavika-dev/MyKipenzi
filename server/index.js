@@ -1,4 +1,5 @@
 import { expireMessages } from './disappearing.js';
+import { processSchedules } from './scheduled.js';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
@@ -95,6 +96,27 @@ io.on('connection', (socket) => {
       if (call) await redis.set(`call-alive:${callId}:${user.id}`, '1', 'EX', 90);
     } catch {
       /* Call maintenance closes expired sessions. */
+    }
+  });
+  socket.on('call:reaction', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      await limit(`call-reaction:${user.id}`, 120, 60);
+      const callId = id.parse(payload.call_id);
+      const call = await one(
+        "SELECT id, caller_id, callee_id, conversation_id FROM calls WHERE id=$1 AND (caller_id=$2 OR callee_id=$2)",
+        [callId, user.id],
+      );
+      if (!call) return;
+      const peer = call.caller_id === user.id ? call.callee_id : call.caller_id;
+      io.to(`user:${peer}`).emit('call:reaction', {
+        call_id: callId,
+        sender_id: user.id,
+        sender_name: user.name,
+        reaction: payload.reaction,
+      });
+    } catch {
+      /* Call reaction is best effort */
     }
   });
   socket.on('doodle:sync', async (payload) => {
@@ -219,6 +241,190 @@ io.on('connection', (socket) => {
       /* daily prompt nudge is best effort */
     }
   });
+  socket.on('music:sync', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('music:sync', {
+          ...payload,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* music sync is best effort */
+    }
+  });
+  socket.on('music:invite', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('music:invite', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          track: payload.track,
+        });
+      }
+    } catch {
+      /* music invite is best effort */
+    }
+  });
+  socket.on('music:reaction', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('music:reaction', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          reaction: payload.reaction,
+        });
+      }
+    } catch {
+      /* music reaction is best effort */
+    }
+  });
+  socket.on('music:status', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('music:status', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          active: Boolean(payload.active),
+          track_id: payload.track_id,
+        });
+      }
+    } catch {
+      /* music status is best effort */
+    }
+  });
+  socket.on('video:sync', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('video:sync', {
+          ...payload,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* video sync is best effort */
+    }
+  });
+  socket.on('video:invite', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('video:invite', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          video: payload.video,
+        });
+      }
+    } catch {
+      /* video invite is best effort */
+    }
+  });
+  socket.on('video:reaction', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('video:reaction', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          reaction: payload.reaction,
+        });
+      }
+    } catch {
+      /* video reaction is best effort */
+    }
+  });
+  socket.on('video:status', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('video:status', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          active: Boolean(payload.active),
+          video_id: payload.video_id,
+        });
+      }
+    } catch {
+      /* video status is best effort */
+    }
+  });
 });
 await events.subscribe('kipenzi-events');
 events.on('message', (_channel, body) => {
@@ -260,6 +466,15 @@ async function flush() {
 const flushTimer = setInterval(flush, 150);
 flushTimer.unref();
 let sweeping = false;
+let scheduling = false;
+const scheduleTimer = setInterval(async () => {
+  if (scheduling) return;
+  scheduling = true;
+  try { await processSchedules(); }
+  catch (error) { logger.error({ error: error.message }, 'Scheduled delivery delayed'); }
+  finally { scheduling = false; }
+}, 1000);
+scheduleTimer.unref();
 const sweepTimer = setInterval(async () => {
   if (sweeping) return;
   sweeping = true;
@@ -295,6 +510,8 @@ const sweepTimer = setInterval(async () => {
       }
       await expireMessages(c);
       await c.query('DELETE FROM sessions WHERE expires_at<now()');
+      // Clean up old drafts (older than 30 days)
+      await c.query("DELETE FROM message_drafts WHERE updated_at < now() - interval '30 days'");
     });
   } catch (e) {
     logger.error({ error: e.message }, 'Maintenance delayed');
@@ -309,6 +526,7 @@ http.listen(config.PORT, '0.0.0.0', () =>
 async function shutdown() {
   clearInterval(flushTimer);
   clearInterval(sweepTimer);
+  clearInterval(scheduleTimer);
   await new Promise((resolve) => io.close(resolve));
   await Promise.all([
     pub.quit(),

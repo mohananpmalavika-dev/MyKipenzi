@@ -8,7 +8,48 @@ export const FONT_SIZES = [
   { id: 'xlarge', label: 'Extra Large', labelMl: 'വളരെ വലുത്', size: '21px', lineHeight: '1.95', metaSize: '12px' },
 ];
 
+const CUSTOM_DEFAULTS = { accent: '#17483e', background: '#f8f9f5', bubble: '#e5ecdc' };
+const CUSTOM_TOKENS = ['--forest', '--green', '--bg-rail', '--bg-chat-panel', '--bg-bubble-mine', '--border-bubble-mine', '--text-bubble-mine'];
+function readPreference(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch { return fallback; }
+}
+function readableText(hex) {
+  const channels = hex.slice(1).match(/../g).map(value => {
+    const channel = parseInt(value, 16) / 255;
+    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722 > 0.179 ? '#17241e' : '#ffffff';
+}
 export function useThemeAndFontSize() {
+  const [customColors, setCustomColors] = useState(() => {
+    const saved = readPreference('kipenzi_custom_colors', CUSTOM_DEFAULTS);
+    return Object.fromEntries(Object.entries(CUSTOM_DEFAULTS).map(([key, value]) => [key, /^#[0-9a-f]{6}$/i.test(saved[key]) ? saved[key] : value]));
+  });
+  const [bubbleStyle, setBubbleStyle] = useState(() => {
+    const saved = readPreference('kipenzi_bubble_style', 'classic');
+    return ['classic', 'rounded', 'square'].includes(saved) ? saved : 'classic';
+  });
+  const [backgroundImage, setBackgroundImage] = useState(() => {
+    const saved = readPreference('kipenzi_background_image', '');
+    return typeof saved === 'string' && /^data:image\/(png|jpeg|webp);base64,/.test(saved) ? saved : '';
+  });
+  const [appearanceError, setAppearanceError] = useState('');
+  const updateBackgroundImage = (image) => {
+    try { localStorage.setItem('kipenzi_background_image', JSON.stringify(image)); }
+    catch { setAppearanceError('Unable to save this image. Try a smaller image or enable browser storage.'); return; }
+    setAppearanceError('');
+    setBackgroundImage(image);
+  };
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-bubble-style', bubbleStyle);
+    root.style.setProperty('--chat-background-image', backgroundImage ? 'url("' + backgroundImage + '")' : 'none');
+    try {
+      localStorage.setItem('kipenzi_custom_colors', JSON.stringify(customColors));
+      localStorage.setItem('kipenzi_bubble_style', JSON.stringify(bubbleStyle));
+    } catch { /* Appearance still applies when storage is unavailable. */ }
+  }, [customColors, bubbleStyle, backgroundImage]);
+
   const [theme, setTheme] = useState(() => {
     try {
       return localStorage.getItem('kipenzi_theme') || 'system';
@@ -48,6 +89,11 @@ export function useThemeAndFontSize() {
     const root = document.documentElement;
     root.setAttribute('data-theme', isDark ? 'dark' : 'light');
     root.setAttribute('data-theme-mode', theme);
+    for (const token of CUSTOM_TOKENS) root.style.removeProperty(token);
+    if (theme === 'custom') {
+      const values = [customColors.accent, customColors.accent, customColors.accent, customColors.background, customColors.bubble, customColors.bubble, readableText(customColors.bubble)];
+      CUSTOM_TOKENS.forEach((token, index) => root.style.setProperty(token, values[index]));
+    }
 
     try {
       localStorage.setItem('kipenzi_theme', theme);
@@ -60,7 +106,7 @@ export function useThemeAndFontSize() {
     if (metaTheme) {
       metaTheme.setAttribute('content', isDark ? '#0e1613' : '#163c35');
     }
-  }, [theme, isDark]);
+  }, [theme, isDark, customColors]);
 
   // Apply font size to document
   useEffect(() => {
@@ -97,6 +143,7 @@ export function useThemeAndFontSize() {
   };
 
   return {
+    customColors, setCustomColors, bubbleStyle, setBubbleStyle, backgroundImage, updateBackgroundImage, appearanceError,
     theme,
     setTheme,
     isDark,

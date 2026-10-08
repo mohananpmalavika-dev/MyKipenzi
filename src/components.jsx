@@ -1,3 +1,4 @@
+import { AppearanceOptions } from './AppearanceOptions.jsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   X,
@@ -29,14 +30,24 @@ import {
   Sun,
   Heart,
   Activity,
+  Headphones,
+  Film,
+  FileText,
+  Copy,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { PhotoViewer } from './PhotoViewer.jsx';
+import { MediaPlayer } from './MediaPlayer.jsx';
+import { MessageHistory, useMessageClock } from './MessageStatus.jsx';
 import { hasExpired } from '../shared/disappearing.js';
 import { api, fileBlob, downloadFile } from './api.js';
 import { languages, stickers } from '../shared/constants.js';
 import { startLovingRingtone, stopLovingRingtone } from './ringtone.js';
 import { FONT_SIZES } from './useThemeAndFontSize.js';
 import { playHeartbeatSound, triggerHeartbeatHaptics } from './heartbeatAudio.js';
+import { detectVoiceFilterFromFilename } from './voiceFilters.js';
+import { CallReactionOverlay } from './CallReactionOverlay.jsx';
 export function ButtonIcon({ label, children, ...props }) {
   return (
     <button className="icon-btn" type="button" title={label} aria-label={label} {...props}>
@@ -113,6 +124,7 @@ export function Settings({
   onUser,
   onError,
   messageAlerts,
+  appearanceControls,
   theme = 'system',
   onThemeChange,
   fontSize = 'comfortable',
@@ -214,13 +226,13 @@ export function Settings({
               <Sparkles size={16} /> Display & Reading Comfort
             </h3>
             <span className="display-section-badge">
-              {theme === 'dark' ? '🌙 Dark' : theme === 'light' ? '☀️ Light' : '🌓 System'}
+              {theme === 'dark' ? '🌙 Dark' : theme === 'light' ? '☀️ Light' : theme === 'custom' ? '🎨 Custom' : '🌓 System'}
             </span>
           </div>
 
           <div className="theme-picker-group">
             <label>Theme (തീം)</label>
-            <div className="theme-picker" role="radiogroup" aria-label="Theme mode">
+            <div className="theme-picker" role="group" aria-label="Theme mode">
               <button
                 type="button"
                 className={`theme-option-btn ${theme === 'light' ? 'active' : ''}`}
@@ -245,15 +257,18 @@ export function Settings({
               >
                 <Monitor size={15} /> System
               </button>
+              <button type="button" className={`theme-option-btn ${theme === 'custom' ? 'active' : ''}`} onClick={() => onThemeChange?.('custom')} aria-pressed={theme === 'custom'}>🎨 Custom</button>
             </div>
           </div>
+
+          <AppearanceOptions controls={appearanceControls} />
 
           <div className="font-size-picker-group">
             <label>
               Mobile Reading Font Size (ഫോണ്ട് വലുപ്പം)
               <small>Comfortable reading on mobile screens, especially for Malayalam & long chats.</small>
             </label>
-            <div className="font-size-picker" role="radiogroup" aria-label="Reading font size">
+            <div className="font-size-picker" role="group" aria-label="Reading font size">
               {FONT_SIZES.map((item) => (
                 <button
                   key={item.id}
@@ -455,7 +470,7 @@ export function Attachment({ attachment, onError }) {
   useEffect(() => {
     let active = true,
       url;
-    if (attachment.mime.startsWith('image/') || audio)
+    if (attachment.mime.startsWith('image/') || attachment.mime.startsWith('video/') || audio)
       fileBlob(attachment.id)
         .then((blob) => {
           url = URL.createObjectURL(blob);
@@ -486,12 +501,23 @@ export function Attachment({ attachment, onError }) {
     );
   }
 
+  const voiceFilter = detectVoiceFilterFromFilename(attachment.name);
+
   return (
     <div className="attachment">
+      {voiceFilter && (
+        <div className={`voice-filter-tag-badge ${voiceFilter.badgeClass}`}>
+          <span className="vft-icon">{voiceFilter.icon}</span>
+          <span className="vft-name">{voiceFilter.name}</span>
+          <span className="vft-ml">({voiceFilter.malayalamName})</span>
+        </div>
+      )}
       {viewing && preview && <PhotoViewer src={preview} attachment={attachment} onError={onError} returnFocus={photoTrigger} onClose={() => setViewing(false)} />}
       {preview &&
         (audio ? (
-          <audio controls preload="metadata" aria-label="Play voice note" src={preview} />
+          <MediaPlayer key={preview} src={preview} onError={onError} />
+        ) : attachment.mime.startsWith('video/') ? (
+          <MediaPlayer key={preview} src={preview} video onError={onError} />
         ) : (
           <button type="button" ref={photoTrigger} className="photo-preview-button" aria-label={'View photo ' + attachment.name} onClick={() => setViewing(true)}><img className="attachment-preview" src={preview} alt={attachment.name} /></button>
         ))}
@@ -501,7 +527,11 @@ export function Attachment({ attachment, onError }) {
         onClick={() => void downloadFile(attachment).catch((e) => onError(e.message))}
       >
         <span>
-          <strong>{attachment.name}</strong>
+          <strong>
+            {voiceFilter
+              ? `${voiceFilter.icon} ${voiceFilter.name} Voice Note (${voiceFilter.malayalamName})`
+              : attachment.name}
+          </strong>
           <small>{(attachment.size / 1024 / 1024).toFixed(1)} MB · Download</small>
         </span>
         <Download size={19} />
@@ -626,7 +656,69 @@ export function DailyPromptCard({ text, onOpenPrompt }) {
   );
 }
 
-export function Message({ message, mine, peerRead, user, capabilities, onError, onReply, onChanged, highlighted, group, contactBlocked, onOpenDailyPrompt }) {
+export function ListenTogetherCard({ text, onOpenMusic }) {
+  const match = text.match(/🎧\s*\[Listen Together\s*·\s*([^(\]]+)(?:\(([^)]+)\))?\]\s*(.*)/i);
+  const titleMl = match ? match[1].trim() : 'നമ്മുടെ പാട്ട്';
+  const titleEn = match && match[2] ? match[2].trim() : 'Listen Together';
+  const note = match && match[3] ? match[3].trim() : '';
+
+  return (
+    <div className="music-chat-card">
+      <div className="music-card-header">
+        <div className="music-card-icon-wrap">
+          <Headphones size={22} className="music-card-headphone" />
+        </div>
+        <div className="music-card-titles">
+          <strong className="music-card-title-ml">{titleMl}</strong>
+          <span className="music-card-title-en">{titleEn} · വാച്ച് & ലിസൺ ടുഗെതർ 🎧</span>
+        </div>
+      </div>
+      {note && <p className="music-card-note">&ldquo;{note}&rdquo;</p>}
+      <button
+        type="button"
+        className="music-card-listen-btn"
+        onClick={onOpenMusic}
+      >
+        <Play size={14} />
+        <span>Listen Together (ഒരുമിച്ച് കേൾക്കാം 🎵)</span>
+      </button>
+    </div>
+  );
+}
+
+export function WatchPartyCard({ text, onOpenWatchParty }) {
+  const match = text.match(/🎬\s*\[Watch Party\s*·\s*([^(\]]+)(?:\(([^)<]+)\))?(?:\s*<([^>]+)>)?\]\s*(.*)/i);
+  const titleMl = match ? match[1].trim() : 'നമ്മുടെ വാച്ച് പാർട്ടി';
+  const titleEn = match && match[2] ? match[2].trim() : 'Watch Party Video';
+  const note = match && match[4] ? match[4].trim() : '';
+
+  return (
+    <div className="watch-chat-card">
+      <div className="watch-card-header">
+        <div className="watch-card-icon-wrap">
+          <Film size={22} className="watch-card-film" />
+        </div>
+        <div className="watch-card-titles">
+          <strong className="watch-card-title-ml">{titleMl}</strong>
+          <span className="watch-card-title-en">{titleEn} · വാച്ച് പാർട്ടി 🍿</span>
+        </div>
+      </div>
+      {note && <p className="watch-card-note">&ldquo;{note}&rdquo;</p>}
+      <button
+        type="button"
+        className="watch-card-join-btn"
+        onClick={onOpenWatchParty}
+      >
+        <Play size={14} />
+        <span>Watch Together (ഒന്നിച്ച് കാണാം 🍿)</span>
+      </button>
+    </div>
+  );
+}
+
+export function Message({ message, mine, peerRead, user, capabilities, onError, onReply, onForward, onChanged, highlighted, group, contactBlocked, onOpenDailyPrompt, onOpenMusic, onOpenWatchParty }) {
+  const [showHistory, setShowHistory] = useState(false);
+  const { canDelete, expiration } = useMessageClock(message);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(message.text);
   const [actionBusy, setActionBusy] = useState(false);
@@ -702,9 +794,12 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
     user.language || 'en';
   const [selectedVoiceLang, setSelectedVoiceLang] = useState(defaultVoiceLang);
   const [translatingLang, setTranslatingLang] = useState(null);
+  const [transcriptionOpen, setTranscriptionOpen] = useState(true);
+  const [copiedVoiceText, setCopiedVoiceText] = useState(false);
 
   const currentVoiceItem =
     message.translations?.[selectedVoiceLang] ||
+    (selectedVoiceLang === 'transcript' ? (message.translations?.transcript || message.translations?.original) : null) ||
     (message.translation?.language === selectedVoiceLang ? message.translation : null) ||
     (message.receiver_translation?.language === selectedVoiceLang
       ? message.receiver_translation
@@ -739,7 +834,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
       return;
     }
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = lang === 'ml' ? 'ml-IN' : lang === 'sw' ? 'sw-KE' : 'en-US';
+    utterance.lang = (lang === 'ml' || lang === 'manglish' || lang === 'transcript') ? 'ml-IN' : lang === 'sw' ? 'sw-KE' : 'en-US';
     utterance.onerror = (event) => {
       if (event.error !== 'canceled' && event.error !== 'interrupted')
         onError('Voice reading failed. Check your browser sound settings.');
@@ -846,6 +941,14 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
           </div>
         )}
         {message.reply && !hasExpired(message.reply) && <blockquote className="quoted-reply"><strong>{message.reply.sender}</strong><p>{message.reply.deleted_at ? 'Message deleted' : message.reply.text || (message.reply.sticker ? stickers[message.reply.sticker] : 'Attachment')}</p></blockquote>}
+        {message.forwarded_from && (
+          <div className="forwarded-indicator">
+            <span className="forwarded-icon">↗</span>
+            <span className="forwarded-label">
+              Forwarded from {message.forwarded_from.sender_name}
+            </span>
+          </div>
+        )}
         {group && !mine && <small className="group-sender">{message.sender?.name || 'Member'}</small>}
         {message.sticker && (
           <div className="sticker" aria-label={message.sticker}>
@@ -865,72 +968,128 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
           <HeartbeatCard text={message.text} />
         ) : !message.deleted_at && message.text?.startsWith('✨ [Daily Us Prompt') ? (
           <DailyPromptCard text={message.text} onOpenPrompt={onOpenDailyPrompt} />
+        ) : !message.deleted_at && message.text?.startsWith('🎧 [Listen Together') ? (
+          <ListenTogetherCard text={message.text} onOpenMusic={onOpenMusic} />
+        ) : !message.deleted_at && message.text?.startsWith('🎬 [Watch Party') ? (
+          <WatchPartyCard text={message.text} onOpenWatchParty={onOpenWatchParty} />
         ) : (
           <p dir="auto">{message.deleted_at ? 'Message deleted' : translated ? message.translation.text : message.text}</p>
         )}
         {isAudioNote && (
-          <div className="voice-translation-card">
+          <div className="voice-translation-card" role="region" aria-label="Voice note transcription">
             <div className="voice-translation-header">
-              <div className="voice-translation-badge">
-                <Sparkles size={12} className="sparkle-icon" />
-                <span>Voice Translation</span>
-              </div>
-              <div className="voice-lang-chips" role="tablist" aria-label="Voice translation languages">
-                {[
-                  { id: 'ml', label: 'മലയാളം' },
-                  { id: 'manglish', label: 'Manglish' },
-                  { id: 'sw', label: 'Kiswahili' },
-                  { id: 'en', label: 'English' },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={selectedVoiceLang === item.id}
-                    className={`voice-lang-chip ${selectedVoiceLang === item.id ? 'active' : ''}`}
-                    onClick={() => void requestVoiceTranslation(item.id)}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {currentVoiceText ? (
-              <div className="voice-translation-body">
-                <p className="voice-translated-text" dir="auto">
-                  {currentVoiceText}
-                </p>
-                <div className="voice-translation-footer">
-                  <span className="voice-lang-desc">
-                    {selectedVoiceLang === 'en'
-                      ? 'English transcription'
-                      : `${languages[selectedVoiceLang] || selectedVoiceLang} translation`}
-                  </span>
-                  <button
-                    type="button"
-                    className="voice-listen-action"
-                    title="Listen to translation"
-                    onClick={() => playVoiceText(currentVoiceText, selectedVoiceLang)}
-                  >
-                    <Volume2 size={12} /> Listen
-                  </button>
+              <div className="voice-translation-title-area">
+                <div className="voice-translation-badge">
+                  <FileText size={13} className="sparkle-icon" />
+                  <strong>വോയ്സ് നോട്ട് ടെക്സ്റ്റാക്കാം</strong>
                 </div>
+                <span className="voice-transcription-subtext">
+                  കേൾക്കാൻ സാഹചര്യമില്ലെങ്കിൽ വായിക്കാം
+                </span>
               </div>
-            ) : isVoicePending ? (
-              <div className="voice-translating-state">
-                <LoaderCircle size={13} className="spin" />
-                <span>Translating voice note into {languages[selectedVoiceLang]}…</span>
-              </div>
-            ) : (
-              <div className="voice-translation-prompt">
+              {currentVoiceText && (
                 <button
                   type="button"
-                  className="voice-fetch-btn"
+                  className="voice-collapse-btn"
+                  onClick={() => setTranscriptionOpen(!transcriptionOpen)}
+                  title={transcriptionOpen ? "ചുരുക്കുക (Hide)" : "വായിക്കുക (Read)"}
+                  aria-expanded={transcriptionOpen}
+                >
+                  {transcriptionOpen ? (
+                    <>
+                      <span>ചുരുക്കുക</span>
+                      <ChevronUp size={12} />
+                    </>
+                  ) : (
+                    <>
+                      <span>വായിക്കുക</span>
+                      <ChevronDown size={12} />
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+
+            <div className="voice-lang-chips" role="tablist" aria-label="Voice translation languages">
+              {[
+                { id: 'ml', label: 'മലയാളം' },
+                { id: 'manglish', label: 'Manglish' },
+                { id: 'en', label: 'English' },
+                { id: 'transcript', label: 'Original' },
+                { id: 'sw', label: 'Kiswahili' },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={selectedVoiceLang === item.id}
+                  className={`voice-lang-chip ${selectedVoiceLang === item.id ? 'active' : ''}`}
+                  onClick={() => void requestVoiceTranslation(item.id)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            {isVoicePending ? (
+              <div className="voice-translating-state">
+                <LoaderCircle size={13} className="spin" />
+                <span>വോയ്സ് നോട്ട് ടെക്സ്റ്റാക്കുന്നു... ({languages[selectedVoiceLang] || (selectedVoiceLang === 'transcript' ? 'Original' : selectedVoiceLang)})</span>
+              </div>
+            ) : currentVoiceText ? (
+              transcriptionOpen && (
+                <div className="voice-translation-body">
+                  <p className="voice-translated-text" dir="auto">
+                    {currentVoiceText}
+                  </p>
+                  <div className="voice-translation-footer">
+                    <span className="voice-lang-desc">
+                      {selectedVoiceLang === 'transcript'
+                        ? '🎙️ ഒറിജിനൽ ശബ്ദം (Original voice speech)'
+                        : selectedVoiceLang === 'en'
+                          ? 'English transcription'
+                          : `${languages[selectedVoiceLang] || selectedVoiceLang} text`}
+                    </span>
+                    <div className="voice-action-group">
+                      <button
+                        type="button"
+                        className="voice-listen-action"
+                        title="കോപ്പി ചെയ്യുക"
+                        onClick={() => {
+                          if (navigator.clipboard?.writeText) {
+                            navigator.clipboard.writeText(currentVoiceText).catch(() => {});
+                          }
+                          setCopiedVoiceText(true);
+                          setTimeout(() => setCopiedVoiceText(false), 2000);
+                        }}
+                      >
+                        <Copy size={12} /> {copiedVoiceText ? 'Copied!' : 'Copy'}
+                      </button>
+                      <button
+                        type="button"
+                        className="voice-listen-action"
+                        title="Listen to transcription"
+                        onClick={() => playVoiceText(currentVoiceText, selectedVoiceLang)}
+                      >
+                        <Volume2 size={12} /> Listen
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="voice-transcription-cta">
+                <button
+                  type="button"
+                  className="voice-fetch-btn voice-transcribe-main-btn"
                   onClick={() => void requestVoiceTranslation(selectedVoiceLang)}
                 >
-                  <RefreshCw size={12} /> Translate into {languages[selectedVoiceLang]}
+                  <FileText size={14} />
+                  <span>ഒറ്റ ക്ലിക്കിൽ വായിക്കുക (Transcribe & Read)</span>
                 </button>
+                <small className="voice-cta-caption">
+                  കേൾക്കാൻ സാഹചര്യമില്ലാത്തപ്പോൾ ഒറ്റ ക്ലിക്കിൽ വായിക്കാം · സൗജന്യ ട്രാൻസ്ക്രിപ്ഷൻ
+                </small>
               </div>
             )}
           </div>
@@ -976,8 +1135,8 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
           </button>
         )}
         <div className="message-meta">
-          {message.expires_at && <small title={"Disappears " + new Date(message.expires_at).toLocaleString()}>Disappearing</small>}
-          {message.edited_at && !message.deleted_at && <small>Edited</small>}
+          {message.expires_at && <small title={"Disappears " + new Date(message.expires_at).toLocaleString()}>{expiration}</small>}
+          {message.edited_at && !message.deleted_at && <button type="button" className="message-history-link" onClick={() => setShowHistory(true)} aria-label="View message editing history">Edited · History</button>}
           <time dateTime={message.created_at}>
             {new Date(message.created_at).toLocaleTimeString([], {
               hour: '2-digit',
@@ -1011,11 +1170,13 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
       {!message.deleted_at && <div className="message-actions">
         <button type="button" aria-pressed={!!message.starred} disabled={actionBusy} onClick={() => void saveMessage("star")}>{message.starred ? "Unstar" : "Star"}</button>
         <button type="button" aria-pressed={!!message.pinned} disabled={actionBusy || contactBlocked} onClick={() => void saveMessage("pin")}>{message.pinned ? "Unpin" : "Pin"}</button>
+        {onForward && <button type="button" disabled={actionBusy || contactBlocked} onClick={() => onForward(message)}>Forward</button>}
         {onReply && <button type="button" disabled={actionBusy} onClick={() => onReply(message)}>Reply</button>}
         {mine && message.text && <button type="button" disabled={actionBusy} onClick={() => { setEditText(message.text); setEditing(true); }}>Edit</button>}
-        {mine && <button type="button" disabled={actionBusy} onClick={() => setConfirmDelete(true)}>Delete</button>}
+        {mine && <button type="button" disabled={actionBusy || !canDelete} title={canDelete ? 'Delete for everyone within 24 hours' : 'The 24-hour deletion window has ended'} onClick={() => setConfirmDelete(true)}>Delete</button>}
       </div>}
-      {confirmDelete && <div className="message-delete-confirm" role="alert"><span>Delete this message for everyone?</span><button type="button" disabled={actionBusy} onClick={() => void mutate('DELETE')}>Delete for everyone</button><button type="button" disabled={actionBusy} onClick={() => setConfirmDelete(false)}>Cancel</button></div>}
+      {confirmDelete && <div className="message-delete-confirm" role="alert"><span>{canDelete ? 'Delete this message and its edit history for everyone? Available for 24 hours after sending.' : 'The 24-hour deletion window has ended.'}</span><button type="button" disabled={actionBusy || !canDelete} onClick={() => void mutate('DELETE')}>Delete for everyone</button><button type="button" disabled={actionBusy} onClick={() => setConfirmDelete(false)}>Cancel</button></div>}
+      {showHistory && !message.deleted_at && <MessageHistory message={message} onClose={() => setShowHistory(false)} />}
       {message.text && !message.deleted_at && (
         <details className="message-tools">
           <summary>
@@ -1060,12 +1221,12 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
       {media &&
         (media.kind === 'avatar' ? (
           media.mime?.startsWith('video') ? (
-            <video className="generated-video" controls src={media.url} />
+            <MediaPlayer key={media.url} src={media.url} video onError={onError} />
           ) : (
             <TalkingAvatar person={user} audioUrl={media.url} />
           )
         ) : (
-          <audio controls src={media.url} />
+          <MediaPlayer key={media.url} src={media.url} onError={onError} />
         ))}
     </article>
   );
@@ -1280,10 +1441,11 @@ function MediaVideo({ stream, muted, className }) {
   }, [stream]);
   return <video className={className} ref={ref} autoPlay playsInline muted={muted} />;
 }
-export function CallOverlay({ controller, user, peer }) {
+export function CallOverlay({ controller, user, peer, musicController, socket }) {
   const { call, local, remote, phase, sharing, muted, cameraOff } = controller;
   const [seconds, setSeconds] = useState(0);
   const [remoteVideo, setRemoteVideo] = useState(false);
+  const stageRef = useRef(null);
   useEffect(() => {
     const tracks = remote?.getVideoTracks() || [];
     const update = () =>
@@ -1337,7 +1499,7 @@ export function CallOverlay({ controller, user, peer }) {
         </span>
         <span>Calling my favorite human · {call.kind === 'audio' ? 'Voice' : 'Video'}</span>
       </div>
-      <div className="call-stage">
+      <div className="call-stage" ref={stageRef}>
         <MediaVideo stream={remote} className={`remote-video ${remoteVideo ? '' : 'audio-call'}`} />
         <div className={`call-info ${remoteVideo ? 'video-connected' : ''}`}>
           <Avatar person={peer} size="huge" />
@@ -1359,6 +1521,17 @@ export function CallOverlay({ controller, user, peer }) {
           )}
         </div>
         {local && <MediaVideo stream={local} muted className="local-video" />}
+        {musicController?.active && musicController?.dock}
+        {call && (call.state === 'active' || phase === 'Connected') && (
+          <CallReactionOverlay
+            call={call}
+            user={user}
+            peer={peer}
+            socket={socket}
+            isMalayalam={user?.language === 'ml' || user?.language === 'manglish' || true}
+            containerRef={stageRef}
+          />
+        )}
       </div>
       <div className="call-controls">
         {incoming ? (
@@ -1398,6 +1571,16 @@ export function CallOverlay({ controller, user, peer }) {
             >
               <Monitor />
             </button>
+            {musicController && (
+              <button
+                className={`call-control ${musicController.active ? 'toggled' : ''}`}
+                onClick={musicController.toggle}
+                aria-label={musicController.active ? 'Hide shared music dock' : 'Listen to music together'}
+                title="വാച്ച് & ലിസൺ ടുഗെതർ (Listen to Music Together 🎧)"
+              >
+                <Headphones />
+              </button>
+            )}
             <button
               className="call-control danger"
               onClick={() => void controller.end()}
@@ -1842,6 +2025,129 @@ export function StickerCreatorModal({ onClose, onSendSticker, onSaveToLibrary, o
               <Sparkles size={15} /> Send as Sticker
             </button>
           </div>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+export function ConversationPicker({ conversations, onSelect, onCancel, messagePreview }) {
+  const [search, setSearch] = useState('');
+  const [caption, setCaption] = useState('');
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  
+  const filtered = conversations.filter((c) =>
+    `${c.peer.name} ${c.peer.handle}`.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const handleForward = async () => {
+    if (!selectedConversation) return;
+    await onSelect(selectedConversation, caption.trim() || undefined);
+  };
+
+  return (
+    <Modal title="Forward Message" onClose={onCancel} wide>
+      <div className="conversation-picker">
+        <div className="picker-search-section">
+          <label className="search-box">
+            <Search size={17} />
+            <input
+              placeholder="Search conversations..."
+              aria-label="Search conversations"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              autoFocus
+            />
+          </label>
+        </div>
+
+        {messagePreview && (
+          <div className="forward-message-preview">
+            <div className="preview-label">
+              <span className="preview-icon">↗</span>
+              <strong>Message to forward:</strong>
+            </div>
+            <div className="preview-bubble">
+              {messagePreview.sticker && (
+                <div className="preview-sticker">{stickers[messagePreview.sticker]}</div>
+              )}
+              {messagePreview.text && <p dir="auto">{messagePreview.text}</p>}
+              {messagePreview.attachment && (
+                <div className="preview-attachment">
+                  <Paperclip size={14} />
+                  <span>{messagePreview.attachment.name}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="picker-conversations-list">
+          <div className="list-label">SELECT CONVERSATION</div>
+          {filtered.length > 0 ? (
+            filtered.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                className={`picker-conversation-item ${selectedConversation?.id === c.id ? 'selected' : ''}`}
+                onClick={() => setSelectedConversation(c)}
+              >
+                <Avatar person={c.peer} />
+                <div className="picker-conversation-text">
+                  <strong>{c.is_group ? c.name : c.peer.name}</strong>
+                  <p>
+                    {c.is_group
+                      ? `${c.members.length} members`
+                      : `@${c.peer.handle}`}
+                  </p>
+                </div>
+                {selectedConversation?.id === c.id && (
+                  <div className="picker-check">
+                    <Check size={18} />
+                  </div>
+                )}
+              </button>
+            ))
+          ) : (
+            <div className="picker-empty">
+              <MessageCircle size={26} />
+              <p>
+                {search
+                  ? 'No conversations match your search.'
+                  : 'No conversations available.'}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {selectedConversation && (
+          <div className="picker-caption-section">
+            <label>
+              Add context (optional)
+              <textarea
+                placeholder="Add a message with the forwarded content..."
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                maxLength={5000}
+                rows={3}
+              />
+            </label>
+          </div>
+        )}
+
+        <div className="picker-actions">
+          <button type="button" className="secondary" onClick={onCancel}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="primary"
+            disabled={!selectedConversation}
+            onClick={handleForward}
+          >
+            <Send size={16} />
+            Forward to {selectedConversation ? (selectedConversation.is_group ? selectedConversation.name : selectedConversation.peer.name) : '...'}
+          </button>
         </div>
       </div>
     </Modal>

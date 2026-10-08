@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
+import { useDraftManager } from './useDraftManager.js';
 import {
   ArrowLeft,
   Download,
@@ -32,24 +33,45 @@ import {
   Sun,
   Type,
   Heart,
+  Headphones,
+  Film,
 } from 'lucide-react';
 import { DisappearingSettings } from './DisappearingSettings.jsx';
+import { ScheduledMessages } from './ScheduledMessages.jsx';
+import { useMessageOutbox } from './useMessageOutbox.js';
+import { OutgoingMessage } from './MessageStatus.jsx';
+import { messageExpiryOptions } from '../shared/messageStatus.js';
 import { expiryOptions, hasExpired } from '../shared/disappearing.js';
 import { firstUnreadMessage, isNearLatest, unreadMessageCount } from '../shared/unread.js';
-import { api, setCsrf, uploadFile } from './api.js';
+import { api, setCsrf } from './api.js';
 import { Avatar, ButtonIcon, CallOverlay, Message, Modal, Settings, StickerCreatorModal } from './components.jsx';
 import { LiveDoodleModal } from './LiveDoodle.jsx';
 import { LiveHeartbeatModal } from './LiveHeartbeat.jsx';
 import { DailyPromptModal } from './DailyPromptModal.jsx';
+import {
+  ListenTogetherModal,
+  ListenTogetherMiniPlayer,
+  ListenTogetherCallDock,
+} from './ListenTogether.jsx';
+import {
+  WatchPartyModal,
+  WatchPartyMiniPlayer,
+  WatchPartyCallDock,
+} from './WatchParty.jsx';
+import { CURATED_TRACKS, musicEngine } from './musicEngine.js';
+import { CURATED_VIDEOS } from './videoEngine.js';
 import { playHeartbeatSound, triggerHeartbeatHaptics } from './heartbeatAudio.js';
 import { useCall } from './useCall.js';
 import { languages, stickers, stickerCategories } from '../shared/constants.js';
 import { ReactionOverlay, detectReaction } from './ReactionOverlay.jsx';
 import { InstallApp } from './InstallApp.jsx';
 import { useMessageAlerts } from './useMessageAlerts.js';
+import { VoiceFilterStudio } from './VoiceFilterStudio.jsx';
+import { VOICE_FILTERS, getVoiceFilter } from './voiceFilters.js';
 import { UserSafety } from './UserSafety.jsx';
 import { ChatExport } from './ChatExport.jsx';
 import { ChatLibrary } from './ChatLibrary.jsx';
+import { GlobalSearch } from './GlobalSearch.jsx';
 import { GroupSettingsModal, GroupMembersList } from './GroupManagement.jsx';
 import { UserDirectory } from './UserDirectory.jsx';
 import { usePushNotifications } from './usePushNotifications.js';
@@ -281,6 +303,8 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
   const { theme, setTheme, isDark, toggleTheme, fontSize, setFontSize, cycleFontSize, currentFontConfig } = themeControls;
   const { user, csrf } = session;
   const push = usePushNotifications(user.id, onError);
+  const outbox = useMessageOutbox();
+  const [messageExpiry, setMessageExpiry] = useState(0);
   const { preview, dismiss, receive, update: updateAlert, soundEnabled, setSoundEnabled, playSound } = useMessageAlerts(user.id);
   const [socket, setSocket] = useState(null),
     [connected, setConnected] = useState(false),
@@ -294,9 +318,11 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     [sending, setSending] = useState(false),
     [search, setSearch] = useState(''),
     [showDisappearing, setShowDisappearing] = useState(false),
+    [showScheduled, setShowScheduled] = useState(false),
     [showSafety, setShowSafety] = useState(false),
     [libraryKind, setLibraryKind] = useState(null),
     [exportChat, setExportChat] = useState(null),
+    [showGlobalSearch, setShowGlobalSearch] = useState(false),
     [highlightMessage, setHighlightMessage] = useState(null),
     [draft, setDraft] = useState(''),
     [replyTo, setReplyTo] = useState(null),
@@ -324,6 +350,16 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     [heartbeatInvite, setHeartbeatInvite] = useState(null),
     [showDailyPrompt, setShowDailyPrompt] = useState(false),
     [dailyPromptInvite, setDailyPromptInvite] = useState(null),
+    [showMusicModal, setShowMusicModal] = useState(false),
+    [isMusicMinimized, setIsMusicMinimized] = useState(false),
+    [musicInvite, setMusicInvite] = useState(null),
+    [isCallMusicActive, setIsCallMusicActive] = useState(false),
+    [_musicPlayTick, setMusicPlayTick] = useState(0),
+    [showWatchPartyModal, setShowWatchPartyModal] = useState(false),
+    [isWatchPartyMinimized, setIsWatchPartyMinimized] = useState(false),
+    [watchPartyInvite, setWatchPartyInvite] = useState(null),
+    [watchPartyVideo, setWatchPartyVideo] = useState(null),
+    [isWatchPartyPlaying, setIsWatchPartyPlaying] = useState(true),
     [stickerCategory, setStickerCategory] = useState('all'),
     [stickerSearch, setStickerSearch] = useState(''),
     [customStickers, setCustomStickers] = useState(() => {
@@ -333,7 +369,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       } catch {
         return [];
       }
-    });
+    }),
+    [voiceNoteForFilter, setVoiceNoteForFilter] = useState(null),
+    [preselectedVoiceFilter, setPreselectedVoiceFilter] = useState('normal'),
+    [showVoiceFilterPicker, setShowVoiceFilterPicker] = useState(false);
   const selectedRef = useRef(null),
     bottom = useRef(null),
     initialUnreadScroll = useRef(false),
@@ -346,7 +385,6 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     recorder = useRef(null),
     recorderStream = useRef(null),
     recordTimer = useRef(null),
-    attempt = useRef(null),
     generation = useRef(0),
     messagesRef = useRef([]),
     lastProcessedMsgRef = useRef(null),
@@ -382,10 +420,41 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     }
   }, [messages, user.id, triggerReaction]);
   const call = useCall(socket, user, onError);
+  
+  // Initialize draft manager for auto-save and restore
+  const { clearDraft } = useDraftManager(
+    selected,
+    draft,
+    setDraft,
+    replyTo,
+    setReplyTo,
+    source,
+    setSource,
+    onError
+  );
+  
   const loadConversations = useCallback(async () => {
     const rows = await api('/conversations');
-    conversationsRef.current = rows;
-    setConversations(rows);
+    // Load draft info for all conversations
+    try {
+      const drafts = await api('/drafts');
+      const draftMap = {};
+      drafts.forEach(d => {
+        draftMap[d.conversation_id] = d;
+      });
+      // Attach draft info to conversations
+      const withDrafts = rows.map(conv => ({
+        ...conv,
+        draft: draftMap[conv.id] || null
+      }));
+      conversationsRef.current = withDrafts;
+      setConversations(withDrafts);
+    } catch (error) {
+      // If drafts fail to load, just use conversations without draft info
+      console.warn('Failed to load drafts:', error.message);
+      conversationsRef.current = rows;
+      setConversations(rows);
+    }
   }, []);
   useEffect(() => {
     const removeExpired=()=>{
@@ -538,6 +607,18 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         triggerHeartbeatHaptics([60, 60, 80]);
       }
     });
+    connection.on('music:invite', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setMusicInvite(payload);
+        triggerHeartbeatHaptics([50, 60, 70]);
+      }
+    });
+    connection.on('video:invite', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setWatchPartyInvite(payload);
+        triggerHeartbeatHaptics([40, 50, 60]);
+      }
+    });
     connection.connect();
     void loadConversations().catch((e) => onError(e.message));
     return () => {
@@ -643,7 +724,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     setUnreadBoundary(Number(conversation?.unread || 0) > 0 ? readSeq : null);
     initialUnreadScroll.current = true;
     setAtLatest(false);
-    attempt.current = null;
+    setMessageExpiry(0);
     stickToBottom.current = false;
     setLoading(true);
     const version = ++generation.current;
@@ -727,48 +808,43 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     if (!cid || sending || (!draft.trim() && !outgoing && !sticker)) return;
     const detected = detectReaction(draft, sticker);
     if (detected) triggerReaction(detected);
-    if (queuedFile) setFile(queuedFile);
     setSending(true);
     try {
-      let attachment = outgoing?.attachment;
-      if (outgoing && !attachment) {
-        const form = new FormData();
-        form.append('file', outgoing.file);
-        setFile({ ...outgoing, error: '', progress: 0 });
-        attachment = await uploadFile(`/conversations/${cid}/uploads`, form, progress => setFile(current => current ? { ...current, progress } : current));
-        setFile({ ...outgoing, attachment, progress: 100, error: '' });
-      }
       const input = {
         text: outgoing?.caption ?? draft,
         source_language: source,
+        expires_in_seconds: messageExpiry,
         ...(replyTo ? { reply_to_id: replyTo.id } : {}),
         ...(sticker ? { sticker } : {}),
-        ...(attachment ? { attachment_id: attachment.id } : {}),
+        ...(outgoing?.attachment ? { attachment_id: outgoing.attachment.id } : {}),
       };
-      const fingerprint = JSON.stringify(input);
-      if (attempt.current?.fingerprint !== fingerprint)
-        attempt.current = { fingerprint, client_id: crypto.randomUUID() };
-      await api(`/conversations/${cid}/messages`, {
-        method: 'POST',
-        body: { ...input, client_id: attempt.current.client_id },
-      });
-      if (selectedRef.current === cid) {
-        setDraft('');
-        setReplyTo(null);
-        setFile(null);
-        setPicker(false);
-        attempt.current = null;
-        stickToBottom.current = true;
-        await loadMessages(cid);
-      }
+      // Each queued message owns an immutable snapshot and one retry identifier.
+      const delivery = outbox.enqueue(cid, input, outgoing?.file);
+      setDraft('');
+      setReplyTo(null);
+      setFile(null);
+      setPicker(false);
+      setMessageExpiry(0);
+      stickToBottom.current = true;
+      void clearDraft().catch((error) => onError(error.message));
+      const result = await delivery;
+      if (!result) return false;
+      if (selectedRef.current === cid) await loadMessages(cid);
       await loadConversations();
       return true;
     } catch (e) {
-      if (outgoing) setFile(current => current ? { ...current, error: e.message } : current);
       onError(e.message);
     } finally {
       setSending(false);
     }
+  };
+  const retryMessage = async (key) => {
+    const result = await outbox.retry(key);
+    if (!result) return;
+    try {
+      if (selectedRef.current === result.conversation_id) await loadMessages(result.conversation_id);
+      await loadConversations();
+    } catch (error) { onError(error.message); }
   };
 
   const saveCustomSticker = (dataUrl) => {
@@ -817,16 +893,60 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     if (!cid) return;
     setSending(true);
     try {
-      await api(`/conversations/${cid}/messages`, {
-        method: 'POST',
-        body: {
-          client_id: crypto.randomUUID(),
-          text,
-          source_language: user.language || 'ml',
-          ...(replyTo ? { reply_to_id: replyTo.id } : {}),
-        },
+      await outbox.enqueue(cid, {
+        text,
+        source_language: user.language || 'ml',
+        expires_in_seconds: messageExpiry,
+        ...(replyTo ? { reply_to_id: replyTo.id } : {}),
       });
+      setMessageExpiry(0);
       setShowHeartbeat(false);
+      setReplyTo(null);
+      stickToBottom.current = true;
+      await loadMessages(cid);
+      await loadConversations();
+    } catch (e) {
+      onError(e.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const sendMusicToChat = async (text) => {
+    const cid = selectedRef.current;
+    if (!cid) return;
+    setSending(true);
+    try {
+      await outbox.enqueue(cid, {
+        text,
+        source_language: user.language || 'ml',
+        expires_in_seconds: messageExpiry,
+        ...(replyTo ? { reply_to_id: replyTo.id } : {}),
+      });
+      setMessageExpiry(0);
+      setReplyTo(null);
+      stickToBottom.current = true;
+      await loadMessages(cid);
+      await loadConversations();
+    } catch (e) {
+      onError(e.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const sendWatchPartyToChat = async (text) => {
+    const cid = selectedRef.current;
+    if (!cid) return;
+    setSending(true);
+    try {
+      await outbox.enqueue(cid, {
+        text,
+        source_language: user.language || 'ml',
+        expires_in_seconds: messageExpiry,
+        ...(replyTo ? { reply_to_id: replyTo.id } : {}),
+      });
+      setMessageExpiry(0);
       setReplyTo(null);
       stickToBottom.current = true;
       await loadMessages(cid);
@@ -843,15 +963,13 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     if (!cid) return;
     setSending(true);
     try {
-      await api(`/conversations/${cid}/messages`, {
-        method: 'POST',
-        body: {
-          client_id: crypto.randomUUID(),
-          text,
-          source_language: user.language || 'ml',
-          ...(replyTo ? { reply_to_id: replyTo.id } : {}),
-        },
+      await outbox.enqueue(cid, {
+        text,
+        source_language: user.language || 'ml',
+        expires_in_seconds: messageExpiry,
+        ...(replyTo ? { reply_to_id: replyTo.id } : {}),
       });
+      setMessageExpiry(0);
       setShowDailyPrompt(false);
       setReplyTo(null);
       stickToBottom.current = true;
@@ -898,7 +1016,9 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         const type = capture.mimeType,
           extension = type.includes('ogg') ? 'ogg' : type.includes('mp4') ? 'm4a' : 'webm';
         const voice = new File(chunks, `voice-note-${Date.now()}.${extension}`, { type });
-        if (voice.size) setFile({ file: voice });
+        if (voice.size) {
+          setVoiceNoteForFilter(voice);
+        }
       };
       capture.start();
       setRecording(true);
@@ -998,13 +1118,22 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
               <span>{conversations.length.toString().padStart(2, '0')}</span>
             </h1>
           </div>
-          <ButtonIcon
-            label="Connect with my ride-or-die"
-            className="new-chat-btn"
-            onClick={() => setShowContact(true)}
-          >
-            <Plus size={21} />
-          </ButtonIcon>
+          <div className="panel-heading-actions">
+            <ButtonIcon
+              label="Search all messages"
+              className="search-all-btn"
+              onClick={() => setShowGlobalSearch(true)}
+            >
+              <Search size={21} />
+            </ButtonIcon>
+            <ButtonIcon
+              label="Connect with my ride-or-die"
+              className="new-chat-btn"
+              onClick={() => setShowContact(true)}
+            >
+              <Plus size={21} />
+            </ButtonIcon>
+          </div>
         </div>
         <div className="panel-install"><InstallApp /></div>
         <label className="search-box">
@@ -1051,12 +1180,16 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     </time>
                   </div>
                   <p>
-                    {c.last_message?.text ||
+                    {c.draft && c.draft.text ? (
+                      <span style={{ color: '#ef4444', fontStyle: 'italic' }}>📝 Draft: {c.draft.text.slice(0, 50)}{c.draft.text.length > 50 ? '...' : ''}</span>
+                    ) : (
+                      c.last_message?.text ||
                       (c.last_message?.sticker
                         ? `${stickers[c.last_message.sticker]} Sticker`
                         : c.last_message?.attachment
                           ? 'Attachment'
-                          : 'Our first hello starts here. Say something! 🤍')}
+                          : 'Our first hello starts here. Say something! 🤍')
+                    )}
                   </p>
                   <span className="contact-language">
                     {languages[c.peer.language]}
@@ -1179,6 +1312,46 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                   }}
                 >
                   <Heart size={20} className="heartbeat-action-pulse" />
+                </ButtonIcon>
+                <ButtonIcon
+                  label="Listen to Music Together 🎧 (വാച്ച് & ലിസൺ ടുഗെതർ)"
+                  disabled={!connected || chosen.contact_blocked}
+                  onClick={() => {
+                    setShowMusicModal(true);
+                    setIsMusicMinimized(false);
+                    setMusicInvite(null);
+                    socket?.emit('music:invite', {
+                      conversation_id: selected,
+                      track: {
+                        id: musicEngine.currentTrack.id,
+                        titleMl: musicEngine.currentTrack.titleMl,
+                        titleEn: musicEngine.currentTrack.titleEn,
+                      },
+                    });
+                  }}
+                >
+                  <Headphones size={20} className="music-action-icon" />
+                </ButtonIcon>
+                <ButtonIcon
+                  label="Watch Party & Video Sync 🎬 (വാച്ച് പാർട്ടി · ഒന്നിച്ച് വീഡിയോ കാണാം)"
+                  disabled={!connected || chosen.contact_blocked}
+                  onClick={() => {
+                    setShowWatchPartyModal(true);
+                    setIsWatchPartyMinimized(false);
+                    setWatchPartyInvite(null);
+                    socket?.emit('video:invite', {
+                      conversation_id: selected,
+                      video: {
+                        id: watchPartyVideo?.id || CURATED_VIDEOS[0].id,
+                        youtubeId: watchPartyVideo?.youtubeId || CURATED_VIDEOS[0].youtubeId,
+                        titleMl: watchPartyVideo?.titleMl || CURATED_VIDEOS[0].titleMl,
+                        titleEn: watchPartyVideo?.titleEn || CURATED_VIDEOS[0].titleEn,
+                        thumbnail: watchPartyVideo?.thumbnail || CURATED_VIDEOS[0].thumbnail,
+                      },
+                    });
+                  }}
+                >
+                  <Film size={20} className="watch-party-action-icon" />
                 </ButtonIcon>
                 <span className="header-divider" />
                 <button
@@ -1305,6 +1478,61 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 </div>
               </div>
             )}
+            {musicInvite && (
+              <div className="music-invite-banner" role="alert">
+                <div className="music-invite-left">
+                  <span className="music-pulse-icon">🎧</span>
+                  <span>
+                    <strong>{musicInvite.sender_name || 'Your partner'}</strong> started playing &ldquo;{musicInvite.track?.titleMl || 'a romantic song'}&rdquo;! (ഒരുമിച്ച് പാട്ട് കേൾക്കാം 🎵)
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="music-invite-join-btn"
+                    onClick={() => {
+                      setShowMusicModal(true);
+                      setIsMusicMinimized(false);
+                      setMusicInvite(null);
+                    }}
+                  >
+                    Join Music 🎵
+                  </button>
+                  <ButtonIcon label="Dismiss" onClick={() => setMusicInvite(null)}>
+                    <X size={15} />
+                  </ButtonIcon>
+                </div>
+              </div>
+            )}
+            {watchPartyInvite && (
+              <div className="watch-invite-banner" role="alert">
+                <div className="watch-invite-left">
+                  <span className="watch-pulse-icon">🎬</span>
+                  <span>
+                    <strong>{watchPartyInvite.sender_name || 'Your partner'}</strong> invited you to a Watch Party &ldquo;{watchPartyInvite.video?.titleMl || 'a romantic video'}&rdquo;! (ഒന്നിച്ച് വീഡിയോ കാണാം 🍿)
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="watch-invite-join-btn"
+                    onClick={() => {
+                      if (watchPartyInvite.video) {
+                        setWatchPartyVideo(watchPartyInvite.video);
+                      }
+                      setShowWatchPartyModal(true);
+                      setIsWatchPartyMinimized(false);
+                      setWatchPartyInvite(null);
+                    }}
+                  >
+                    Join Watch Party 🍿
+                  </button>
+                  <ButtonIcon label="Dismiss" onClick={() => setWatchPartyInvite(null)}>
+                    <X size={15} />
+                  </ButtonIcon>
+                </div>
+              </div>
+            )}
             {tab === 'calls' ? (
               <div className="history">
                 <h2>Our Moments Together</h2>
@@ -1412,9 +1640,18 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                             capabilities={capabilities}
                             onError={onError}
                             onOpenDailyPrompt={() => setShowDailyPrompt(true)}
+                            onOpenMusic={() => {
+                              setShowMusicModal(true);
+                              setIsMusicMinimized(false);
+                            }}
+                            onOpenWatchParty={() => {
+                              setShowWatchPartyModal(true);
+                              setIsWatchPartyMinimized(false);
+                            }}
                           />
                         </div>
                       ))}
+                      {outbox.entries.filter((entry) => entry.conversation_id === selected && !messages.some((message) => message.client_id === entry.input.client_id)).map((entry) => <OutgoingMessage key={entry.input.client_id} entry={entry} retryDisabled={sending || !!chosen.contact_blocked || outbox.entries.some((row) => row.status === 'sending')} onRetry={(key) => void retryMessage(key)} />)}
                       {typing && (
                         <div className="typing-indicator">
                           <i />
@@ -1431,6 +1668,85 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                   stickToBottom.current = true; setAtLatest(true);
                   bottom.current?.scrollIntoView({ behavior:'instant', block:'end' });
                 }}>Jump to latest <ChevronDown size={16} />{pendingUnread > 0 && <span aria-label={pendingUnread + ' unread messages'}>{pendingUnread} unread</span>}</button>}
+                {isMusicMinimized && !showMusicModal && (
+                  <ListenTogetherMiniPlayer
+                    track={musicEngine.currentTrack}
+                    isPlaying={musicEngine.isPlaying}
+                    currentPos={musicEngine.getCurrentPosition()}
+                    onTogglePlay={() => {
+                      if (musicEngine.isPlaying) {
+                        musicEngine.pauseTrack();
+                        socket?.emit('music:sync', {
+                          conversation_id: selected,
+                          action: 'pause',
+                          track_id: musicEngine.currentTrack.id,
+                          position: musicEngine.getCurrentPosition(),
+                          is_playing: false,
+                          timestamp: Date.now(),
+                        });
+                      } else {
+                        musicEngine.playTrack(musicEngine.currentTrack, musicEngine.getCurrentPosition());
+                        socket?.emit('music:sync', {
+                          conversation_id: selected,
+                          action: 'play',
+                          track_id: musicEngine.currentTrack.id,
+                          position: musicEngine.getCurrentPosition(),
+                          is_playing: true,
+                          timestamp: Date.now(),
+                        });
+                      }
+                      setMusicPlayTick((t) => t + 1);
+                    }}
+                    onExpand={() => {
+                      setShowMusicModal(true);
+                      setIsMusicMinimized(false);
+                    }}
+                    onClose={() => {
+                      musicEngine.pauseTrack();
+                      setIsMusicMinimized(false);
+                      setShowMusicModal(false);
+                      socket?.emit('music:status', {
+                        conversation_id: selected,
+                        active: false,
+                        track_id: musicEngine.currentTrack.id,
+                      });
+                    }}
+                    partnerListening={true}
+                  />
+                )}
+                {isWatchPartyMinimized && !showWatchPartyModal && (
+                  <WatchPartyMiniPlayer
+                    video={watchPartyVideo || CURATED_VIDEOS[0]}
+                    isPlaying={isWatchPartyPlaying}
+                    currentTime={0}
+                    onTogglePlay={() => {
+                      const next = !isWatchPartyPlaying;
+                      setIsWatchPartyPlaying(next);
+                      socket?.emit('video:sync', {
+                        conversation_id: selected,
+                        action: next ? 'play' : 'pause',
+                        video_id: (watchPartyVideo || CURATED_VIDEOS[0]).id || (watchPartyVideo || CURATED_VIDEOS[0]).youtubeId,
+                        position: 0,
+                        is_playing: next,
+                        timestamp: Date.now(),
+                      });
+                    }}
+                    onExpand={() => {
+                      setShowWatchPartyModal(true);
+                      setIsWatchPartyMinimized(false);
+                    }}
+                    onClose={() => {
+                      setIsWatchPartyMinimized(false);
+                      setShowWatchPartyModal(false);
+                      socket?.emit('video:status', {
+                        conversation_id: selected,
+                        active: false,
+                        video_id: (watchPartyVideo || CURATED_VIDEOS[0]).id,
+                      });
+                    }}
+                    partnerWatching={true}
+                  />
+                )}
                 <footer className="composer-area">
                   {chosen.contact_blocked && <p className="blocked-notice" role="status">Messaging is unavailable while a user is blocked.{chosen.blocked_by_me && <button type="button" className="text-btn" onClick={() => setShowSafety(true)}>Unblock user</button>}</p>}
                   <fieldset className="composer-controls" disabled={chosen.contact_blocked}>
@@ -1439,6 +1755,22 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                       <div><strong>Replying to {replyTo.sender?.name || 'message'}</strong><p>{replyTo.text || (replyTo.sticker ? stickers[replyTo.sticker] : 'Attachment')}</p></div>
                       <ButtonIcon label="Cancel reply" disabled={sending} onClick={() => setReplyTo(null)}><X size={16} /></ButtonIcon>
                     </div>
+                  )}
+                  {voiceNoteForFilter && (
+                    <VoiceFilterStudio
+                      rawVoiceBlob={voiceNoteForFilter}
+                      initialFilter={preselectedVoiceFilter}
+                      onSend={async (filteredFile, filterId) => {
+                        setVoiceNoteForFilter(null);
+                        await sendMessage(null, { file: filteredFile, caption: draft });
+                      }}
+                      onCancel={() => setVoiceNoteForFilter(null)}
+                      onRerecord={() => {
+                        setVoiceNoteForFilter(null);
+                        void record();
+                      }}
+                      onError={onError}
+                    />
                   )}
                   {file && (
                     <div className="queued-file">
@@ -1656,6 +1988,11 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     {recording ? (
                       <div className="recording">
                         <span className="record-dot" /> Recording · {recordSeconds}s
+                        {preselectedVoiceFilter !== 'normal' && (
+                          <span className="recording-filter-pill">
+                            {getVoiceFilter(preselectedVoiceFilter).icon} {getVoiceFilter(preselectedVoiceFilter).name}
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <textarea
@@ -1677,6 +2014,66 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                         }}
                       />
                     )}
+                    <div className="voice-filter-toggle-container">
+                      <button
+                        type="button"
+                        className={`voice-filter-toggle-btn ${preselectedVoiceFilter !== 'normal' ? 'active' : ''}`}
+                        title="Fun Voice Filters (ശബ്ദം മാറ്റാനുള്ള ഇഫക്റ്റുകൾ)"
+                        aria-label="Fun voice filters"
+                        disabled={sending || recording}
+                        onClick={() => setShowVoiceFilterPicker((prev) => !prev)}
+                      >
+                        <span className="vf-toggle-icon">
+                          {preselectedVoiceFilter !== 'normal'
+                            ? getVoiceFilter(preselectedVoiceFilter).icon
+                            : '🎭'}
+                        </span>
+                      </button>
+                      {showVoiceFilterPicker && (
+                        <div className="voice-filter-popover" role="dialog" aria-label="Select Voice Filter">
+                          <div className="vf-popover-header">
+                            <div className="vf-popover-title">
+                              <strong>🎭 Fun Voice Filters</strong>
+                              <small>ശബ്ദ ഇഫക്റ്റുകൾ</small>
+                            </div>
+                            <button
+                              type="button"
+                              className="vf-popover-close"
+                              aria-label="Close voice filter selector"
+                              onClick={() => setShowVoiceFilterPicker(false)}
+                            >
+                              <X size={13} />
+                            </button>
+                          </div>
+                          <div className="vf-popover-list">
+                            {VOICE_FILTERS.map((f) => {
+                              const isSelected = preselectedVoiceFilter === f.id;
+                              return (
+                                <button
+                                  key={f.id}
+                                  type="button"
+                                  className={`vf-popover-item ${isSelected ? 'selected' : ''}`}
+                                  onClick={() => {
+                                    setPreselectedVoiceFilter(f.id);
+                                    setShowVoiceFilterPicker(false);
+                                  }}
+                                >
+                                  <span className="vf-item-icon">{f.icon}</span>
+                                  <div className="vf-item-text">
+                                    <div className="vf-item-heading">
+                                      <strong>{f.name}</strong>
+                                      <span className="vf-item-ml">{f.malayalamName}</span>
+                                    </div>
+                                    <small>{f.description}</small>
+                                  </div>
+                                  {isSelected && <span className="vf-item-check">✓</span>}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     <ButtonIcon
                       label={recording ? 'Stop recording' : 'Record voice note'}
                       disabled={sending || !!file}
@@ -1684,6 +2081,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     >
                       {recording ? <StopCircle size={22} /> : <Mic size={21} />}
                     </ButtonIcon>
+                    <ButtonIcon label="Scheduled messages" disabled={sending || recording} onClick={() => setShowScheduled(true)}><Clock size={21} /></ButtonIcon>
                     <button
                       type="submit"
                       className="send-btn"
@@ -1694,6 +2092,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     </button>
                   </form>
                   <div className="composer-hint">
+                    <label>Self-destruct<select aria-label="Message expiration" value={messageExpiry} disabled={sending || recording} onChange={(event) => setMessageExpiry(Number(event.target.value))}>{Object.entries(messageExpiryOptions).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
                     <label>
                       <Globe2 size={12} /> Writing in
                       <select
@@ -1762,6 +2161,27 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       {showDisappearing && chosen && <DisappearingSettings conversation={chosen} onClose={() => setShowDisappearing(false)} onChanged={loadConversations} onError={onError} />}
       {showSafety && chosen && <UserSafety person={chosen.peer} blocked={chosen.blocked_by_me} onClose={() => setShowSafety(false)} onChanged={loadConversations} />}
       {exportChat && <ChatExport conversationId={exportChat.id} title={exportChat.title} onClose={() => setExportChat(null)} />}
+      {showGlobalSearch && <GlobalSearch 
+        onClose={() => setShowGlobalSearch(false)} 
+        conversations={conversations}
+        onOpenMessage={async message => {
+          const cid = message.conversation_id;
+          try {
+            const page = await api(`/conversations/${cid}/messages?before=${Number(message.seq)+1}`);
+            if (selectedRef.current !== cid) {
+              await selectConversation(cid);
+            }
+            stickToBottom.current = false;
+            setAtLatest(false);
+            setMessages(old => mergeMessages(old, page.messages));
+            setHasMore(page.has_more);
+            setTab('chats');
+            setHighlightMessage(message.id);
+            setShowGlobalSearch(false);
+            requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById('message-' + message.id)?.scrollIntoView({ block:'center', behavior:'smooth' })));
+          } catch (e) { onError(e.message); }
+        }}
+      />}
       {libraryKind && selected && <ChatLibrary conversationId={selected} initialKind={libraryKind} onClose={() => setLibraryKind(null)} onOpen={async message => {
         const cid = selectedRef.current;
         try {
@@ -1775,6 +2195,9 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById('message-' + message.id)?.scrollIntoView({ block:'center', behavior:'smooth' })));
         } catch (e) { onError(e.message); }
       }} />}
+      <ScheduledMessages open={showScheduled} onClose={() => setShowScheduled(false)} conversationId={selected} draft={draft} source={source} socket={socket} pushEnabled={push.enabled} onScheduled={(text) => {
+        if (selectedRef.current === selected && draft.trim() === text) { setDraft(''); void clearDraft(); }
+      }} />
       {showSettings && (
         <Settings
           user={user}
@@ -1793,6 +2216,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
             </div>
           }
           capabilities={capabilities}
+          appearanceControls={themeControls}
           theme={theme}
           onThemeChange={setTheme}
           fontSize={fontSize}
@@ -1863,6 +2287,61 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onError={onError}
         />
       )}
+      {showMusicModal && chosen && (
+        <ListenTogetherModal
+          conversationId={selected}
+          user={user}
+          peer={chosen.peer}
+          socket={socket}
+          onClose={() => {
+            setShowMusicModal(false);
+            setIsMusicMinimized(false);
+          }}
+          onMinimize={() => {
+            setShowMusicModal(false);
+            setIsMusicMinimized(true);
+          }}
+          onSendToChat={sendMusicToChat}
+          onError={onError}
+          isCallMode={Boolean(call?.call)}
+        />
+      )}
+      {showWatchPartyModal && chosen && (
+        <WatchPartyModal
+          conversationId={selected}
+          user={user}
+          peer={chosen.peer}
+          socket={socket}
+          initialVideo={watchPartyVideo}
+          onClose={() => {
+            setShowWatchPartyModal(false);
+            setIsWatchPartyMinimized(false);
+          }}
+          onMinimize={() => {
+            setShowWatchPartyModal(false);
+            setIsWatchPartyMinimized(true);
+          }}
+          onSendToChat={sendWatchPartyToChat}
+          onSendMessage={(text) => {
+            if (text && text.trim()) {
+              api(`/conversations/${selected}/messages`, {
+                method: 'POST',
+                body: {
+                  client_id: crypto.randomUUID(),
+                  text: text.trim(),
+                  source_language: user.language || 'ml',
+                },
+              }).then(() => {
+                stickToBottom.current = true;
+                loadMessages(selected);
+                loadConversations();
+              }).catch((e) => onError(e.message));
+            }
+          }}
+          onError={onError}
+          isCallMode={Boolean(call?.call)}
+        />
+      )}
       {showGroupSettings && chosen && chosen.is_group && (
         <GroupSettingsModal
           conversation={chosen}
@@ -1871,7 +2350,85 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onUpdate={loadConversations}
         />
       )}
-      <CallOverlay controller={call} user={user} peer={callPeer} />
+      <CallOverlay
+        controller={call}
+        user={user}
+        peer={callPeer}
+        socket={socket}
+        musicController={chosen ? {
+          active: isCallMusicActive,
+          toggle: () => {
+            const next = !isCallMusicActive;
+            setIsCallMusicActive(next);
+            if (next && !musicEngine.isPlaying) {
+              musicEngine.playTrack(musicEngine.currentTrack, 0, 0.25);
+              socket?.emit('music:sync', {
+                conversation_id: selected,
+                action: 'play',
+                track_id: musicEngine.currentTrack.id,
+                position: 0,
+                is_playing: true,
+                timestamp: Date.now(),
+              });
+            }
+          },
+          dock: (
+            <ListenTogetherCallDock
+              track={musicEngine.currentTrack}
+              isPlaying={musicEngine.isPlaying}
+              onTogglePlay={() => {
+                if (musicEngine.isPlaying) {
+                  musicEngine.pauseTrack();
+                  socket?.emit('music:sync', {
+                    conversation_id: selected,
+                    action: 'pause',
+                    track_id: musicEngine.currentTrack.id,
+                    position: musicEngine.getCurrentPosition(),
+                    is_playing: false,
+                    timestamp: Date.now(),
+                  });
+                } else {
+                  musicEngine.playTrack(musicEngine.currentTrack, musicEngine.getCurrentPosition(), 0.25);
+                  socket?.emit('music:sync', {
+                    conversation_id: selected,
+                    action: 'play',
+                    track_id: musicEngine.currentTrack.id,
+                    position: musicEngine.getCurrentPosition(),
+                    is_playing: true,
+                    timestamp: Date.now(),
+                  });
+                }
+                setMusicPlayTick((t) => t + 1);
+              }}
+              onNextTrack={() => {
+                const curIdx = CURATED_TRACKS.findIndex((t) => t.id === musicEngine.currentTrack.id);
+                const nextIdx = (curIdx + 1) % CURATED_TRACKS.length;
+                const nextTrack = CURATED_TRACKS[nextIdx];
+                musicEngine.playTrack(nextTrack, 0, 0.25);
+                socket?.emit('music:sync', {
+                  conversation_id: selected,
+                  action: 'change_track',
+                  track_id: nextTrack.id,
+                  position: 0,
+                  is_playing: true,
+                  timestamp: Date.now(),
+                });
+                setMusicPlayTick((t) => t + 1);
+              }}
+              volume={musicEngine.volume}
+              onVolumeChange={(v) => {
+                musicEngine.setVolume(v);
+                setMusicPlayTick((t) => t + 1);
+              }}
+              onExpand={() => {
+                setShowMusicModal(true);
+                setIsMusicMinimized(false);
+              }}
+              partnerListening={true}
+            />
+          ),
+        } : undefined}
+      />
       </div>
     </>
   );

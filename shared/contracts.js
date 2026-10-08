@@ -3,6 +3,7 @@ import { languages, stickers, stickerCategories } from './constants.js';
 export { languages, stickers, stickerCategories };
 export const id = z.string().uuid();
 export const language = z.enum(['en', 'ml', 'manglish', 'sw']);
+export const targetLanguage = z.enum(['en', 'ml', 'manglish', 'sw', 'transcript']);
 export const registration = z.object({
   handle: z.string().regex(/^[a-z0-9_]{3,30}$/),
   name: z.string().trim().min(1).max(80),
@@ -37,6 +38,7 @@ export const messageInput = z
     sticker: z.enum(Object.keys(stickers)).optional(),
     attachment_id: id.optional(),
     reply_to_id: id.optional(),
+    expires_in_seconds: z.union([z.literal(0), z.literal(300), z.literal(3600), z.literal(86400), z.literal(604800), z.literal(2592000)]).optional(),
   })
   .refine((v) => v.text || v.sticker || v.attachment_id, { message: 'Message is empty' });
 export const messageEdit = z.object({ text: z.string().trim().min(1).max(5000) });

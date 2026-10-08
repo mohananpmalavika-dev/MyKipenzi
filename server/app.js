@@ -13,6 +13,8 @@ import { limit, aiLimit, redis, logger } from './infra.js';
 import { inspectFile, putObject, removeObject, getObject, storageReady } from './storage.js';
 import { cloneVoice, voiceVerified } from './providers.js';
 import { pushEnabled } from './push.js';
+import { createSchedule, changeSchedule } from './scheduled.js';
+import { scheduleInput, scheduleEdit } from '../shared/scheduling.js';
 import { pushEndpoint, pushSubscription } from '../shared/push.js';
 import {
   membership,
@@ -22,6 +24,7 @@ import {
   ensureReaderTranslations,
   changeMessage,
   saveMessage,
+  forwardMessage,
   toggleReaction,
   changeCall,
   conversationEvent,
@@ -54,6 +57,7 @@ import {
   messageEdit,
   id,
   language,
+  targetLanguage,
   stickers,
 } from '../shared/contracts.js';
 import { getPromptForDate, getTodayDateKey } from '../shared/dailyPrompts.js';
@@ -221,6 +225,17 @@ export function createApp(io) {
       res.json(await saveMessage(req.user,id.parse(req.params.id),kind,method==='put'));
     });
   }
+  app.get('/api/messages/:id/history', async (req, res) => {
+    const mid = id.parse(req.params.id);
+    const result = await transaction(async (c) => {
+      const message = await one('SELECT * FROM messages WHERE id=$1 FOR SHARE', [mid], c);
+      if (!message || message.deleted_at || hasExpired(message)) throw new HttpError(404, 'Message history is unavailable.');
+      await membership(req.user.id, message.conversation_id, c);
+      const history = (await c.query('SELECT id::text,text,edited_at,replaced_at FROM message_edit_history WHERE message_id=$1 ORDER BY id', [mid])).rows;
+      return { history, current: { text: message.text, edited_at: message.edited_at || message.created_at } };
+    });
+    res.json(result);
+  });
   app.patch('/api/messages/:id', async (req, res) => {
     await limit(`messages:${req.user.id}`, 40, 60);
     res.json(await changeMessage(req.user, id.parse(req.params.id), messageEdit.parse(req.body).text));
@@ -235,6 +250,16 @@ export function createApp(io) {
     const emoji = z.enum(['❤️','😂','👍','😮','😢','🙏']).parse(req.body.emoji);
     const result = await toggleReaction(req.user, mid, emoji);
     res.json(result);
+  });
+  app.post('/api/messages/:id/forward', async (req, res) => {
+    await limit(`forward:${req.user.id}`, 30, 60);
+    const mid = id.parse(req.params.id);
+    const input = z.object({
+      conversation_id: z.string().uuid(),
+      caption: z.string().trim().max(5000).optional(),
+    }).parse(req.body);
+    const result = await forwardMessage(req.user, mid, input.conversation_id, input.caption);
+    res.status(201).json(result);
   });
   app.post('/api/profile/photo', upload.single('file'), async (req, res) => {
     const type = await inspectFile(req.file, 'avatar');
@@ -513,6 +538,71 @@ export function createApp(io) {
   app.get('/api/conversations/:id/join-requests', getJoinRequests);
   app.post('/api/conversations/:id/join-requests/:requestId', respondToJoinRequest);
   app.get('/api/conversations/:id/activity', getGroupActivity);
+  // Message Drafts endpoints
+  app.get('/api/conversations/:id/draft', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    const draft = await one(
+      'SELECT text, reply_to_id, source_language, updated_at FROM message_drafts WHERE user_id=$1 AND conversation_id=$2',
+      [req.user.id, cid]
+    );
+    res.json(draft || { text: '', reply_to_id: null, source_language: 'auto' });
+  });
+
+  app.put('/api/conversations/:id/draft', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await limit(`drafts:${req.user.id}`, 100, 60);
+    const input = z.object({
+      text: z.string().max(5000).default(''),
+      reply_to_id: z.string().uuid().nullable().optional(),
+      source_language: z.enum(['auto','en','ml','manglish','sw']).default('auto'),
+    }).parse(req.body);
+    
+    if (input.text.trim() === '') {
+      // Delete draft if empty
+      await db.query(
+        'DELETE FROM message_drafts WHERE user_id=$1 AND conversation_id=$2',
+        [req.user.id, cid]
+      );
+      res.json({ ok: true, deleted: true });
+    } else {
+      // Upsert draft
+      const draft = await one(
+        `INSERT INTO message_drafts(user_id, conversation_id, text, reply_to_id, source_language, created_at, updated_at)
+         VALUES($1, $2, $3, $4, $5, now(), now())
+         ON CONFLICT(user_id, conversation_id)
+         DO UPDATE SET text=EXCLUDED.text, reply_to_id=EXCLUDED.reply_to_id, source_language=EXCLUDED.source_language, updated_at=now()
+         RETURNING *`,
+        [req.user.id, cid, input.text, input.reply_to_id || null, input.source_language]
+      );
+      res.json(draft);
+    }
+  });
+
+  app.delete('/api/conversations/:id/draft', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await db.query(
+      'DELETE FROM message_drafts WHERE user_id=$1 AND conversation_id=$2',
+      [req.user.id, cid]
+    );
+    res.json({ ok: true });
+  });
+
+  app.get('/api/drafts', async (req, res) => {
+    // Get all drafts for the current user with conversation info
+    const result = await db.query(
+      `SELECT d.conversation_id, d.text, d.updated_at, c.name, c.direct_key IS NULL AS is_group
+       FROM message_drafts d
+       JOIN conversations c ON c.id = d.conversation_id
+       WHERE d.user_id = $1
+       ORDER BY d.updated_at DESC`,
+      [req.user.id]
+    );
+    res.json(result.rows);
+  });
+
   // Daily "Us" Prompts endpoints (Question of the Day with double-blind mutual reveal)
   app.get('/api/conversations/:id/daily-prompt', async (req, res) => {
     const cid = id.parse(req.params.id);
@@ -790,6 +880,97 @@ export function createApp(io) {
     await ensureReaderTranslations(req.user, result.rows.slice(0,30));
     res.json({ messages: result.rows.slice(0,30), has_more: result.rows.length>30 });
   });
+  app.get('/api/messages/search', async (req, res) => {
+    await limit(`search:${req.user.id}`, 60, 60);
+    const input = z.object({
+      q: z.string().trim().min(1, 'Search query is required').max(200),
+      conversation_id: z.string().uuid().optional(),
+      sender_id: z.string().uuid().optional(),
+      media_type: z.enum(['all','photos','videos','audio','documents']).default('all'),
+      date_from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      date_to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      offset: z.coerce.number().int().min(0).max(10000).default(0),
+    }).parse(req.query);
+
+    // Build WHERE conditions
+    const conditions = ['m.deleted_at IS NULL'];
+    const params = [req.user.language, req.user.id];
+    let paramIndex = 3;
+
+    // Text search condition
+    conditions.push(`(strpos(lower(m.text),lower($${paramIndex}))>0 OR strpos(lower(a.name),lower($${paramIndex}))>0 OR strpos(lower(t.text),lower($${paramIndex}))>0)`);
+    params.push(input.q);
+    paramIndex++;
+
+    // Conversation filter
+    if (input.conversation_id) {
+      conditions.push(`m.conversation_id=$${paramIndex}`);
+      params.push(input.conversation_id);
+      paramIndex++;
+    }
+
+    // Sender filter
+    if (input.sender_id) {
+      conditions.push(`m.sender_id=$${paramIndex}`);
+      params.push(input.sender_id);
+      paramIndex++;
+    }
+
+    // Media type filter
+    if (input.media_type === 'photos') {
+      conditions.push(`a.mime LIKE 'image/%'`);
+    } else if (input.media_type === 'videos') {
+      conditions.push(`a.mime LIKE 'video/%'`);
+    } else if (input.media_type === 'audio') {
+      conditions.push(`a.mime LIKE 'audio/%'`);
+    } else if (input.media_type === 'documents') {
+      conditions.push(`a.id IS NOT NULL AND a.mime NOT LIKE 'image/%' AND a.mime NOT LIKE 'video/%' AND a.mime NOT LIKE 'audio/%'`);
+    }
+
+    // Date range filters
+    if (input.date_from) {
+      conditions.push(`m.created_at >= $${paramIndex}::date`);
+      params.push(input.date_from);
+      paramIndex++;
+    }
+    if (input.date_to) {
+      conditions.push(`m.created_at < ($${paramIndex}::date + interval '1 day')`);
+      params.push(input.date_to);
+      paramIndex++;
+    }
+
+    // Only search in conversations where user is a member
+    conditions.push(`EXISTS(SELECT 1 FROM members mem WHERE mem.conversation_id=m.conversation_id AND mem.user_id=$2)`);
+
+    const whereClause = conditions.join(' AND ');
+    
+    const result = await db.query(
+      `${messageSelect},
+       c.name as conversation_name,
+       c.direct_key IS NULL as is_group
+       FROM messages m
+       LEFT JOIN attachments a ON a.id=m.attachment_id
+       LEFT JOIN translations t ON t.message_id=m.id AND t.language=$1
+       JOIN users u ON u.id=m.sender_id
+       JOIN conversations c ON c.id=m.conversation_id
+       WHERE ${whereClause}
+       ORDER BY m.created_at DESC
+       LIMIT 51 OFFSET $${paramIndex}`,
+      [...params, input.offset],
+    );
+
+    await ensureReaderTranslations(req.user, result.rows.slice(0, 50));
+    
+    res.json({
+      messages: result.rows.slice(0, 50).map(msg => ({
+        ...msg,
+        conversation_name: msg.conversation_name,
+        is_group: msg.is_group,
+      })),
+      has_more: result.rows.length > 50,
+      offset: input.offset,
+    });
+  });
   app.get('/api/conversations/:id/messages', async (req, res) => {
     // Update last_seen timestamp on activity
     await db.query('UPDATE users SET last_seen=now() WHERE id=$1', [req.user.id]);
@@ -819,6 +1000,24 @@ export function createApp(io) {
     );
     await ensureReaderTranslations(req.user, result.rows);
     res.json({ messages: result.rows.reverse(), has_more: result.rows.length === 50 });
+  });
+  app.get('/api/conversations/:id/scheduled', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    const result = await db.query("SELECT * FROM scheduled_messages WHERE conversation_id=$1 AND sender_id=$2 ORDER BY (status='pending') DESC,CASE WHEN status='pending' THEN delivery_at END,updated_at DESC LIMIT 100", [cid, req.user.id]);
+    res.json({ scheduled: result.rows });
+  });
+  app.post('/api/conversations/:id/scheduled', async (req, res) => {
+    await limit(`schedules:${req.user.id}`, 40, 60);
+    res.status(201).json(await createSchedule(req.user, id.parse(req.params.id), scheduleInput.parse(req.body)));
+  });
+  app.patch('/api/scheduled/:id', async (req, res) => {
+    await limit(`schedules:${req.user.id}`, 40, 60);
+    res.json(await changeSchedule(req.user, id.parse(req.params.id), scheduleEdit.parse(req.body)));
+  });
+  app.delete('/api/scheduled/:id', async (req, res) => {
+    await limit(`schedules:${req.user.id}`, 40, 60);
+    res.json(await changeSchedule(req.user, id.parse(req.params.id), null));
   });
   app.post('/api/conversations/:id/messages', async (req, res) => {
     await limit(`messages:${req.user.id}`, 40, 60);
@@ -903,7 +1102,7 @@ export function createApp(io) {
   });
   app.post('/api/messages/:id/translate', async (req, res) => {
     const mid = id.parse(req.params.id),
-      target = language.parse(req.body.language);
+      target = targetLanguage.parse(req.body.language);
     const m = await one(
       'SELECT m.*,u.ai_consent,a.mime,a.name FROM messages m JOIN users u ON u.id=m.sender_id LEFT JOIN attachments a ON a.id=m.attachment_id WHERE m.id=$1',
       [mid],

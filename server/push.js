@@ -7,6 +7,29 @@ import { pushEndpoint } from '../shared/push.js';
 
 export const pushEnabled = Boolean(config.VAPID_PUBLIC_KEY && config.VAPID_PRIVATE_KEY);
 
+export async function deliverSchedulePush({ id, revision }, send = webpush.sendNotification.bind(webpush)) {
+  if (!pushEnabled) return;
+  const row = (await db.query("SELECT s.* FROM scheduled_messages s JOIN members m ON m.user_id=s.sender_id AND m.conversation_id=s.conversation_id WHERE s.id=$1 AND s.revision=$2 AND s.status='pending' AND s.delivery_at>now()", [id, revision])).rows[0];
+  if (!row) return;
+  const subscriptions = (await db.query('SELECT p.* FROM push_subscriptions p JOIN sessions s ON s.token_hash=p.session_token_hash AND s.user_id=p.user_id WHERE p.user_id=$1 AND s.expires_at>now()', [row.sender_id])).rows;
+  const when = new Intl.DateTimeFormat('en', { timeZone: row.time_zone, dateStyle: 'medium', timeStyle: 'short' }).format(row.delivery_at);
+  const payload = JSON.stringify({ title: 'Scheduled message reminder', body: `Your message will be sent at ${when} (${row.time_zone}).`, tag: `kipenzi-schedule-${id}-${revision}`, data: { conversation_id: row.conversation_id, user_id: row.sender_id, scheduled_id: id } });
+  let retry = false;
+  for (const subscription of subscriptions) {
+    if (!pushEndpoint.safeParse(subscription.endpoint).success) continue;
+    try {
+      await send({ endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } }, payload, {
+        TTL: Math.max(1, Math.min(300, Math.floor((new Date(row.delivery_at).getTime() - Date.now()) / 1000))), urgency: 'normal', timeout: 10000,
+        vapidDetails: { subject: config.APP_ORIGIN, publicKey: config.VAPID_PUBLIC_KEY, privateKey: config.VAPID_PRIVATE_KEY },
+      });
+    } catch (error) {
+      if (error.statusCode === 404 || error.statusCode === 410) await db.query('DELETE FROM push_subscriptions WHERE endpoint=$1 AND session_token_hash=$2', [subscription.endpoint, subscription.session_token_hash]);
+      else retry = true;
+    }
+  }
+  if (retry) throw new Error('Scheduled reminder delivery temporarily unavailable.');
+}
+
 export async function deliverMessagePush({ message_id, user_id }, attempt = 0, send = webpush.sendNotification.bind(webpush)) {
   if (!pushEnabled) return;
   const recipient = (await db.query(

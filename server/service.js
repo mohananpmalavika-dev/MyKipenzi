@@ -1,4 +1,5 @@
 import { hasExpired } from '../shared/disappearing.js';
+import { canDeleteForEveryone } from '../shared/messageStatus.js';
 import { randomUUID } from 'node:crypto';
 import { db, one, transaction } from './db.js';
 import { HttpError } from './security.js';
@@ -70,10 +71,12 @@ export const messageSelect = `SELECT m.*,
     GROUP BY r.emoji
   ) react
  ) AS reactions
+ ,(SELECT jsonb_build_object('id',fm.id,'sender_id',fm.sender_id,'sender_name',fmu.name,'text',fm.text,'sticker',fm.sticker,'has_attachment',fm.attachment_id IS NOT NULL)
+ FROM messages fm JOIN users fmu ON fmu.id=fm.sender_id WHERE fm.id=m.forwarded_from_id) AS forwarded_from
  FROM (SELECT * FROM messages WHERE expires_at IS NULL OR expires_at>now()) m JOIN users u ON u.id=m.sender_id LEFT JOIN attachments a ON a.id=m.attachment_id
  LEFT JOIN translations t ON t.message_id=m.id AND t.language=$2::text`;
-export async function sendMessage(user, input, conversationId) {
-  return transaction(async (c) => {
+export async function sendMessage(user, input, conversationId, client) {
+  const deliver = async (c) => {
     await membership(user.id, conversationId, c);
     await assertCanContact(user.id, conversationId, c);
     
@@ -126,7 +129,7 @@ export async function sendMessage(user, input, conversationId) {
         (/^voice-note-/.test(attachment.name || '') && attachment.mime === 'video/webm');
     }
     const m = await one(
-      `INSERT INTO messages(id,conversation_id,sender_id,client_id,text,source_language,sticker,attachment_id,reply_to_id,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,(SELECT CASE WHEN disappearing_seconds=0 THEN NULL ELSE now()+make_interval(secs=>disappearing_seconds) END FROM conversations WHERE id=$2)) RETURNING *`,
+      `INSERT INTO messages(id,conversation_id,sender_id,client_id,text,source_language,sticker,attachment_id,reply_to_id,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,(SELECT CASE WHEN seconds=0 THEN NULL ELSE now()+make_interval(secs=>seconds) END FROM (SELECT CASE WHEN disappearing_seconds>0 AND $10::int>0 THEN least(disappearing_seconds,$10::int) ELSE coalesce(nullif($10::int,0),disappearing_seconds) END AS seconds FROM conversations WHERE id=$2) timer)) RETURNING *`,
       [
         randomUUID(),
         conversationId,
@@ -137,6 +140,7 @@ export async function sendMessage(user, input, conversationId) {
         input.sticker || null,
         input.attachment_id || null,
         input.reply_to_id || null,
+        input.expires_in_seconds || null,
       ],
       c,
     );
@@ -172,7 +176,8 @@ export async function sendMessage(user, input, conversationId) {
     for (const recipient of recipients)
       await enqueue(c, 'push', { message_id: m.id, user_id: recipient.user_id });
     return m;
-  });
+  };
+  return client ? deliver(client) : transaction(deliver);
 }
 export async function changeMessage(user, messageId, text) {
   return transaction(async (c) => {
@@ -185,13 +190,24 @@ export async function changeMessage(user, messageId, text) {
       throw new HttpError(409, 'Message was deleted.');
     }
     if (text !== undefined && !m.text) throw new HttpError(400, 'Only message text can be edited.');
+    if (text === undefined && !canDeleteForEveryone(m)) throw new HttpError(409, 'Messages can only be deleted for everyone within 24 hours of sending.');
+    if (text !== undefined && text === m.text) return m;
+    if (text !== undefined) await c.query('INSERT INTO message_edit_history(message_id,text,edited_at) VALUES($1,$2,$3)', [m.id, m.text, m.edited_at || m.created_at]);
     const result = text === undefined
       ? await one("UPDATE messages SET text='Message deleted',sticker=NULL,attachment_id=NULL,deleted_at=now() WHERE id=$1 RETURNING *", [messageId], c)
       : await one('UPDATE messages SET text=$2,edited_at=clock_timestamp() WHERE id=$1 RETURNING *', [messageId, text], c);
     if (text === undefined) {
+      await c.query('DELETE FROM message_edit_history WHERE message_id=$1', [messageId]);
+      await c.query('DELETE FROM reactions WHERE message_id=$1', [messageId]);
       await c.query('DELETE FROM message_stars WHERE message_id=$1', [messageId]);
       await c.query('DELETE FROM message_pins WHERE message_id=$1', [messageId]);
+      if (m.attachment_id && !(await one('SELECT 1 FROM messages WHERE attachment_id=$1 AND id<>$2 AND deleted_at IS NULL AND (expires_at IS NULL OR expires_at>now())', [m.attachment_id, m.id], c))) {
+        const attachment = await one('UPDATE attachments SET expired_at=now() WHERE id=$1 RETURNING object_key', [m.attachment_id], c);
+        if (attachment) await enqueue(c, 'delete_object', { key: attachment.object_key });
+      }
     }
+    const mediaObjects = (await c.query('SELECT object_key FROM media_jobs WHERE message_id=$1 AND object_key IS NOT NULL', [messageId])).rows;
+    for (const object of mediaObjects) await enqueue(c, 'delete_object', { key: object.object_key });
     await c.query('DELETE FROM translations WHERE message_id=$1', [messageId]);
     await c.query('DELETE FROM media_jobs WHERE message_id=$1', [messageId]);
     if (text !== undefined && user.ai_consent && config.GEMINI_API_KEY) {
@@ -292,5 +308,105 @@ export async function saveMessage(user, messageId, kind, enabled) {
       await enqueue(c,'event',{users:[user.id],event:'message:changed',data:{conversation_id:message.conversation_id,message_id:messageId}});
     }
     return { [kind==='pin'?'pinned':'starred']:enabled };
+  });
+}
+
+export async function forwardMessage(user, messageId, targetConversationId, caption) {
+  return transaction(async (c) => {
+    // Get original message
+    const original = await one('SELECT * FROM messages WHERE id=$1', [messageId], c);
+    if (!original || hasExpired(original)) throw new HttpError(404, 'Message not found.');
+    if (original.deleted_at) throw new HttpError(400, 'Cannot forward deleted messages.');
+    
+    // Check user has access to original message
+    await membership(user.id, original.conversation_id, c);
+    
+    // Check user has access to target conversation and can send messages
+    await membership(user.id, targetConversationId, c);
+    await assertCanContact(user.id, targetConversationId, c);
+    
+    // Check if user has permission to send messages in target group
+    const member = await one(
+      'SELECT m.can_send_messages, c.direct_key IS NULL as is_group FROM members m JOIN conversations c ON c.id=m.conversation_id WHERE m.user_id=$1 AND m.conversation_id=$2',
+      [user.id, targetConversationId],
+      c,
+    );
+    if (member.is_group && !member.can_send_messages) {
+      throw new HttpError(403, 'You do not have permission to send messages in this group.');
+    }
+    
+    // Cannot forward to same conversation
+    if (original.conversation_id === targetConversationId) {
+      throw new HttpError(400, 'Cannot forward a message to the same conversation.');
+    }
+    
+    // Create forwarded message
+    const forwardedId = randomUUID();
+    const clientId = randomUUID();
+    
+    const forwarded = await one(
+      `INSERT INTO messages(id,conversation_id,sender_id,client_id,text,source_language,sticker,attachment_id,forwarded_from_id,expires_at)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,(SELECT CASE WHEN disappearing_seconds=0 THEN NULL ELSE now()+make_interval(secs=>disappearing_seconds) END FROM conversations WHERE id=$2))
+       RETURNING *`,
+      [
+        forwardedId,
+        targetConversationId,
+        user.id,
+        clientId,
+        caption || original.text,
+        user.language || 'auto',
+        original.sticker || null,
+        original.attachment_id || null,
+        messageId,
+      ],
+      c,
+    );
+    
+    // Mark sender as read
+    await c.query(
+      'UPDATE members SET read_seq=GREATEST(read_seq,$3) WHERE conversation_id=$1 AND user_id=$2',
+      [targetConversationId, user.id, forwarded.seq],
+    );
+    
+    // Request translations if needed
+    const isVoiceNote = original.attachment_id && await one(
+      'SELECT mime,name FROM attachments WHERE id=$1 AND (mime LIKE \'audio/%\' OR (name LIKE \'voice-note-%\' AND mime=\'video/webm\'))',
+      [original.attachment_id],
+      c
+    );
+    
+    if ((forwarded.text || isVoiceNote) && user.ai_consent && config.GEMINI_API_KEY) {
+      const recipients = (
+        await c.query(
+          'SELECT u.language,array_agg(u.id) AS requester_ids FROM members mm JOIN users u ON u.id=mm.user_id WHERE mm.conversation_id=$1 AND u.id<>$2 AND u.ai_consent GROUP BY u.language',
+          [targetConversationId, user.id],
+        )
+      ).rows;
+      for (const { requester_ids, language } of recipients) {
+        await c.query('INSERT INTO translations(message_id,language) VALUES($1,$2)', [
+          forwarded.id,
+          language,
+        ]);
+        await enqueue(c, 'translate', { message_id: forwarded.id, language, requester_ids });
+      }
+    }
+    
+    // Notify conversation
+    await conversationEvent(c, targetConversationId, 'message:changed', {
+      conversation_id: targetConversationId,
+      message_id: forwarded.id,
+    });
+    
+    // Send arrival notifications
+    const recipients = (await c.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [targetConversationId, user.id])).rows;
+    await enqueue(c, 'event', {
+      users: recipients.map(row => row.user_id),
+      event: 'message:arrived',
+      data: { conversation_id: targetConversationId, message_id: forwarded.id, sender_id: user.id },
+    });
+    for (const recipient of recipients)
+      await enqueue(c, 'push', { message_id: forwarded.id, user_id: recipient.user_id });
+    
+    return forwarded;
   });
 }

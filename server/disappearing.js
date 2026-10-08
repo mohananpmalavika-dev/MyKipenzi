@@ -10,6 +10,7 @@ export async function expireMessages(client) {
   const media=(await client.query('SELECT object_key FROM media_jobs WHERE message_id=$1 AND object_key IS NOT NULL',[m.id])).rows;
   for(const item of media) await enqueue(client,'delete_object',{key:item.object_key});
   await client.query('DELETE FROM translations WHERE message_id=$1',[m.id]);
+  await client.query('DELETE FROM message_edit_history WHERE message_id=$1',[m.id]);
   await client.query('DELETE FROM media_jobs WHERE message_id=$1',[m.id]);
   await client.query('DELETE FROM message_stars WHERE message_id=$1',[m.id]);
   await client.query('DELETE FROM message_pins WHERE message_id=$1',[m.id]);

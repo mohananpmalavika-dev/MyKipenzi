@@ -104,7 +104,7 @@ export async function translateAudio(buffer, mime = 'audio/webm', filename = '')
         systemInstruction: {
           parts: [
             {
-              text: 'You are an expert audio translator and transcriber. The audio input is a voice message in English. Transcribe the English speech, and translate it into: Malayalam (written in Malayalam script), Manglish (spoken Malayalam rendered in Latin/English chat alphabet, not English), and Swahili (Kiswahili). Always respond strictly with valid JSON with keys transcript, ml, manglish, sw, en. Never include markdown code blocks or conversational text.',
+              text: 'You are an expert multilingual audio transcriber and translator. The audio input is a voice message that may be spoken in Malayalam, English, Manglish, or Swahili. Accurately transcribe the exact spoken speech in the original spoken language in "transcript". Then provide: "ml" (Malayalam written in Malayalam script), "manglish" (spoken Malayalam rendered in Latin/English chat alphabet, not English), "en" (English transcription or translation), and "sw" (Swahili translation). Always respond strictly with valid JSON with keys transcript, ml, manglish, sw, en. Never include markdown code blocks or conversational text.',
             },
           ],
         },
@@ -114,7 +114,7 @@ export async function translateAudio(buffer, mime = 'audio/webm', filename = '')
             parts: [
               { inlineData: { mimeType: normalizedMime, data: base64Audio } },
               {
-                text: 'Transcribe this voice message and translate into Malayalam ("ml" in Malayalam script), Manglish ("manglish" in Latin alphabet), Swahili ("sw"), and English transcript ("en"). Return JSON.',
+                text: 'Transcribe this voice message accurately and translate. Return strictly valid JSON with keys: transcript (verbatim original speech), ml (Malayalam script), manglish (Latin chat alphabet), en (English), and sw (Swahili).',
               },
             ],
           },
