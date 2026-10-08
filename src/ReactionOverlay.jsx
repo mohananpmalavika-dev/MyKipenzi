@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export function detectReaction(text, sticker) {
+export function detectReaction(text, sticker, translatedText) {
   if (sticker) {
     if (['love', 'red_heart', 'sparkle_heart', 'two_hearts', 'heart_eyes', 'rose'].includes(sticker)) {
       return 'heart';
@@ -8,54 +8,81 @@ export function detectReaction(text, sticker) {
     if (sticker === 'kiss') return 'kiss';
     if (sticker === 'hug') return 'hug';
   }
-  if (text) {
-    const lower = text.toLowerCase();
-    if (
-      lower.includes('miss u') ||
-      lower.includes('miss you') ||
-      lower.includes('missed you') ||
-      lower.includes('miss ur face') ||
-      lower.includes('miss your face') ||
-      lower.includes('nakukumbuka')
-    ) {
-      return 'miss';
-    }
-    if (
-      lower.includes('love u') ||
-      lower.includes('love you') ||
-      lower.includes('loveyou') ||
-      lower.includes('ishtam') ||
-      lower.includes('nakupenda')
-    ) {
-      return 'love';
-    }
-    if (
-      lower.includes('kiss') ||
-      lower.includes('chumma') ||
-      lower.includes('mutham') ||
-      lower.includes('ummah') ||
-      lower.includes('umma') ||
-      lower.includes('halik') ||
-      /[😘😚💋]/.test(lower)
-    ) {
-      return 'kiss';
-    }
-    if (
-      lower.includes('hug') ||
-      lower.includes('katti piditham') ||
-      lower.includes('kumbatia') ||
-      /[🫂]/.test(lower)
-    ) {
-      return 'hug';
-    }
-    if (
-      /[❤️💖💕💓💗💘💝]/.test(lower) ||
-      lower.includes('heart') ||
-      lower.includes('sneham')
-    ) {
-      return 'heart';
-    }
+
+  const combined = `${text || ''} ${translatedText || ''}`.trim();
+  if (!combined) return null;
+  const lower = combined.toLowerCase();
+
+  // 1. Miss You / Love You
+  if (
+    lower.includes('miss u') ||
+    lower.includes('miss you') ||
+    lower.includes('missed you') ||
+    lower.includes('miss ur face') ||
+    lower.includes('miss your face') ||
+    lower.includes('nakukumbuka') ||
+    lower.includes('missyou')
+  ) {
+    return 'miss';
   }
+  if (
+    lower.includes('love u') ||
+    lower.includes('love you') ||
+    lower.includes('loveyou') ||
+    lower.includes('i love you') ||
+    lower.includes('i love u') ||
+    lower.includes('nakupenda')
+  ) {
+    return 'love';
+  }
+
+  // 2. Kiss
+  const kissSymbols = ['😘', '😚', '😽', '💋', '👄'];
+  if (
+    kissSymbols.some((k) => combined.includes(k)) ||
+    lower.includes('kiss') ||
+    lower.includes('chumma') ||
+    lower.includes('mutham') ||
+    lower.includes('ummah') ||
+    lower.includes('umma') ||
+    lower.includes('halik') ||
+    lower.includes('busu')
+  ) {
+    return 'kiss';
+  }
+
+  // 3. Hug
+  const hugSymbols = ['🫂', '🤗'];
+  if (
+    hugSymbols.some((h) => combined.includes(h)) ||
+    lower.includes('hug') ||
+    lower.includes('katti piditham') ||
+    lower.includes('kumbatia')
+  ) {
+    return 'hug';
+  }
+
+  // 4. Heart - Comprehensive matching across all mobile keyboards
+  const heartSymbols = [
+    '❤️', '💖', '💕', '💓', '💗', '🤍', '💚', '🧡', '💛', '💙', '💜', '🤎', '🖤', '🩷', '🩵', '🩶',
+    '❣️', '♥️', '💘', '💝', '🫶', '😍', '🥰', '💌', '<3',
+  ];
+
+  if (
+    heartSymbols.some((h) => combined.includes(h)) ||
+    lower.includes('heart') ||
+    lower.includes('hearts') ||
+    lower.includes('sneham') ||
+    lower.includes('ishtam') ||
+    lower.includes('karal') ||
+    lower.includes('chakkare') ||
+    lower.includes('muthe') ||
+    lower.includes('upendo') ||
+    lower.includes('moyo')
+  ) {
+    return 'heart';
+  }
+
   return null;
 }
 
@@ -96,27 +123,31 @@ export function ReactionOverlay({ reaction, onDone }) {
     triggerDeviceVibration(reaction.type);
 
     if (reaction.type === 'heart') {
-      const hearts = ['❤️', '💖', '💕', '💗', '💓', '🤍', '✨', '🥰'];
-      const items = Array.from({ length: 42 }).map((_, i) => ({
-        id: i,
-        char: hearts[Math.floor(Math.random() * hearts.length)],
-        left: `${Math.random() * 96 + 2}%`,
-        size: `${Math.random() * 20 + 20}px`,
-        duration: `${Math.random() * 1.8 + 2.2}s`,
-        delay: `${Math.random() * 1.2}s`,
-        drift: `${(Math.random() - 0.5) * 80}px`,
-      }));
+      const hearts = ['❤️', '💖', '💕', '💗', '💓', '🤍', '💚', '🩷', '✨', '🥰', '🫶'];
+      const items = Array.from({ length: 42 }).map((_, i) => {
+        const drift = (Math.random() - 0.5) * 70;
+        return {
+          id: i,
+          char: hearts[Math.floor(Math.random() * hearts.length)],
+          left: `${Math.random() * 92 + 4}%`,
+          size: `${Math.floor(Math.random() * 16 + 22)}px`,
+          duration: `${(Math.random() * 1.4 + 2.2).toFixed(2)}s`,
+          delay: `${(Math.random() * 1.1).toFixed(2)}s`,
+          drift: `${drift.toFixed(1)}px`,
+          midDrift: `${(drift * 0.35).toFixed(1)}px`,
+        };
+      });
       setParticles(items);
     } else if (reaction.type === 'kiss') {
-      const kisses = ['💋', '😘', '😚', '💖', '💋', '✨'];
+      const kisses = ['💋', '😘', '😚', '💖', '💋', '✨', '🌸'];
       const items = Array.from({ length: 26 }).map((_, i) => ({
         id: i,
         char: kisses[Math.floor(Math.random() * kisses.length)],
         left: `${Math.random() * 80 + 10}%`,
-        size: `${Math.random() * 24 + 24}px`,
-        duration: `${Math.random() * 1.4 + 1.8}s`,
-        delay: `${Math.random() * 0.8}s`,
-        angle: `${(Math.random() - 0.5) * 50}deg`,
+        size: `${Math.floor(Math.random() * 18 + 24)}px`,
+        duration: `${(Math.random() * 1.2 + 1.8).toFixed(2)}s`,
+        delay: `${(Math.random() * 0.7).toFixed(2)}s`,
+        angle: `${Math.floor((Math.random() - 0.5) * 50)}deg`,
       }));
       setParticles(items);
     }
@@ -149,7 +180,10 @@ export function ReactionOverlay({ reaction, onDone }) {
                 fontSize: p.size,
                 animationDuration: p.duration,
                 animationDelay: p.delay,
+                WebkitAnimationDuration: p.duration,
+                WebkitAnimationDelay: p.delay,
                 '--drift': p.drift,
+                '--mid-drift': p.midDrift,
               }}
             >
               {p.char}
@@ -175,6 +209,8 @@ export function ReactionOverlay({ reaction, onDone }) {
                 fontSize: p.size,
                 animationDuration: p.duration,
                 animationDelay: p.delay,
+                WebkitAnimationDuration: p.duration,
+                WebkitAnimationDelay: p.delay,
                 '--angle': p.angle,
               }}
             >

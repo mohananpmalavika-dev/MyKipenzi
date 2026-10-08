@@ -271,7 +271,8 @@ function Chat({ session, capabilities, onSession, onError }) {
     attempt = useRef(null),
     generation = useRef(0),
     messagesRef = useRef([]),
-    lastProcessedMsgRef = useRef(null);
+    lastProcessedMsgRef = useRef(null),
+    lastTriggeredMsgIdRef = useRef(null);
   const triggerReaction = useCallback((type) => {
     if (!type) return;
     setReaction({ type, id: Date.now() });
@@ -287,9 +288,13 @@ function Chat({ session, capabilities, onSession, onError }) {
     messagesRef.current = messages;
     if (messages.length) {
       const latest = messages.at(-1);
-      if (latest && lastProcessedMsgRef.current && lastProcessedMsgRef.current !== latest.id) {
-        if (latest.sender_id !== user.id) {
-          const detected = detectReaction(latest.text, latest.sticker);
+      if (latest && latest.sender_id !== user.id && latest.id !== lastTriggeredMsgIdRef.current) {
+        const isNewArrival = lastProcessedMsgRef.current && lastProcessedMsgRef.current !== latest.id;
+        const msgAgeMs = Date.now() - new Date(latest.created_at).getTime();
+        const isRecent = !Number.isNaN(msgAgeMs) && msgAgeMs < 45000;
+        if (isNewArrival || isRecent) {
+          lastTriggeredMsgIdRef.current = latest.id;
+          const detected = detectReaction(latest.text, latest.sticker, latest.translation?.text);
           if (detected) triggerReaction(detected);
         }
       }
@@ -566,11 +571,12 @@ function Chat({ session, capabilities, onSession, onError }) {
     ),
     callPeer = conversations.find((c) => c.id === call.call?.conversation_id)?.peer;
   return (
-    <div
-      className={`app-shell ${selected ? 'chat-open' : ''} ${vibrateScreen ? 'screen-vibrate' : ''} ${heartbeatScreen ? 'screen-heartbeat' : ''}`}
-    >
+    <>
       <ReactionOverlay reaction={reaction} onDone={() => setReaction(null)} />
-      <aside className="nav-rail">
+      <div
+        className={`app-shell ${selected ? 'chat-open' : ''} ${vibrateScreen ? 'screen-vibrate' : ''} ${heartbeatScreen ? 'screen-heartbeat' : ''}`}
+      >
+        <aside className="nav-rail">
         <div className="brand-mark">
           k<span>•</span>
         </div>
@@ -1086,7 +1092,8 @@ function Chat({ session, capabilities, onSession, onError }) {
         </Modal>
       )}
       <CallOverlay controller={call} user={user} peer={callPeer} />
-    </div>
+      </div>
+    </>
   );
 }
 export default function App() {
