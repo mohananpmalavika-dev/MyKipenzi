@@ -118,7 +118,9 @@ export function playSyncChime() {
       osc.start(now + idx * 0.05);
       osc.stop(now + idx * 0.05 + 0.65);
     });
-  } catch {}
+  } catch {
+    /* audio context error fallback */
+  }
 }
 
 /**
@@ -129,5 +131,7 @@ export function triggerHeartbeatHaptics(pattern = [60, 70, 80, 180]) {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       navigator.vibrate(pattern);
     }
-  } catch {}
+  } catch {
+    /* haptic vibration unsupported or blocked fallback */
+  }
 }

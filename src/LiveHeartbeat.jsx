@@ -32,7 +32,7 @@ export function LiveHeartbeatModal({
   socket,
   onClose,
   onSendToChat,
-  onError,
+  onError: _onError,
 }) {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
@@ -49,11 +49,9 @@ export function LiveHeartbeatModal({
   const [particles, setParticles] = useState([]);
   const [loveNote, setLoveNote] = useState('എന്റെ ഓരോ തുടിപ്പും നിനക്കായി 💓');
   const [showNoteComposer, setShowNoteComposer] = useState(false);
-  const [pulseCount, setPulseCount] = useState(0);
 
   const padRef = useRef(null);
   const ecgCanvasRef = useRef(null);
-  const ecgPointsRef = useRef([]);
   const ecgAnimRef = useRef(null);
   const ecgSpikeRef = useRef(0);
   const touchTapTimesRef = useRef([]);
@@ -122,7 +120,6 @@ export function LiveHeartbeatModal({
   // Trigger pulse effect (Sound, Vibration, Screen Aura, Ripple & ECG Spike)
   const triggerPulseEffect = useCallback(
     (normX, normY, source = 'local') => {
-      setPulseCount((c) => c + 1);
 
       // 1. Sound
       if (soundEnabled) {
@@ -155,7 +152,7 @@ export function LiveHeartbeatModal({
       ]);
 
       // 6. Spawn romantic glowing particles
-      const newParticles = Array.from({ length: 6 }).map((_, i) => ({
+      const newParticles = Array.from({ length: 6 }).map(() => ({
         id: Math.random().toString(36).substring(2, 9),
         x: normX * 100 + (Math.random() * 8 - 4),
         y: normY * 100 + (Math.random() * 8 - 4),
@@ -176,8 +173,10 @@ export function LiveHeartbeatModal({
       const dy = localTouchPos.y - partnerTouchPos.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      // If touches are close (< 0.2 screen fraction) or both holding
-      setTouchSynced(true);
+      // If touches are close (< 0.25 screen fraction) or both holding
+      if (distance < 0.25 || (isLocalTouching && isPartnerTouching)) {
+        setTouchSynced(true);
+      }
       const now = Date.now();
       if (now - lastSyncSoundRef.current > 1800) {
         lastSyncSoundRef.current = now;
@@ -362,7 +361,7 @@ export function LiveHeartbeatModal({
     setLocalTouchPos({ x, y });
   };
 
-  const handlePointerUp = (e) => {
+  const handlePointerUp = () => {
     setIsLocalTouching(false);
     clearInterval(holdIntervalRef.current);
 
@@ -635,7 +634,7 @@ export function LiveHeartbeatModal({
 /**
  * Interactive Message Card for chat when a heartbeat message is received
  */
-export function HeartbeatCard({ text, mine, onError }) {
+export function HeartbeatCard({ text }) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   // Extract BPM if present e.g. "💓 [Heartbeat Pulse · 78 BPM] message"
