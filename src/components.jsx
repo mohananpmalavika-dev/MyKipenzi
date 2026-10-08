@@ -137,7 +137,7 @@ export function Settings({ user, capabilities, onClose, onUser, onError }) {
     </div>
   );
   return (
-    <Modal title="Your settings" onClose={onClose}>
+    <Modal title="Sanctuary Settings" onClose={onClose}>
       <form onSubmit={save} className="settings-form">
         <div className="profile-row">
           <Avatar person={user} size="large" />
@@ -147,7 +147,7 @@ export function Settings({ user, capabilities, onClose, onUser, onError }) {
           </div>
         </div>
         <label>
-          Display name
+          Your name / nickname
           <input
             value={draft.name}
             maxLength={80}
@@ -168,7 +168,7 @@ export function Settings({ user, capabilities, onClose, onUser, onError }) {
             ))}
           </select>
           <small>
-            Their words, in the language that feels like home to you. You each choose your own.
+            Their words, in the language closest to your heart. You each pick your own.
           </small>
         </label>
         <label className="check-label">
@@ -178,10 +178,9 @@ export function Settings({ user, capabilities, onClose, onUser, onError }) {
             onChange={(e) => setDraft({ ...draft, ai_consent: e.target.checked })}
           />
           <span>
-            Allow AI translation and voice processing
+            Enable AI translation and voice reading
             <small>
-              You and your friend both choose whether to use this. Message text is sent to Google
-              Gemini and ElevenLabs when needed.
+              Bridges the distance between us. Text translates between Malayalam, Swahili, and English and reads aloud in natural neural voices.
             </small>
           </span>
         </label>
@@ -192,17 +191,16 @@ export function Settings({ user, capabilities, onClose, onUser, onError }) {
             onChange={(e) => setDraft({ ...draft, likeness_consent: e.target.checked })}
           />
           <span>
-            This is my own photo and voice
+            This is my own photo and real voice
             <small>
-              I consent to cloning my voice and animating my photo through ElevenLabs and D-ID. Save
-              before uploading a voice. Turning this off removes my cloned voice.
+              Clones your voice and animates your photo so your friend feels like you are right beside them.
             </small>
           </span>
         </label>
         <div className="settings-assets">
           <div>
-            <h3>Profile photo</h3>
-            <p>JPG or PNG · a clear, front-facing portrait</p>
+            <h3>Bestie’s view of you</h3>
+            <p>JPG or PNG · your favorite portrait</p>
             <label className="upload-btn">
               <Upload size={15} /> Upload photo
               <input
@@ -229,11 +227,11 @@ export function Settings({ user, capabilities, onClose, onUser, onError }) {
             )}
           </div>
           <div>
-            <h3>Your voice</h3>
+            <h3>Your voice clone</h3>
             <p>
               {user.has_voice
                 ? user.voice_verified
-                  ? 'Voice ready to use.'
+                  ? 'Your voice clone is ready to comfort your friend.'
                   : 'Provider verification required. Complete verification with ElevenLabs, then refresh its status.'
                 : 'Upload a clean 30–60 second recording of yourself. MP3, WAV, OGG, WebM.'}
             </p>
@@ -270,7 +268,7 @@ export function Settings({ user, capabilities, onClose, onUser, onError }) {
         </div>
         {voiceStatus}
         <button className="primary" disabled={busy}>
-          {busy ? <LoaderCircle className="spin" size={18} /> : 'Save settings'}
+          {busy ? <LoaderCircle className="spin" size={18} /> : 'Save sanctuary settings'}
         </button>
       </form>
     </Modal>
@@ -548,18 +546,21 @@ export function CallOverlay({ controller, user, peer }) {
         <span className="brand-mark">
           k<span>•</span>
         </span>
-        <span>Kipenzi call · {call.kind === 'audio' ? 'Voice' : 'Video'}</span>
+        <span>Calling my favorite human · {call.kind === 'audio' ? 'Voice' : 'Video'}</span>
       </div>
       <div className="call-stage">
         <MediaVideo stream={remote} className={`remote-video ${remoteVideo ? '' : 'audio-call'}`} />
         <div className={`call-info ${remoteVideo ? 'video-connected' : ''}`}>
           <Avatar person={peer} size="huge" />
-          <h2>{peer?.name || 'Your friend'}</h2>
+          <h2>{peer?.name || 'My ride-or-die'}</h2>
           <p>
-            {phase}
-            {phase === 'Connected'
-              ? ` · ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
-              : ''}
+            {incoming
+              ? 'Your bestie is calling! Pick up! 💖'
+              : phase === 'Connected'
+                ? `Hearing your voice fixes everything · ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+                : phase === 'Connecting'
+                  ? 'Connecting to my favorite person...'
+                  : phase}
           </p>
         </div>
         {local && <MediaVideo stream={local} muted className="local-video" />}
@@ -614,8 +615,8 @@ export function CallOverlay({ controller, user, peer }) {
       </div>
       <p className="call-footer">
         {sharing
-          ? 'Your screen is being shared.'
-          : 'Microphone and camera are shared only during this call.'}
+          ? 'Your screen is shared with your bestie.'
+          : 'Private & encrypted. Just the two of you against the world.'}
       </p>
     </div>
   );

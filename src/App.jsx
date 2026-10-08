@@ -26,6 +26,7 @@ import { api, setCsrf } from './api.js';
 import { Avatar, ButtonIcon, CallOverlay, Message, Modal, Settings } from './components.jsx';
 import { useCall } from './useCall.js';
 import { languages, stickers } from '../shared/constants.js';
+import { ReactionOverlay, detectReaction } from './ReactionOverlay.jsx';
 const mergeMessages = (old, next) =>
   Array.from(new Map([...old, ...next].map((m) => [m.id, m])).values()).sort(
     (a, b) => Number(a.seq) - Number(b.seq),
@@ -63,47 +64,46 @@ function Auth({ capabilities, onSession, onError }) {
         </div>
         <div className="story-content">
           <span className="eyebrow">
-            <span className="tiny-dot" /> A LITTLE SPACE TO FEEL CLOSE
+            <span className="tiny-dot" /> OUR PRIVATE SANCTUARY · JUST THE TWO OF US
           </span>
           <h1>
-            Some things
+            Through thick & thin,
             <br />
-            feel better
+            you’re my person.
             <br />
-            <em>when shared.</em>
+            <em>Always.</em>
           </h1>
           <p>
-            The little things that made you smile. The day that didn’t go so well. The thought you
-            wanted to tell them first. There’s room for all of it here.
+            Every late-night rant, every dumb inside joke, every tear and unfiltered truth that belongs only between us. There’s room for our entire world right here.
           </p>
           <div className="language-art" aria-hidden="true">
             <div className="art-orbit" />
             <div className="art-bubble malayalam">
-              You still up? <span>A little hello</span>
+              Enthokkeyundu vishesham? 🤍 <span>Always here for you</span>
             </div>
             <div className="art-bridge">
               <Globe2 size={28} />
-              <span>Here</span>
+              <span>Us 🫂</span>
             </div>
             <div className="art-bubble swahili">
-              I’m here. <span>Sometimes, that’s enough</span>
+              Niko hapa daima. 💫 <span>Never walk alone</span>
             </div>
             <div className="art-spark">✳</div>
           </div>
           <div className="story-features">
             <span>
-              <MessageCircle size={17} /> Share what’s on your mind
+              <MessageCircle size={17} /> Unfiltered midnight talks & secrets
             </span>
             <span>
-              <Video size={17} /> Hear a familiar voice
+              <Video size={17} /> Hearing your voice fixes everything
             </span>
             <span>
-              <Globe2 size={17} /> Say it your way
+              <Globe2 size={17} /> Our bond across every language
             </span>
           </div>
         </div>
         <div className="story-footer">
-          For the things you want to tell each other.<span>kipenzi</span>
+          A secret sanctuary built for two die-hard souls.<span>kipenzi</span>
         </div>
       </section>
       <section className="auth-panel">
@@ -111,12 +111,12 @@ function Auth({ capabilities, onSession, onError }) {
           <div className="welcome-icon">
             <MessageCircle size={25} />
           </div>
-          <span className="eyebrow dark">PICK UP WHERE YOU LEFT OFF</span>
-          <h2>{register ? 'Make yourself at home.' : 'Welcome back.'}</h2>
+          <span className="eyebrow dark">SAFE & SACRED BETWEEN US</span>
+          <h2>{register ? 'Let’s set up our private corner.' : 'Welcome back, my favorite human.'}</h2>
           <p>
             {register
-              ? 'A few details, then your first hello.'
-              : 'A story to tell? A little “I missed you”? Come on in.'}
+              ? 'A few quick details, then straight to your ride-or-die.'
+              : 'Got gossip? Missed me? A breakdown to share? Spill it all right here.'}
           </p>
           <form onSubmit={submit}>
             {register && (
@@ -126,7 +126,7 @@ function Auth({ capabilities, onSession, onError }) {
                   <input
                     name="name"
                     autoComplete="name"
-                    placeholder="What should we call you?"
+                    placeholder="What does your bestie call you?"
                     required
                     maxLength={80}
                   />
@@ -136,7 +136,7 @@ function Auth({ capabilities, onSession, onError }) {
                   <input
                     name="handle"
                     autoComplete="username"
-                    placeholder="e.g. dhanya"
+                    placeholder="e.g. bestie_nickname"
                     pattern="[a-z0-9_]{3,30}"
                     title="3–30 lowercase letters, digits or underscores"
                     required
@@ -160,7 +160,7 @@ function Auth({ capabilities, onSession, onError }) {
                 name="password"
                 type="password"
                 autoComplete={register ? 'new-password' : 'current-password'}
-                placeholder={register ? 'At least 12 characters' : 'Your password'}
+                placeholder={register ? 'At least 12 characters (keep our secrets safe)' : 'Your secret password'}
                 minLength={register ? 12 : undefined}
                 maxLength={128}
                 required
@@ -181,10 +181,9 @@ function Auth({ capabilities, onSession, onError }) {
                 <label className="check-label">
                   <input type="checkbox" name="ai_consent" />
                   <span>
-                    Enable AI translation and voice reading
+                    Enable AI translation and soulmate voice reading
                     <small>
-                      Text is processed by Google Gemini and ElevenLabs. You can change this
-                      anytime.
+                      Speak freely in Malayalam, Swahili, or English. Gemini & Edge-TTS will translate and speak in natural voices.
                     </small>
                   </span>
                 </label>
@@ -199,16 +198,16 @@ function Auth({ capabilities, onSession, onError }) {
               {busy ? (
                 <LoaderCircle size={19} className="spin" />
               ) : register ? (
-                'Create account'
+                'Open our sanctuary'
               ) : (
-                'Sign in'
+                'Step inside'
               )}
               {!busy && <ArrowRight size={18} />}
             </button>
           </form>
           {capabilities.registration && (
             <p className="auth-switch">
-              {register ? 'Already have an account?' : 'New around here?'}{' '}
+              {register ? 'Already have our sanctuary?' : 'Setting this up for the first time?'}{' '}
               <button
                 type="button"
                 onClick={() => {
@@ -216,15 +215,15 @@ function Auth({ capabilities, onSession, onError }) {
                   setError('');
                 }}
               >
-                {register ? 'Sign in' : 'Create an account'}
+                {register ? 'Step inside' : 'Create our sanctuary'}
               </button>
             </p>
           )}
           <div className="auth-note">
             <ShieldCheck size={18} />
             <span>
-              Your words deserve a little care.
-              <small>Translation and voice tools are always your choice.</small>
+              Strictly confidential between the two of us.
+              <small>Zero eavesdropping. Just pure love, real trust, and unfiltered honesty.</small>
             </span>
           </div>
         </div>
@@ -255,7 +254,10 @@ function Chat({ session, capabilities, onSession, onError }) {
     [tab, setTab] = useState('chats'),
     [calls, setCalls] = useState([]),
     [recording, setRecording] = useState(false),
-    [recordSeconds, setRecordSeconds] = useState(0);
+    [recordSeconds, setRecordSeconds] = useState(0),
+    [reaction, setReaction] = useState(null),
+    [vibrateScreen, setVibrateScreen] = useState(false),
+    [heartbeatScreen, setHeartbeatScreen] = useState(false);
   const selectedRef = useRef(null),
     bottom = useRef(null),
     scrollBox = useRef(null),
@@ -268,10 +270,32 @@ function Chat({ session, capabilities, onSession, onError }) {
     recordTimer = useRef(null),
     attempt = useRef(null),
     generation = useRef(0),
-    messagesRef = useRef([]);
+    messagesRef = useRef([]),
+    lastProcessedMsgRef = useRef(null);
+  const triggerReaction = useCallback((type) => {
+    if (!type) return;
+    setReaction({ type, id: Date.now() });
+    if (type === 'kiss' || type === 'hug') {
+      setVibrateScreen(true);
+      setTimeout(() => setVibrateScreen(false), 1400);
+    } else if (type === 'love' || type === 'miss') {
+      setHeartbeatScreen(true);
+      setTimeout(() => setHeartbeatScreen(false), 2400);
+    }
+  }, []);
   useEffect(() => {
     messagesRef.current = messages;
-  }, [messages]);
+    if (messages.length) {
+      const latest = messages.at(-1);
+      if (latest && lastProcessedMsgRef.current && lastProcessedMsgRef.current !== latest.id) {
+        if (latest.sender_id !== user.id) {
+          const detected = detectReaction(latest.text, latest.sticker);
+          if (detected) triggerReaction(detected);
+        }
+      }
+      if (latest) lastProcessedMsgRef.current = latest.id;
+    }
+  }, [messages, user.id, triggerReaction]);
   const call = useCall(socket, user, onError);
   const loadConversations = useCallback(async () => {
     setConversations(await api('/conversations'));
@@ -401,6 +425,7 @@ function Chat({ session, capabilities, onSession, onError }) {
     }
     selectedRef.current = cid;
     messagesRef.current = [];
+    lastProcessedMsgRef.current = null;
     setSelected(cid);
     setMessages([]);
     setFile(null);
@@ -445,6 +470,8 @@ function Chat({ session, capabilities, onSession, onError }) {
   const sendMessage = async (sticker) => {
     const cid = selectedRef.current;
     if (!cid || sending || (!draft.trim() && !file && !sticker)) return;
+    const detected = detectReaction(draft, sticker);
+    if (detected) triggerReaction(detected);
     setSending(true);
     try {
       let attachment = file?.attachment;
@@ -539,7 +566,10 @@ function Chat({ session, capabilities, onSession, onError }) {
     ),
     callPeer = conversations.find((c) => c.id === call.call?.conversation_id)?.peer;
   return (
-    <div className={`app-shell ${selected ? 'chat-open' : ''}`}>
+    <div
+      className={`app-shell ${selected ? 'chat-open' : ''} ${vibrateScreen ? 'screen-vibrate' : ''} ${heartbeatScreen ? 'screen-heartbeat' : ''}`}
+    >
+      <ReactionOverlay reaction={reaction} onDone={() => setReaction(null)} />
       <aside className="nav-rail">
         <div className="brand-mark">
           k<span>•</span>
@@ -579,14 +609,14 @@ function Chat({ session, capabilities, onSession, onError }) {
       <aside className="conversation-panel">
         <div className="panel-heading">
           <div>
-            <span className="eyebrow dark">THE PEOPLE YOU COME BACK TO</span>
+            <span className="eyebrow dark">MY FAVORITE HUMAN</span>
             <h1>
-              {tab === 'chats' ? 'Chats' : 'Calls'}
+              {tab === 'chats' ? 'Our Sanctuary' : 'Our Moments'}
               <span>{conversations.length.toString().padStart(2, '0')}</span>
             </h1>
           </div>
           <ButtonIcon
-            label="Say hello"
+            label="Connect with my ride-or-die"
             className="new-chat-btn"
             onClick={() => setShowContact(true)}
           >
@@ -596,17 +626,17 @@ function Chat({ session, capabilities, onSession, onError }) {
         <label className="search-box">
           <Search size={17} />
           <input
-            placeholder="Find your person or a chat"
-            aria-label="Find a person or chat"
+            placeholder="Search our memories or your person..."
+            aria-label="Search our memories or your person"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           <span>⌕</span>
         </label>
         <div className="list-label">
-          YOUR CHATS
+          OUR SAFE HAVEN
           <span className={connected ? 'connection-indicator online' : 'connection-indicator'}>
-            {connected ? 'Connected' : 'Reconnecting'}
+            {connected ? 'Close & connected' : 'Reconnecting...'}
           </span>
         </div>
         <div className="conversation-list">
@@ -636,7 +666,7 @@ function Chat({ session, capabilities, onSession, onError }) {
                       ? `${stickers[c.last_message.sticker]} Sticker`
                       : c.last_message?.attachment
                         ? 'Attachment'
-                        : 'Your first hello starts here.')}
+                        : 'Our first hello starts here. Say something! 🤍')}
                 </p>
                 <span className="contact-language">{languages[c.peer.language]}</span>
               </div>
@@ -648,12 +678,12 @@ function Chat({ session, capabilities, onSession, onError }) {
               <MessageCircle size={26} />
               <p>
                 {search
-                  ? 'No chats here by that name.'
-                  : 'Someone on your mind? Start with a hello.'}
+                  ? 'No memories or chats here by that name.'
+                  : 'Where’s your partner in crime? Start our private sanctuary with a hello.'}
               </p>
               {!search && (
                 <button className="text-btn" onClick={() => setShowContact(true)}>
-                  Say hello <ArrowRight size={14} />
+                  Say hello to my person <ArrowRight size={14} />
                 </button>
               )}
             </div>
@@ -664,8 +694,8 @@ function Chat({ session, capabilities, onSession, onError }) {
             <Globe2 size={20} />
           </div>
           <div>
-            <strong>Let the feeling come through.</strong>
-            <p>I’m reading in {languages[user.language]}</p>
+            <strong>Unbreakable bond, zero barriers.</strong>
+            <p>Reading in {languages[user.language]} · feels like home</p>
           </div>
           <ButtonIcon label="Change receive language" onClick={() => setShowSettings(true)}>
             <ChevronDown size={16} />
@@ -699,7 +729,7 @@ function Chat({ session, capabilities, onSession, onError }) {
               <Avatar person={chosen.peer} />
               <div className="chat-title">
                 <h2>{chosen.peer.name}</h2>
-                <p>A little space for the two of us.</p>
+                <p>My person · Ride or die forever 🤍</p>
               </div>
               <div className="header-actions">
                 <ButtonIcon
@@ -726,10 +756,10 @@ function Chat({ session, capabilities, onSession, onError }) {
               <Globe2 size={15} />
               <span>
                 {user.ai_consent && capabilities.translation
-                  ? `${chosen.peer.name}’s words, in ${languages[user.language]}. Translation works when you both turn it on.`
+                  ? `${chosen.peer.name}’s words, flowing right to you in ${languages[user.language]}. Speaking straight from the heart.`
                   : capabilities.translation
-                    ? 'Say it your way. You can both turn on translation in settings.'
-                    : 'Say it your way. Translation will be here once setup is complete.'}
+                    ? 'Speak freely. You can both turn on translation in chat settings.'
+                    : 'Translation will be ready once setup is complete.'}
               </span>
               <button type="button" onClick={() => setShowSettings(true)}>
                 Settings
@@ -737,8 +767,8 @@ function Chat({ session, capabilities, onSession, onError }) {
             </div>
             {tab === 'calls' ? (
               <div className="history">
-                <h2>Call history</h2>
-                <p>The times you stopped to hear each other.</p>
+                <h2>Our Moments Together</h2>
+                <p>Every late-night call, every laugh shared across the miles.</p>
                 {calls.map((c) => (
                   <div key={c.id} className="history-row">
                     {c.kind === 'video' ? <Video size={20} /> : <Phone size={20} />}
@@ -754,10 +784,10 @@ function Chat({ session, capabilities, onSession, onError }) {
                   </div>
                 ))}
                 {!calls.length && (
-                  <p className="muted">No calls yet. Start one using the buttons above.</p>
+                  <p className="muted">No calls yet. Pick up the phone and hear their voice!</p>
                 )}
                 <button className="secondary" onClick={() => setTab('chats')}>
-                  Return to messages
+                  Return to our chat
                 </button>
               </div>
             ) : (
@@ -794,16 +824,16 @@ function Chat({ session, capabilities, onSession, onError }) {
                             }
                           }}
                         >
-                          Earlier in your story
+                          Scroll back through our memories ✨
                         </button>
                       )}
                       <div className="conversation-start">
                         <span>
-                          <ShieldCheck size={14} /> A little space for the two of us
+                          <ShieldCheck size={14} /> Our Private Sanctuary · Just the two of us
                         </span>
                         <p>
-                          A quick hello to {chosen.peer.name}. Or the thing that’s been on your
-                          mind.
+                          No filters, no secrets, no judgments. Just you and me against the whole
+                          world. Tell me everything.
                         </p>
                       </div>
                       {messages.map((m, i) => (
@@ -836,7 +866,7 @@ function Chat({ session, capabilities, onSession, onError }) {
                           <i />
                           <i />
                           <i />
-                          <span>{chosen.peer.name} is typing</span>
+                          <span>{chosen.peer.name} is typing something sweet...</span>
                         </div>
                       )}
                       <div ref={bottom} />
@@ -918,7 +948,7 @@ function Chat({ session, capabilities, onSession, onError }) {
                     ) : (
                       <textarea
                         aria-label="Message"
-                        placeholder="Something on your mind?"
+                        placeholder="Spill the tea... or just say you miss me 💬"
                         rows={1}
                         value={draft}
                         disabled={sending}
@@ -967,7 +997,7 @@ function Chat({ session, capabilities, onSession, onError }) {
                         ))}
                       </select>
                     </label>
-                    <span>Enter to send · Shift + Enter for a new line</span>
+                    <span>Press Enter to send some love · Shift + Enter for a new line</span>
                   </div>
                 </footer>
               </>
@@ -975,36 +1005,36 @@ function Chat({ session, capabilities, onSession, onError }) {
           </>
         ) : (
           <div className="chat-welcome">
-            <span className="eyebrow dark">FOR THE THINGS YOU WANT TO SHARE</span>
+            <span className="eyebrow dark">OUR SACRED CORNER</span>
             <div className="welcome-art">
               <span className="welcome-ring" />
               <MessageCircle size={72} strokeWidth={1.15} />
-              <span className="welcome-tag first">How was your day?</span>
-              <span className="welcome-tag second">I missed this.</span>
-              <span className="welcome-tag third">Tell me everything.</span>
+              <span className="welcome-tag first">I missed your face! 🥺</span>
+              <span className="welcome-tag second">Spill the tea right now! ☕</span>
+              <span className="welcome-tag third">Through thick & thin, always. 🤍</span>
             </div>
             <h2>
-              A little closer,
+              Two souls,
               <br />
-              <em>one message at a time.</em>
+              one unbreakable bond.
+              <br />
+              <em>Never apart.</em>
             </h2>
             <p>
-              Some days need a laugh. Some days need someone who’ll listen.
-              <br />
-              Open your chat. Bring your day with you.
+              Whether it’s a random midnight meme, a breakdown that needs comfort, or a silly victory to celebrate — this space is ours.
             </p>
             <button className="primary compact" onClick={() => setShowContact(true)}>
-              <Plus size={18} /> Say hello
+              <Plus size={18} /> Reach out to my person
             </button>
             <div className="welcome-details">
               <span>
-                <Video size={16} /> A familiar voice
+                <Video size={16} /> Hear the voice that makes everything okay
               </span>
               <span>
-                <Globe2 size={16} /> Words that feel like you
+                <Globe2 size={16} /> Raw feelings, zero filter
               </span>
               <span>
-                <Paperclip size={16} /> Little moments, shared
+                <Paperclip size={16} /> Little moments that belong only to us
               </span>
             </div>
             {(!capabilities.translation || !capabilities.avatar) && (
@@ -1026,17 +1056,17 @@ function Chat({ session, capabilities, onSession, onError }) {
         />
       )}{' '}
       {showContact && (
-        <Modal title="Someone on your mind?" onClose={() => setShowContact(false)}>
+        <Modal title="Connect with your ride-or-die" onClose={() => setShowContact(false)}>
           <p className="modal-description">
-            A first hello, or a chat you’ve been meaning to have. Enter their handle below. Yours is{' '}
+            Ready to bring your favorite human in? Enter their handle below so you can share your world together. Yours is{' '}
             <strong>@{user.handle}</strong>, if you’d like to share it with them.
           </p>
           <form className="contact-form" onSubmit={addContact}>
             <label>
-              Friend’s handle
+              Bestie’s handle
               <input
                 name="handle"
-                placeholder="@your_friend"
+                placeholder="@my_ride_or_die"
                 required
                 autoFocus
                 minLength={3}
@@ -1049,7 +1079,7 @@ function Chat({ session, capabilities, onSession, onError }) {
               </p>
             )}
             <button className="primary" disabled={contactBusy}>
-              {contactBusy ? <LoaderCircle className="spin" size={18} /> : 'Open our chat'}
+              {contactBusy ? <LoaderCircle className="spin" size={18} /> : 'Open our sanctuary'}
               <ArrowRight size={17} />
             </button>
           </form>

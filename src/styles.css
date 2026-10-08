@@ -1191,8 +1191,11 @@ small {
   position: absolute;
   bottom: 105px;
   left: 30px;
-  max-width: 310px;
+  max-width: 320px;
+  max-height: 250px;
+  overflow-y: auto;
   box-shadow: 0 8px 30px #26402110;
+  scrollbar-width: thin;
 }
 .sticker-picker button {
   font-size: 32px;
@@ -1861,6 +1864,295 @@ small {
     padding: 28px 24px 25px;
   }
 }
+
+/* Screen Vibrate & Reaction FX */
+.screen-vibrate {
+  animation: screenVibrate 0.65s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite !important;
+}
+
+.screen-heartbeat {
+  animation: screenHeartbeat 1.6s ease-in-out infinite !important;
+}
+
+@keyframes screenVibrate {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-4px, -3px) rotate(-0.5deg); }
+  20% { transform: translate(4px, 3px) rotate(0.5deg); }
+  30% { transform: translate(-5px, 2px) rotate(-0.4deg); }
+  40% { transform: translate(5px, -2px) rotate(0.4deg); }
+  50% { transform: translate(-3px, 4px) rotate(-0.3deg); }
+  60% { transform: translate(4px, -3px) rotate(0.3deg); }
+  70% { transform: translate(-3px, -2px) rotate(-0.2deg); }
+  80% { transform: translate(3px, 2px) rotate(0.2deg); }
+  90% { transform: translate(-2px, 1px) rotate(0deg); }
+}
+
+@keyframes screenHeartbeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.018); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.025); }
+  70% { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+.reaction-stage {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: opacity 0.4s ease;
+}
+
+.reaction-stage.reaction-heart {
+  background: radial-gradient(circle at center, rgba(255, 182, 193, 0.18) 0%, transparent 75%);
+}
+
+.reaction-stage.reaction-kiss {
+  background: radial-gradient(circle at center, rgba(255, 105, 180, 0.22) 0%, transparent 75%);
+}
+
+.reaction-stage.reaction-hug {
+  background: radial-gradient(circle at center, rgba(255, 215, 0, 0.18) 0%, rgba(255, 182, 193, 0.12) 40%, transparent 80%);
+}
+
+.reaction-stage.reaction-love {
+  background: radial-gradient(circle at center, rgba(230, 57, 70, 0.22) 0%, rgba(247, 143, 167, 0.15) 50%, transparent 85%);
+}
+
+.reaction-stage.reaction-miss {
+  background: radial-gradient(circle at center, rgba(162, 155, 254, 0.25) 0%, rgba(224, 86, 157, 0.15) 50%, transparent 85%);
+}
+
+.heart-rain-container,
+.kiss-burst-container,
+.hug-burst-container,
+.soulmate-impact-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.falling-heart {
+  position: absolute;
+  top: -60px;
+  user-select: none;
+  animation: heartFall linear forwards;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 4px 10px rgba(255, 75, 110, 0.35));
+}
+
+@keyframes heartFall {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(0.6);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(60px) translateX(calc(var(--drift) * 0.2)) rotate(15deg) scale(1.1);
+  }
+  85% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(105vh) translateX(var(--drift)) rotate(60deg) scale(0.85);
+    opacity: 0;
+  }
+}
+
+.floating-kiss {
+  position: absolute;
+  bottom: 40px;
+  user-select: none;
+  animation: kissFly ease-out forwards;
+  filter: drop-shadow(0 4px 12px rgba(230, 57, 70, 0.4));
+}
+
+@keyframes kissFly {
+  0% {
+    transform: translateY(40px) scale(0.3) rotate(0deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0px) scale(1.2) rotate(var(--angle));
+  }
+  100% {
+    transform: translateY(-92vh) scale(1.5) rotate(calc(var(--angle) * 2));
+    opacity: 0;
+  }
+}
+
+.kiss-center-pulse,
+.hug-center-wrap,
+.soulmate-heartbeat {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kiss-main-icon {
+  font-size: 80px;
+  animation: kissPulse 1.2s ease-in-out infinite;
+  filter: drop-shadow(0 10px 30px rgba(230, 57, 70, 0.5));
+}
+
+@keyframes kissPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3) rotate(-10deg); }
+}
+
+.kiss-ripple {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 105, 180, 0.6);
+  animation: rippleExpand 1.6s ease-out infinite;
+}
+
+.kiss-ripple.delay {
+  animation-delay: 0.8s;
+}
+
+@keyframes rippleExpand {
+  0% { transform: scale(0.6); opacity: 1; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+
+.hug-main-icon {
+  font-size: 88px;
+  animation: hugPulseIcon 1.5s ease-in-out infinite;
+  filter: drop-shadow(0 10px 35px rgba(245, 158, 11, 0.45));
+}
+
+@keyframes hugPulseIcon {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.hug-aura {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 193, 7, 0.5);
+  animation: hugAuraExpand 2.2s cubic-bezier(0.1, 0.7, 0.1, 1) infinite;
+}
+
+.hug-aura.ring-1 { width: 140px; height: 140px; animation-delay: 0s; }
+.hug-aura.ring-2 { width: 180px; height: 180px; animation-delay: 0.6s; border-color: rgba(255, 138, 101, 0.45); }
+.hug-aura.ring-3 { width: 220px; height: 220px; animation-delay: 1.2s; border-color: rgba(255, 182, 193, 0.35); }
+
+@keyframes hugAuraExpand {
+  0% { transform: scale(0.5); opacity: 0.9; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+.soulmate-main-icon {
+  font-size: 92px;
+  animation: soulmateBeat 1.4s ease-in-out infinite;
+  filter: drop-shadow(0 12px 40px rgba(225, 29, 72, 0.55));
+}
+
+@keyframes soulmateBeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.28); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.35); }
+  75% { transform: scale(1); }
+}
+
+.heartbeat-aura {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.35) 0%, transparent 70%);
+  animation: auraPulse 1.4s ease-in-out infinite;
+}
+
+.heartbeat-aura.soft {
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.35) 0%, transparent 70%);
+}
+
+@keyframes auraPulse {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  45% { transform: scale(2.2); opacity: 0.8; }
+}
+
+.reaction-badge {
+  position: absolute;
+  bottom: 120px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 16px 28px;
+  border-radius: 36px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  animation: badgePop 3.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+}
+
+.reaction-badge .badge-title {
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #17483e;
+}
+
+.reaction-badge .badge-subtitle {
+  font-size: 13px;
+  color: #5c7753;
+  font-weight: 500;
+}
+
+.reaction-badge.warm .badge-title {
+  color: #b45309;
+}
+.reaction-badge.warm .badge-subtitle {
+  color: #92400e;
+}
+
+.reaction-badge.emotional .badge-title {
+  color: #be123c;
+}
+.reaction-badge.emotional .badge-subtitle {
+  color: #881337;
+}
+
+@keyframes badgePop {
+  0% {
+    opacity: 0;
+    transform: scale(0.65) translateY(40px);
+  }
+  14% {
+    opacity: 1;
+    transform: scale(1.06) translateY(0);
+  }
+  22% {
+    transform: scale(1);
+  }
+  82% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9) translateY(-30px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1870,3 +2162,4 @@ small {
     transition: none !important;
   }
 }
+
