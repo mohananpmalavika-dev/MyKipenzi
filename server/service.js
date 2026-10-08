@@ -98,6 +98,12 @@ export async function sendMessage(user, input, conversationId) {
       conversation_id: conversationId,
       message_id: m.id,
     });
+    const recipients = (await c.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [conversationId, user.id])).rows;
+    await enqueue(c, 'event', {
+      users: recipients.map(row => row.user_id),
+      event: 'message:arrived',
+      data: { conversation_id: conversationId, message_id: m.id, sender_id: user.id },
+    });
     return m;
   });
 }

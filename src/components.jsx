@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   X,
   Upload,
@@ -18,6 +18,13 @@ import {
   Play,
   Pause,
   Sparkles,
+  Image as ImageIcon,
+  Plus,
+  Trash2,
+  Scissors,
+  Type,
+  Palette,
+  RotateCcw,
 } from 'lucide-react';
 import { api, fileBlob, downloadFile } from './api.js';
 import { languages, stickers } from '../shared/constants.js';
@@ -90,7 +97,7 @@ export function Modal({ title, onClose, children, wide = false }) {
     </dialog>
   );
 }
-export function Settings({ user, capabilities, onClose, onUser, onError }) {
+export function Settings({ user, capabilities, onClose, onUser, onError, messageAlerts }) {
   const [draft, setDraft] = useState({
       name: user.name,
       language: user.language,
@@ -144,6 +151,7 @@ export function Settings({ user, capabilities, onClose, onUser, onError }) {
   return (
     <Modal title="Sanctuary Settings" onClose={onClose}>
       <form onSubmit={save} className="settings-form">
+        {messageAlerts}
         <div className="profile-row">
           <Avatar person={user} size="large" />
           <div>
@@ -323,6 +331,24 @@ function Attachment({ attachment, onError }) {
       if (url) URL.revokeObjectURL(url);
     };
   }, [attachment.id, attachment.mime, audio, onError]);
+  const isCustomSticker =
+    attachment.name?.startsWith('sticker-') ||
+    (attachment.mime?.startsWith('image/') && attachment.name?.toLowerCase().includes('sticker'));
+
+  if (isCustomSticker) {
+    return (
+      <div className="custom-sticker-attachment">
+        {preview ? (
+          <img className="custom-sticker-img" src={preview} alt="Custom sticker" />
+        ) : (
+          <div className="custom-sticker-loading">
+            <LoaderCircle size={20} className="spin" />
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="attachment">
       {preview &&
@@ -346,8 +372,7 @@ function Attachment({ attachment, onError }) {
   );
 }
 export function Message({ message, mine, peerRead, user, capabilities, onError }) {
-  const [original, setOriginal] = useState(false),
-    [job, setJob] = useState(null),
+  const [job, setJob] = useState(null),
     [media, setMedia] = useState(null),
     [busy, setBusy] = useState(false),
     [ownVoice, setOwnVoice] = useState(false);
@@ -407,7 +432,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
       onError('This browser does not support voice reading.');
       return;
     }
-    const readingTranslation = translated && !original;
+    const readingTranslation = translated;
     const utterance = new SpeechSynthesisUtterance(
       readingTranslation ? message.translation.text : message.text,
     );
@@ -433,7 +458,16 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
           </div>
         )}
         {message.attachment && <Attachment attachment={message.attachment} onError={onError} />}
-        <p dir="auto">{translated && !original ? message.translation.text : message.text}</p>
+        <p dir="auto">{translated ? message.translation.text : message.text}</p>
+        {translated && (
+          <>
+            <small className="translation-label">{languages[message.translation.language || user.language]}</small>
+            <div className="sender-original">
+              <small>Sender sent{languages[message.source_language] ? ` · ${languages[message.source_language]}` : ''}</small>
+              <p dir="auto">{message.text}</p>
+            </div>
+          </>
+        )}
         {mine && message.text && message.receiver_translation && (
           <div className="receiver-preview" aria-live="polite">
             <small>Receiver sees · {languages[message.receiver_translation.language]}</small>
@@ -447,15 +481,6 @@ export function Message({ message, mine, peerRead, user, capabilities, onError }
               </small>
             )}
           </div>
-        )}
-        {translated && (
-          <button
-            type="button"
-            className="translation-label"
-            onClick={() => setOriginal(!original)}
-          >
-            {original ? 'Show translation' : `${languages[user.language]} · Show original`}
-          </button>
         )}
         {!mine && message.translation?.status === 'pending' && (
           <small className="translation-label">Translating… · Original shown</small>
@@ -887,5 +912,436 @@ export function CallOverlay({ controller, user, peer }) {
           : 'Private & encrypted. Just the two of you against the world.'}
       </p>
     </div>
+  );
+}
+
+export function StickerCreatorModal({ onClose, onSendSticker, onSaveToLibrary, onError }) {
+  const [imageSrc, setImageSrc] = useState(null);
+  const [shape, setShape] = useState('circle');
+  const [borderWidth, setBorderWidth] = useState(8);
+  const [borderColor, setBorderColor] = useState('#ffffff');
+  const [caption, setCaption] = useState('');
+  const [captionPos, setCaptionPos] = useState('bottom');
+  const [filter, setFilter] = useState('none');
+  const [scale, setScale] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const panStartRef = useRef({ x: 0, y: 0 });
+  const canvasRef = useRef(null);
+  const imgRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const handleFile = useCallback(
+    (file) => {
+      if (!file || !file.type.startsWith('image/')) {
+        onError?.('Please choose an image file (PNG, JPG, WebP).');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          imgRef.current = img;
+          setImageSrc(e.target.result);
+          setScale(1);
+          setPan({ x: 0, y: 0 });
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+    [onError],
+  );
+
+  useEffect(() => {
+    const handlePaste = (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          handleFile(item.getAsFile());
+          break;
+        }
+      }
+    };
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [handleFile]);
+
+  const renderSticker = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !imgRef.current) return;
+    const ctx = canvas.getContext('2d');
+    const size = 320;
+    canvas.width = size;
+    canvas.height = size;
+    ctx.clearRect(0, 0, size, size);
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const radius = size * 0.42;
+
+    ctx.save();
+    ctx.beginPath();
+    if (shape === 'circle') {
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    } else if (shape === 'rounded') {
+      const w = radius * 1.85;
+      const h = radius * 1.85;
+      ctx.roundRect(cx - w / 2, cy - h / 2, w, h, 32);
+    } else if (shape === 'heart') {
+      const s = radius * 0.038;
+      ctx.moveTo(cx, cy - 25 * s);
+      ctx.bezierCurveTo(cx - 30 * s, cy - 60 * s, cx - 60 * s, cy - 20 * s, cx, cy + 50 * s);
+      ctx.bezierCurveTo(cx + 60 * s, cy - 20 * s, cx + 30 * s, cy - 60 * s, cx, cy - 25 * s);
+    } else if (shape === 'star') {
+      const spikes = 5;
+      const outerRadius = radius;
+      const innerRadius = radius * 0.55;
+      let rot = (Math.PI / 2) * 3;
+      let x = cx;
+      let y = cy;
+      const step = Math.PI / spikes;
+      ctx.moveTo(cx, cy - outerRadius);
+      for (let i = 0; i < spikes; i++) {
+        x = cx + Math.cos(rot) * outerRadius;
+        y = cy + Math.sin(rot) * outerRadius;
+        ctx.lineTo(x, y);
+        rot += step;
+        x = cx + Math.cos(rot) * innerRadius;
+        y = cy + Math.sin(rot) * innerRadius;
+        ctx.lineTo(x, y);
+        rot += step;
+      }
+      ctx.lineTo(cx, cy - outerRadius);
+      ctx.closePath();
+    } else {
+      const w = radius * 1.95;
+      const h = radius * 1.95;
+      ctx.roundRect(cx - w / 2, cy - h / 2, w, h, 20);
+    }
+
+    if (borderWidth > 0) {
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetY = 6;
+      ctx.lineWidth = borderWidth * 2;
+      ctx.strokeStyle = borderColor;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    ctx.clip();
+
+    if (filter === 'vibrant') ctx.filter = 'saturate(1.5) contrast(1.15)';
+    else if (filter === 'warm') ctx.filter = 'sepia(0.25) saturate(1.3) hue-rotate(-10deg)';
+    else if (filter === 'noir') ctx.filter = 'grayscale(1) contrast(1.2)';
+    else ctx.filter = 'none';
+
+    const img = imgRef.current;
+    const aspect = img.width / img.height;
+    let dw = size * scale;
+    let dh = (size / aspect) * scale;
+    if (aspect < 1) {
+      dh = size * scale;
+      dw = size * aspect * scale;
+    }
+    const dx = cx - dw / 2 + pan.x;
+    const dy = cy - dh / 2 + pan.y;
+    ctx.drawImage(img, dx, dy, dw, dh);
+    ctx.restore();
+
+    if (caption.trim()) {
+      ctx.save();
+      const textY = captionPos === 'top' ? cy - radius * 0.65 : cy + radius * 0.72;
+      ctx.font = 'bold 20px "DM Sans", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const metrics = ctx.measureText(caption);
+      const bgW = metrics.width + 22;
+      const bgH = 32;
+      ctx.fillStyle = 'rgba(23, 72, 62, 0.9)';
+      ctx.beginPath();
+      ctx.roundRect(cx - bgW / 2, textY - bgH / 2, bgW, bgH, 12);
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(caption, cx, textY);
+      ctx.restore();
+    }
+  }, [shape, borderWidth, borderColor, caption, captionPos, filter, scale, pan]);
+
+  useEffect(() => {
+    renderSticker();
+  }, [renderSticker]);
+
+  const handleMouseDown = (e) => {
+    if (!imageSrc) return;
+    setIsDragging(true);
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    panStartRef.current = { ...pan };
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+    setPan({
+      x: panStartRef.current.x + dx,
+      y: panStartRef.current.y + dy,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleSend = () => {
+    const canvas = canvasRef.current;
+    if (!canvas || !imageSrc) return;
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const dataUrl = canvas.toDataURL('image/png');
+      onSendSticker(blob, dataUrl);
+      onClose();
+    }, 'image/png');
+  };
+
+  const handleSave = () => {
+    const canvas = canvasRef.current;
+    if (!canvas || !imageSrc) return;
+    const dataUrl = canvas.toDataURL('image/png');
+    onSaveToLibrary(dataUrl);
+  };
+
+  const quickCaptions = ['Missing You ❤️', 'Habibi ✨', 'Polichu 🔥', 'Nakupenda 💚', 'Uff 🤩', 'Bestie 🤝'];
+
+  return (
+    <Modal title="Sticker Studio 🎨" onClose={onClose} wide>
+      <div className="sticker-studio">
+        <div className="sticker-studio-canvas-col">
+          <div
+            className={`sticker-canvas-stage ${imageSrc ? 'has-image' : ''}`}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            {imageSrc ? (
+              <canvas ref={canvasRef} className="sticker-canvas" />
+            ) : (
+              <div
+                className="sticker-upload-empty"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <div className="empty-icon-wrap">
+                  <ImageIcon size={38} />
+                </div>
+                <strong>Drop a photo or click to browse</strong>
+                <p>JPG, PNG, WebP or paste from clipboard (Ctrl+V)</p>
+                <button type="button" className="upload-select-btn">
+                  <Upload size={14} /> Select Photo
+                </button>
+              </div>
+            )}
+          </div>
+
+          {imageSrc && (
+            <div className="canvas-adjustments">
+              <div className="zoom-control">
+                <span>Zoom</span>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2.5"
+                  step="0.05"
+                  value={scale}
+                  onChange={(e) => setScale(Number(e.target.value))}
+                />
+                <small>{Math.round(scale * 100)}%</small>
+              </div>
+              <button
+                type="button"
+                className="reset-btn"
+                title="Reset position"
+                onClick={() => {
+                  setScale(1);
+                  setPan({ x: 0, y: 0 });
+                }}
+              >
+                <RotateCcw size={13} /> Reset
+              </button>
+              <button
+                type="button"
+                className="change-photo-btn"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Change Photo
+              </button>
+            </div>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              if (e.target.files?.[0]) handleFile(e.target.files[0]);
+              e.target.value = '';
+            }}
+          />
+        </div>
+
+        <div className="sticker-studio-controls-col">
+          <div className="control-section">
+            <label className="section-label">
+              <Scissors size={14} /> Cutout Shape
+            </label>
+            <div className="shape-options">
+              {[
+                { id: 'circle', label: 'Circle', icon: '🔵' },
+                { id: 'rounded', label: 'Squircle', icon: '⬛' },
+                { id: 'heart', label: 'Heart', icon: '💖' },
+                { id: 'star', label: 'Star', icon: '⭐' },
+                { id: 'original', label: 'Card', icon: '🖼️' },
+              ].map((s) => (
+                <button
+                  type="button"
+                  key={s.id}
+                  className={`shape-btn ${shape === s.id ? 'active' : ''}`}
+                  onClick={() => setShape(s.id)}
+                >
+                  <span className="shape-icon">{s.icon}</span>
+                  <span>{s.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="control-section">
+            <label className="section-label">
+              <Palette size={14} /> Sticker Border Outline
+            </label>
+            <div className="border-controls">
+              <div className="border-width-pills">
+                {[
+                  { w: 0, label: 'None' },
+                  { w: 5, label: 'Thin' },
+                  { w: 8, label: 'Medium' },
+                  { w: 14, label: 'Thick' },
+                ].map((b) => (
+                  <button
+                    type="button"
+                    key={b.w}
+                    className={`width-pill ${borderWidth === b.w ? 'active' : ''}`}
+                    onClick={() => setBorderWidth(b.w)}
+                  >
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+              {borderWidth > 0 && (
+                <div className="color-palette">
+                  {['#ffffff', '#ffeaa7', '#ff7675', '#55efc4', '#74b9ff', '#17483e'].map((c) => (
+                    <button
+                      type="button"
+                      key={c}
+                      className={`color-dot ${borderColor === c ? 'active' : ''}`}
+                      style={{ backgroundColor: c }}
+                      onClick={() => setBorderColor(c)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="control-section">
+            <label className="section-label">
+              <Type size={14} /> Caption & Stamp
+            </label>
+            <div className="caption-input-row">
+              <input
+                type="text"
+                placeholder="Add text (e.g. Love You, Uff, Habibi)..."
+                maxLength={30}
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                className="sticker-caption-input"
+              />
+              {caption && (
+                <button
+                  type="button"
+                  className="pos-toggle"
+                  onClick={() => setCaptionPos(captionPos === 'top' ? 'bottom' : 'top')}
+                >
+                  {captionPos === 'top' ? 'Top' : 'Bottom'}
+                </button>
+              )}
+            </div>
+            <div className="quick-tags">
+              {quickCaptions.map((q) => (
+                <button
+                  type="button"
+                  key={q}
+                  className="quick-tag-chip"
+                  onClick={() => setCaption(q)}
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="control-section">
+            <label className="section-label">Filters</label>
+            <div className="filter-chips">
+              {[
+                { id: 'none', label: 'Original' },
+                { id: 'vibrant', label: 'Vibrant' },
+                { id: 'warm', label: 'Warm' },
+                { id: 'noir', label: 'B&W' },
+              ].map((f) => (
+                <button
+                  type="button"
+                  key={f.id}
+                  className={`filter-chip ${filter === f.id ? 'active' : ''}`}
+                  onClick={() => setFilter(f.id)}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="sticker-actions-footer">
+            <button
+              type="button"
+              className="save-library-btn"
+              disabled={!imageSrc}
+              onClick={handleSave}
+            >
+              <Plus size={14} /> Save to My Stickers
+            </button>
+            <button
+              type="button"
+              className="send-sticker-btn"
+              disabled={!imageSrc}
+              onClick={handleSend}
+            >
+              <Sparkles size={15} /> Send as Sticker
+            </button>
+          </div>
+        </div>
+      </div>
+    </Modal>
   );
 }

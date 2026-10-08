@@ -120,6 +120,20 @@ test('API integration against an isolated PostgreSQL schema', async (t) => {
         400,
       );
     });
+    await t.test('message alert previews are private, translated, and only queued once for recipients', async () => {
+      assert.equal((await request(`/messages/${message.id}`, undefined, eve)).status, 404);
+      assert.equal((await request(`/messages/${message.id}`)).status, 401);
+      await db.query('UPDATE users SET language=$2 WHERE id=$1', [bob.user.id, 'ml']);
+      await db.query("INSERT INTO translations(message_id,language,status,text) VALUES($1,'ml','ready','സുഖമാണോ?') ON CONFLICT(message_id,language) DO UPDATE SET status='ready',text=EXCLUDED.text", [message.id]);
+      const preview = await request(`/messages/${message.id}`, undefined, bob);
+      assert.equal(preview.status, 200);
+      assert.equal(preview.data.translation.text, 'സുഖമാണോ?');
+      assert.equal(preview.data.sender.id, alice.user.id);
+      const events = await db.query("SELECT payload FROM outbox WHERE kind='event' AND payload->>'event'='message:arrived' AND payload->'data'->>'message_id'=$1", [message.id]);
+      assert.equal(events.rows.length, 1);
+      assert.deepEqual(events.rows[0].payload.users, [bob.user.id]);
+      await db.query('UPDATE users SET language=$2 WHERE id=$1', [bob.user.id, bob.user.language]);
+    });
     await t.test('read receipts are monotonic and require a real conversation cursor', async () => {
       assert.equal(
         (await request(`/conversations/${conversation}/read`, { seq: Number(message.seq) }, bob))

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { languages, stickers } from './constants.js';
-export { languages, stickers };
+import { languages, stickers, stickerCategories } from './constants.js';
+export { languages, stickers, stickerCategories };
 export const id = z.string().uuid();
 export const language = z.enum(['en', 'ml', 'manglish', 'sw']);
 export const registration = z.object({

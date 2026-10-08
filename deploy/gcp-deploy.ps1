@@ -25,7 +25,7 @@ Write-Host "✅ Image pushed successfully" -ForegroundColor Green
 
 # 2. Pull on GCP VM and restart services
 Write-Host "`n[2/3] Updating containers on GCP VM..." -ForegroundColor Yellow
-$remoteCommand = "sudo docker pull $ImageTag && cd /opt/kipenzi && sudo docker compose up -d"
+$remoteCommand = "sudo docker pull $ImageTag && cd /opt/kipenzi && sudo docker container prune -f && sudo docker compose up -d --remove-orphans"
 gcloud compute ssh $Instance --zone=$Zone --project=$Project --quiet --command=$remoteCommand
 if ($LASTEXITCODE -ne 0) { throw "Remote deployment failed!" }
 

@@ -158,6 +158,13 @@ export function createApp(io) {
     });
     res.json(publicUser(user));
   });
+  app.get('/api/messages/:id', async (req, res) => {
+    const mid = id.parse(req.params.id);
+    const message = await one(`${messageSelect} WHERE m.id=$1`, [mid, req.user.language]);
+    if (!message) throw new HttpError(404, 'Message not found.');
+    await membership(req.user.id, message.conversation_id);
+    res.json(message);
+  });
   app.post('/api/profile/photo', upload.single('file'), async (req, res) => {
     const type = await inspectFile(req.file, 'avatar');
     const fileId = randomUUID(),

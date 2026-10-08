@@ -2,11 +2,29 @@ import { useEffect, useState } from 'react';
 
 export function detectReaction(text, sticker, translatedText) {
   if (sticker) {
-    if (['love', 'red_heart', 'sparkle_heart', 'two_hearts', 'heart_eyes', 'rose'].includes(sticker)) {
+    if (
+      [
+        'love',
+        'red_heart',
+        'sparkle_heart',
+        'two_hearts',
+        'heart_eyes',
+        'rose',
+        'pink_heart',
+        'heart_with_arrow',
+        'heart_on_fire',
+        'revolving_hearts',
+        'love_letter',
+        'heart_ribbon',
+        'love_eyes_cat',
+      ].includes(sticker)
+    ) {
       return 'heart';
     }
-    if (sticker === 'kiss') return 'kiss';
-    if (sticker === 'hug') return 'hug';
+    if (sticker === 'kiss' || sticker === 'heart_kiss' || sticker === 'couple_kiss') return 'kiss';
+    if (sticker === 'hug' || sticker === 'cuddle') return 'hug';
+    if (sticker === 'celebrate' || sticker === 'party_popper' || sticker === 'fireworks')
+      return 'soulmate';
   }
 
   const combined = `${text || ''} ${translatedText || ''}`.trim();

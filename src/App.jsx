@@ -21,13 +21,16 @@ import {
   LoaderCircle,
   StopCircle,
   FileText,
+  Sparkles,
+  Trash2,
 } from 'lucide-react';
 import { api, setCsrf } from './api.js';
-import { Avatar, ButtonIcon, CallOverlay, Message, Modal, Settings } from './components.jsx';
+import { Avatar, ButtonIcon, CallOverlay, Message, Modal, Settings, StickerCreatorModal } from './components.jsx';
 import { useCall } from './useCall.js';
-import { languages, stickers } from '../shared/constants.js';
+import { languages, stickers, stickerCategories } from '../shared/constants.js';
 import { ReactionOverlay, detectReaction } from './ReactionOverlay.jsx';
 import { InstallApp } from './InstallApp.jsx';
+import { useMessageAlerts } from './useMessageAlerts.js';
 const mergeMessages = (old, next) =>
   Array.from(new Map([...old, ...next].map((m) => [m.id, m])).values()).sort(
     (a, b) => Number(a.seq) - Number(b.seq),
@@ -235,6 +238,7 @@ function Auth({ capabilities, onSession, onError }) {
 }
 function Chat({ session, capabilities, onSession, onError }) {
   const { user, csrf } = session;
+  const { preview, dismiss, receive, update: updateAlert, soundEnabled, setSoundEnabled, playSound } = useMessageAlerts(user.id);
   const [socket, setSocket] = useState(null),
     [connected, setConnected] = useState(false),
     [conversations, setConversations] = useState([]),
@@ -259,7 +263,18 @@ function Chat({ session, capabilities, onSession, onError }) {
     [recordSeconds, setRecordSeconds] = useState(0),
     [reaction, setReaction] = useState(null),
     [vibrateScreen, setVibrateScreen] = useState(false),
-    [heartbeatScreen, setHeartbeatScreen] = useState(false);
+    [heartbeatScreen, setHeartbeatScreen] = useState(false),
+    [showStickerCreator, setShowStickerCreator] = useState(false),
+    [stickerCategory, setStickerCategory] = useState('all'),
+    [stickerSearch, setStickerSearch] = useState(''),
+    [customStickers, setCustomStickers] = useState(() => {
+      try {
+        const stored = localStorage.getItem('kipenzi_custom_stickers');
+        return stored ? JSON.parse(stored) : [];
+      } catch {
+        return [];
+      }
+    });
   const selectedRef = useRef(null),
     bottom = useRef(null),
     scrollBox = useRef(null),
@@ -343,10 +358,11 @@ function Chat({ session, capabilities, onSession, onError }) {
         onError(e.message);
       }
     };
-    const changed = async ({ conversation_id }) => {
+    const changed = async ({ conversation_id, message_id }) => {
       try {
         await loadConversations();
         if (selectedRef.current === conversation_id) await loadMessages(conversation_id);
+        if (message_id) void updateAlert(message_id);
       } catch (e) {
         onError(e.message);
       }
@@ -365,6 +381,7 @@ function Chat({ session, capabilities, onSession, onError }) {
       if (e.message === 'Unauthorized') onError('Session expired. Sign in again.');
     });
     connection.on('message:changed', changed);
+    connection.on('message:arrived', receive);
     connection.on('conversation:changed', changed);
     connection.on('receipt:changed', changed);
     connection.on('typing', handleTyping);
@@ -374,7 +391,7 @@ function Chat({ session, capabilities, onSession, onError }) {
       connection.disconnect();
       clearTimeout(typingTimer.current);
     };
-  }, [csrf, loadConversations, loadMessages, onError]);
+  }, [csrf, loadConversations, loadMessages, onError, receive, updateAlert]);
   useEffect(() => {
     if (selectedRef.current) {
       setMessages([]);
@@ -516,6 +533,82 @@ function Chat({ session, capabilities, onSession, onError }) {
       setSending(false);
     }
   };
+
+  const saveCustomSticker = (dataUrl) => {
+    const item = { id: crypto.randomUUID(), dataUrl, createdAt: Date.now() };
+    setCustomStickers((prev) => {
+      const updated = [item, ...prev].slice(0, 50);
+      try {
+        localStorage.setItem('kipenzi_custom_stickers', JSON.stringify(updated));
+      } catch (err) {
+        onError?.(err.message);
+      }
+      return updated;
+    });
+  };
+
+  const deleteCustomSticker = (id, e) => {
+    e.stopPropagation();
+    setCustomStickers((prev) => {
+      const updated = prev.filter((s) => s.id !== id);
+      try {
+        localStorage.setItem('kipenzi_custom_stickers', JSON.stringify(updated));
+      } catch (err) {
+        onError?.(err.message);
+      }
+      return updated;
+    });
+  };
+
+  const sendCustomSticker = async (blob, dataUrl) => {
+    const cid = selectedRef.current;
+    if (!cid) return;
+    if (dataUrl) saveCustomSticker(dataUrl);
+    setSending(true);
+    try {
+      const form = new FormData();
+      form.append('file', blob, `sticker-${Date.now()}.png`);
+      const attachment = await api(`/conversations/${cid}/uploads`, { method: 'POST', body: form });
+      await api(`/conversations/${cid}/messages`, {
+        method: 'POST',
+        body: { client_id: crypto.randomUUID(), attachment_id: attachment.id, text: '' },
+      });
+      setPicker(false);
+      setShowStickerCreator(false);
+      stickToBottom.current = true;
+      await loadMessages(cid);
+      await loadConversations();
+    } catch (e) {
+      onError(e.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const sendSavedCustomSticker = async (sticker) => {
+    const cid = selectedRef.current;
+    if (!cid || sending) return;
+    setSending(true);
+    try {
+      const res = await fetch(sticker.dataUrl);
+      const blob = await res.blob();
+      const form = new FormData();
+      form.append('file', blob, `sticker-${Date.now()}.png`);
+      const attachment = await api(`/conversations/${cid}/uploads`, { method: 'POST', body: form });
+      await api(`/conversations/${cid}/messages`, {
+        method: 'POST',
+        body: { client_id: crypto.randomUUID(), attachment_id: attachment.id, text: '' },
+      });
+      setPicker(false);
+      stickToBottom.current = true;
+      await loadMessages(cid);
+      await loadConversations();
+    } catch (e) {
+      onError(e.message);
+    } finally {
+      setSending(false);
+    }
+  };
   const record = async () => {
     if (recording) {
       recorder.current?.stop();
@@ -575,6 +668,15 @@ function Chat({ session, capabilities, onSession, onError }) {
   return (
     <>
       <ReactionOverlay reaction={reaction} onDone={() => setReaction(null)} />
+      {preview && (
+        <div className="incoming-message-alert" role="status" aria-live="polite">
+          <button type="button" className="incoming-message-open" onClick={() => { dismiss(); void selectConversation(preview.conversation_id); }}>
+            <MessageCircle size={23} />
+            <span><strong>{preview.name}</strong><span dir="auto">{preview.body}</span><small>Tap to open chat</small></span>
+          </button>
+          <ButtonIcon label="Dismiss message alert" onClick={dismiss}><X size={18} /></ButtonIcon>
+        </div>
+      )}
       <div
         className={`app-shell ${selected ? 'chat-open' : ''} ${vibrateScreen ? 'screen-vibrate' : ''} ${heartbeatScreen ? 'screen-heartbeat' : ''}`}
       >
@@ -903,18 +1005,128 @@ function Chat({ session, capabilities, onSession, onError }) {
                   )}
                   {picker && (
                     <div className="sticker-picker">
-                      {Object.entries(stickers).map(([key, emoji]) => (
+                      <div className="sticker-picker-toolbar">
+                        <div className="sticker-search-wrap">
+                          <Search size={14} />
+                          <input
+                            type="text"
+                            placeholder="Search stickers..."
+                            value={stickerSearch}
+                            onChange={(e) => setStickerSearch(e.target.value)}
+                            className="sticker-search-input"
+                          />
+                          {stickerSearch && (
+                            <button
+                              type="button"
+                              className="clear-search-btn"
+                              onClick={() => setStickerSearch('')}
+                            >
+                              <X size={12} />
+                            </button>
+                          )}
+                        </div>
                         <button
                           type="button"
-                          key={key}
-                          title={key}
-                          aria-label={`Send ${key} sticker`}
-                          disabled={sending}
-                          onClick={() => void sendMessage(key)}
+                          className="create-sticker-btn"
+                          title="Create custom sticker from photo"
+                          onClick={() => {
+                            setShowStickerCreator(true);
+                          }}
                         >
-                          {emoji}
+                          <Plus size={13} /> Create
                         </button>
-                      ))}
+                      </div>
+
+                      <div className="sticker-tabs-scroll">
+                        <button
+                          type="button"
+                          className={`sticker-tab ${stickerCategory === 'custom' ? 'active' : ''}`}
+                          onClick={() => {
+                            setStickerCategory('custom');
+                            setStickerSearch('');
+                          }}
+                        >
+                          <span>🎨 My Stickers</span>
+                          {customStickers.length > 0 && (
+                            <span className="badge-count">{customStickers.length}</span>
+                          )}
+                        </button>
+                        {Object.entries(stickerCategories).map(([catKey, cat]) => (
+                          <button
+                            type="button"
+                            key={catKey}
+                            className={`sticker-tab ${stickerCategory === catKey ? 'active' : ''}`}
+                            onClick={() => {
+                              setStickerCategory(catKey);
+                              setStickerSearch('');
+                            }}
+                          >
+                            <span>{cat.icon} {cat.label}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="sticker-grid-content">
+                        {stickerCategory === 'custom' && !stickerSearch ? (
+                          <div className="custom-stickers-grid">
+                            <button
+                              type="button"
+                              className="custom-sticker-add-card"
+                              onClick={() => setShowStickerCreator(true)}
+                            >
+                              <Plus size={20} />
+                              <span>Create from Photo</span>
+                            </button>
+                            {customStickers.map((s) => (
+                              <div
+                                key={s.id}
+                                className="custom-sticker-item"
+                                onClick={() => void sendSavedCustomSticker(s)}
+                                title="Click to send sticker"
+                              >
+                                <img src={s.dataUrl} alt="Custom sticker" />
+                                <button
+                                  type="button"
+                                  className="del-sticker-btn"
+                                  title="Delete sticker"
+                                  onClick={(e) => deleteCustomSticker(s.id, e)}
+                                >
+                                  <Trash2 size={11} />
+                                </button>
+                              </div>
+                            ))}
+                            {customStickers.length === 0 && (
+                              <p className="no-custom-msg">
+                                No custom stickers yet. Tap &apos;Create from Photo&apos; to make your first!
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="emoji-stickers-grid">
+                            {Object.entries(stickers)
+                              .filter(([key]) => {
+                                if (stickerSearch.trim()) {
+                                  return key.toLowerCase().includes(stickerSearch.toLowerCase().replace(/\s+/g, '_'));
+                                }
+                                if (stickerCategory === 'all') return true;
+                                return stickerCategories[stickerCategory]?.keys?.includes(key);
+                              })
+                              .map(([key, emoji]) => (
+                                <button
+                                  type="button"
+                                  key={key}
+                                  title={key.replace(/_/g, ' ')}
+                                  aria-label={`Send ${key} sticker`}
+                                  disabled={sending}
+                                  onClick={() => void sendMessage(key)}
+                                  className="emoji-sticker-btn"
+                                >
+                                  {emoji}
+                                </button>
+                              ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                   <form
@@ -1060,6 +1272,14 @@ function Chat({ session, capabilities, onSession, onError }) {
       {showSettings && (
         <Settings
           user={user}
+          messageAlerts={
+            <div className="message-alert-settings">
+              <h3>Message alerts</h3>
+              <p>Incoming messages show a sender name and preview while Kipenzi is open.</p>
+              <label className="check-label"><input type="checkbox" checked={soundEnabled} onChange={event => setSoundEnabled(event.target.checked)} />Play a sound for new messages</label>
+              <button type="button" className="secondary" disabled={!soundEnabled} onClick={playSound}>Test message sound</button>
+            </div>
+          }
           capabilities={capabilities}
           onClose={() => setShowSettings(false)}
           onUser={(updated) => onSession({ ...session, user: updated })}
@@ -1095,6 +1315,14 @@ function Chat({ session, capabilities, onSession, onError }) {
             </button>
           </form>
         </Modal>
+      )}
+      {showStickerCreator && (
+        <StickerCreatorModal
+          onClose={() => setShowStickerCreator(false)}
+          onSendSticker={sendCustomSticker}
+          onSaveToLibrary={saveCustomSticker}
+          onError={onError}
+        />
       )}
       <CallOverlay controller={call} user={user} peer={callPeer} />
       </div>
