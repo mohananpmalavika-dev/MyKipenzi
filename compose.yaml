@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment: { POSTGRES_USER: kipenzi, POSTGRES_PASSWORD: local_password, POSTGRES_DB: kipenzi }
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U kipenzi"], interval: 5s, timeout: 3s, retries: 20 }
+    restart: unless-stopped
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: ["redis-data:/data"]
+    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 5s, timeout: 3s, retries: 20 }
+    restart: unless-stopped
+  storage:
+    image: chrislusf/seaweedfs:latest
+    command: ["mini", "-dir=/data", "-s3.port=9000"]
+    environment: { AWS_ACCESS_KEY_ID: local_admin, AWS_SECRET_ACCESS_KEY: local_storage_password, S3_BUCKET: kipenzi-private }
+    ports: ["127.0.0.1:9000:9000"]
+    volumes: ["storage-data:/data"]
+    restart: unless-stopped
+  clamav:
+    image: clamav/clamav:stable
+    ports: ["127.0.0.1:3310:3310"]
+    volumes: ["clamav-data:/var/lib/clamav"]
+    restart: unless-stopped
+  turn:
+    image: coturn/coturn:4.6.3
+    command: ["--no-cli", "--log-file=stdout", "--use-auth-secret", "--static-auth-secret=${TURN_SECRET:-replace_with_random_shared_secret_at_least_32_characters}", "--realm=kipenzi.local", "--external-ip=${TURN_PUBLIC_IP:-127.0.0.1}", "--listening-port=3478", "--min-port=49160", "--max-port=49200", "--no-multicast-peers", "--no-tls", "--no-dtls"]
+    ports: ["3478:3478/tcp", "3478:3478/udp", "49160-49200:49160-49200/udp"]
+    restart: unless-stopped
+volumes:
+  postgres-data:
+  redis-data:
+  storage-data:
+  clamav-data:

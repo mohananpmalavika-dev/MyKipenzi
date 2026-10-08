@@ -1,0 +1,33 @@
+# Supply a production .env in this directory. Use managed PostgreSQL/Redis/S3 or private services.
+services:
+  migrate:
+    build: ..
+    env_file: .env
+    command: ["node", "server/migrate.js"]
+  api:
+    build: ..
+    env_file: .env
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    expose: ["3001"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3001/api/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  worker:
+    build: ..
+    env_file: .env
+    command: ["node", "server/worker.js"]
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    restart: unless-stopped
+  proxy:
+    image: caddy:2-alpine
+    env_file: .env
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro", "caddy-data:/data", "caddy-config:/config"]
+    depends_on: [api]
+    restart: unless-stopped
+volumes:
+  caddy-data:
+  caddy-config:
