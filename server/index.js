@@ -1,3 +1,4 @@
+import { expireMessages } from './disappearing.js';
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
@@ -197,6 +198,27 @@ io.on('connection', (socket) => {
       /* heartbeat status is best effort */
     }
   });
+  socket.on('daily_prompt:nudge', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const peer = await one(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [cid, user.id],
+      );
+      if (peer) {
+        io.to(`user:${peer.user_id}`).emit('daily_prompt:nudge', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          date: payload.date,
+        });
+      }
+    } catch {
+      /* daily prompt nudge is best effort */
+    }
+  });
 });
 await events.subscribe('kipenzi-events');
 events.on('message', (_channel, body) => {
@@ -271,6 +293,7 @@ const sweepTimer = setInterval(async () => {
           });
         }
       }
+      await expireMessages(c);
       await c.query('DELETE FROM sessions WHERE expires_at<now()');
     });
   } catch (e) {

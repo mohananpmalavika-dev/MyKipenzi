@@ -1,3 +1,4 @@
+import { hasExpired } from '../shared/disappearing.js';
 import { Worker } from 'bullmq';
 import { config } from './config.js';
 import { one, db, transaction } from './db.js';
@@ -11,7 +12,7 @@ import {
   avatarVideo,
   deleteVoice,
 } from './providers.js';
-import { putObject, providerObject, readObject } from './storage.js';
+import { putObject, providerObject, readObject, removeObject } from './storage.js';
 import { enqueue, conversationEvent } from './service.js';
 import { deliverMessagePush } from './push.js';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -21,7 +22,7 @@ async function translation(data) {
     'SELECT m.*,u.ai_consent,t.status,a.object_key,a.mime,a.name FROM messages m JOIN users u ON u.id=m.sender_id JOIN translations t ON t.message_id=m.id AND t.language=$2 LEFT JOIN attachments a ON a.id=m.attachment_id WHERE m.id=$1',
     [message_id, language],
   );
-  if (!m || m.deleted_at || m.status === 'ready') return;
+  if (!m || m.deleted_at || hasExpired(m) || m.status === 'ready') return;
   if (!m.ai_consent) throw new Error('AI processing consent was withdrawn.');
   const requesters = requester_ids || (requester_id ? [requester_id] : []);
   if (requesters.length) {
@@ -44,11 +45,11 @@ async function translation(data) {
     const results = await translateAudio(Buffer.from(audioBytes), m.mime, m.name);
     await transaction(async (c) => {
       const current = await one(
-        'SELECT edited_at,deleted_at FROM messages WHERE id=$1 FOR UPDATE',
+        'SELECT edited_at,deleted_at,expires_at FROM messages WHERE id=$1 FOR UPDATE',
         [message_id],
         c,
       );
-      if (!current || current.deleted_at || String(current.edited_at) !== String(m.edited_at))
+      if (!current || current.deleted_at || hasExpired(current) || String(current.edited_at) !== String(m.edited_at))
         return;
       for (const [lang, transText] of Object.entries(results)) {
         if (['ml', 'manglish', 'sw', 'en'].includes(lang) && transText) {
@@ -76,8 +77,8 @@ async function translation(data) {
       ? m.text
       : await translateText(m.text, m.source_language, language);
   await transaction(async (c) => {
-    const current = await one('SELECT text,edited_at,deleted_at FROM messages WHERE id=$1 FOR UPDATE', [message_id], c);
-    if (!current || current.deleted_at || current.text !== m.text || String(current.edited_at) !== String(m.edited_at)) return;
+    const current = await one('SELECT text,edited_at,deleted_at,expires_at FROM messages WHERE id=$1 FOR UPDATE', [message_id], c);
+    if (!current || current.deleted_at || hasExpired(current) || current.text !== m.text || String(current.edited_at) !== String(m.edited_at)) return;
     await c.query(
       "UPDATE translations SET text=$3,status='ready' WHERE message_id=$1 AND language=$2",
       [message_id, language, text],
@@ -96,7 +97,7 @@ async function media(data) {
     'SELECT m.*,u.ai_consent FROM messages m JOIN users u ON u.id=m.sender_id WHERE m.id=$1',
     [job.message_id],
   );
-  if (!m || m.deleted_at) return;
+  if (!m || m.deleted_at || hasExpired(m)) return;
   if (!user.ai_consent || !m.ai_consent) throw new Error('AI processing consent was withdrawn.');
   if (job.own_voice && (!user.voice_id || !user.voice_verified || !user.likeness_consent))
     throw new Error('Your own voice is unavailable.');
@@ -161,6 +162,12 @@ async function media(data) {
     }
   }
   await transaction(async (c) => {
+    const current=await one('SELECT deleted_at,expires_at FROM messages WHERE id=$1 FOR UPDATE',[m.id],c);
+    if (!current || current.deleted_at || hasExpired(current) || !(await one('SELECT id FROM media_jobs WHERE id=$1',[job.id],c))) {
+      await enqueue(c,'delete_object',{key:audioKey});
+      if (key!==audioKey) await enqueue(c,'delete_object',{key});
+      return;
+    }
     await c.query(
       "UPDATE media_jobs SET status='ready',object_key=$2,mime=$3,error=NULL WHERE id=$1",
       [job.id, key, mime],
@@ -173,6 +180,7 @@ const worker = new Worker(
   async (job) => {
     if (job.name === 'translate') await translation(job.data);
     else if (job.name === 'media') await media(job.data);
+    else if (job.name === 'delete_object') await removeObject(job.data.key);
     else if (job.name === 'delete_voice') await deleteVoice(job.data.voice_id);
     else if (job.name === 'push') await deliverMessagePush(job.data, job.attemptsMade);
   },

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import {
   ArrowLeft,
+  Download,
   ArrowRight,
   ChevronDown,
   Globe2,
@@ -15,6 +16,9 @@ import {
   Send,
   Settings as SettingsIcon,
   ShieldCheck,
+  Clock,
+  Star,
+  Pin,
   Smile,
   Video,
   X,
@@ -29,10 +33,14 @@ import {
   Type,
   Heart,
 } from 'lucide-react';
-import { api, setCsrf } from './api.js';
+import { DisappearingSettings } from './DisappearingSettings.jsx';
+import { expiryOptions, hasExpired } from '../shared/disappearing.js';
+import { firstUnreadMessage, isNearLatest, unreadMessageCount } from '../shared/unread.js';
+import { api, setCsrf, uploadFile } from './api.js';
 import { Avatar, ButtonIcon, CallOverlay, Message, Modal, Settings, StickerCreatorModal } from './components.jsx';
 import { LiveDoodleModal } from './LiveDoodle.jsx';
 import { LiveHeartbeatModal } from './LiveHeartbeat.jsx';
+import { DailyPromptModal } from './DailyPromptModal.jsx';
 import { playHeartbeatSound, triggerHeartbeatHaptics } from './heartbeatAudio.js';
 import { useCall } from './useCall.js';
 import { languages, stickers, stickerCategories } from '../shared/constants.js';
@@ -40,7 +48,9 @@ import { ReactionOverlay, detectReaction } from './ReactionOverlay.jsx';
 import { InstallApp } from './InstallApp.jsx';
 import { useMessageAlerts } from './useMessageAlerts.js';
 import { UserSafety } from './UserSafety.jsx';
+import { ChatExport } from './ChatExport.jsx';
 import { ChatLibrary } from './ChatLibrary.jsx';
+import { GroupSettingsModal, GroupMembersList } from './GroupManagement.jsx';
 import { UserDirectory } from './UserDirectory.jsx';
 import { usePushNotifications } from './usePushNotifications.js';
 import { useThemeAndFontSize } from './useThemeAndFontSize.js';
@@ -63,7 +73,7 @@ function formatLastSeen(lastSeen) {
 }
 
 const mergeMessages = (old, next) =>
-  Array.from(new Map([...old, ...next].map((m) => [m.id, m])).values()).sort(
+  Array.from(new Map([...old, ...next].filter(m => !hasExpired(m)).map((m) => [m.id, m])).values()).sort(
     (a, b) => Number(a.seq) - Number(b.seq),
   );
 function Auth({ capabilities, onSession, onError }) {
@@ -278,11 +288,15 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     [selected, setSelected] = useState(null),
     [messages, setMessages] = useState([]),
     [hasMore, setHasMore] = useState(false),
+    [atLatest, setAtLatest] = useState(true),
+    [unreadBoundary, setUnreadBoundary] = useState(null),
     [loading, setLoading] = useState(false),
     [sending, setSending] = useState(false),
     [search, setSearch] = useState(''),
+    [showDisappearing, setShowDisappearing] = useState(false),
     [showSafety, setShowSafety] = useState(false),
     [libraryKind, setLibraryKind] = useState(null),
+    [exportChat, setExportChat] = useState(null),
     [highlightMessage, setHighlightMessage] = useState(null),
     [draft, setDraft] = useState(''),
     [replyTo, setReplyTo] = useState(null),
@@ -292,6 +306,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     [showSettings, setShowSettings] = useState(false),
     [showContact, setShowContact] = useState(false),
     [showGroup, setShowGroup] = useState(false),
+    [showGroupSettings, setShowGroupSettings] = useState(false),
     [contactBusy, setContactBusy] = useState(false),
     [contactError, setContactError] = useState(''),
     [typing, setTyping] = useState(false),
@@ -307,6 +322,8 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     [doodleInvite, setDoodleInvite] = useState(null),
     [showHeartbeat, setShowHeartbeat] = useState(false),
     [heartbeatInvite, setHeartbeatInvite] = useState(null),
+    [showDailyPrompt, setShowDailyPrompt] = useState(false),
+    [dailyPromptInvite, setDailyPromptInvite] = useState(null),
     [stickerCategory, setStickerCategory] = useState('all'),
     [stickerSearch, setStickerSearch] = useState(''),
     [customStickers, setCustomStickers] = useState(() => {
@@ -319,6 +336,8 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     });
   const selectedRef = useRef(null),
     bottom = useRef(null),
+    initialUnreadScroll = useRef(false),
+    conversationsRef = useRef([]),
     scrollBox = useRef(null),
     stickToBottom = useRef(true),
     lastRead = useRef(0),
@@ -364,8 +383,22 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
   }, [messages, user.id, triggerReaction]);
   const call = useCall(socket, user, onError);
   const loadConversations = useCallback(async () => {
-    setConversations(await api('/conversations'));
+    const rows = await api('/conversations');
+    conversationsRef.current = rows;
+    setConversations(rows);
   }, []);
+  useEffect(() => {
+    const removeExpired=()=>{
+      const old=messagesRef.current;
+      if(!old.some(m=>hasExpired(m) || hasExpired(m.reply))) return;
+      setMessages(items=>items.filter(m=>!hasExpired(m)).map(m=>hasExpired(m.reply)?{...m,reply:null}:m));
+      setReplyTo(m=>hasExpired(m)?null:m);
+      dismiss();
+      void loadConversations().catch(e=>onError(e.message));
+    };
+    const timer=setInterval(removeExpired,1000);window.addEventListener('focus',removeExpired);
+    return ()=>{clearInterval(timer);window.removeEventListener('focus',removeExpired);};
+  },[loadConversations,onError,dismiss]);
   const loadMessages = useCallback(async (cid, before, initial = false) => {
     const previous = selectedRef.current === cid ? messagesRef.current : [];
     const result = await api(`/conversations/${cid}/messages${before ? `?before=${before}` : ''}`);
@@ -401,7 +434,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           const cid = selectedRef.current;
           const loaded = messagesRef.current;
           await loadMessages(cid);
-          const fresh = await Promise.all(loaded.map(m => api(`/messages/${m.id}`)));
+          const fresh = await Promise.all(loaded.filter(m=>!hasExpired(m)).map(m => api(`/messages/${m.id}`)));
           if (selectedRef.current === cid) setMessages(old => mergeMessages(old, fresh));
         }
       } catch (e) {
@@ -460,6 +493,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       setConnected(false);
       if (e.message === 'Unauthorized') onError('Session expired. Sign in again.');
     });
+    connection.on('message:expired', ({conversation_id,message_id}) => {
+      if(selectedRef.current===conversation_id) {setMessages(old=>old.filter(m=>m.id!==message_id && !hasExpired(m)));setReplyTo(m=>m?.id===message_id?null:m);}
+      dismiss();void loadConversations().catch(e=>onError(e.message));
+    });
     connection.on('message:changed', changed);
     connection.on('message:arrived', receive);
     connection.on('conversation:changed', changed);
@@ -468,13 +505,46 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     connection.on('doodle:invite', handleDoodleInvite);
     connection.on('heartbeat:invite', handleHeartbeatInvite);
     connection.on('heartbeat:pulse', handleHeartbeatPulse);
+    connection.on('daily_prompt:answered', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setDailyPromptInvite({
+          conversation_id: payload.conversation_id,
+          sender_name: payload.sender_name,
+          date: payload.date,
+          type: 'answered',
+        });
+        triggerHeartbeatHaptics([40, 50, 60]);
+      }
+    });
+    connection.on('daily_prompt:revealed', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setDailyPromptInvite({
+          conversation_id: payload.conversation_id,
+          sender_name: payload.partner_name,
+          date: payload.date,
+          type: 'revealed',
+        });
+        triggerHeartbeatHaptics([70, 70, 90]);
+      }
+    });
+    connection.on('daily_prompt:nudge', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setDailyPromptInvite({
+          conversation_id: payload.conversation_id,
+          sender_name: payload.sender_name,
+          date: payload.date,
+          type: 'nudge',
+        });
+        triggerHeartbeatHaptics([60, 60, 80]);
+      }
+    });
     connection.connect();
     void loadConversations().catch((e) => onError(e.message));
     return () => {
       connection.disconnect();
       clearTimeout(typingTimer.current);
     };
-  }, [csrf, loadConversations, loadMessages, onError, receive, updateAlert]);
+  }, [csrf, loadConversations, loadMessages, onError, receive, updateAlert, dismiss]);
   useEffect(() => {
     if (selectedRef.current) {
       setMessages([]);
@@ -482,13 +552,36 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     }
   }, [user.language, loadMessages, onError]);
   useEffect(() => {
-    if (stickToBottom.current)
+    if (stickToBottom.current && !initialUnreadScroll.current)
       bottom.current?.scrollIntoView({ behavior: 'instant', block: 'end' });
-  }, [messages.length, selected, typing]);
+  }, [messages.length, selected, typing, loading]);
+  const firstUnread = unreadBoundary === null ? null : firstUnreadMessage(messages, unreadBoundary, user.id);
+  const pendingUnread = unreadMessageCount(messages, lastRead.current, user.id);
+  useEffect(() => {
+    if (loading || !initialUnreadScroll.current || !messages.length) return;
+    initialUnreadScroll.current = false;
+    requestAnimationFrame(() => {
+      const node = firstUnread ? document.getElementById('unread-divider') : bottom.current;
+      node?.scrollIntoView({ behavior: 'instant', block: firstUnread ? 'start' : 'end' });
+      if (scrollBox.current) {
+        const near = isNearLatest(scrollBox.current);
+        stickToBottom.current = near;
+        setAtLatest(near);
+      }
+    });
+  }, [loading, messages, firstUnread]);
+  useEffect(() => {
+    if (!atLatest && unreadBoundary === null && messages.some(m => m.sender_id !== user.id && Number(m.seq) > lastRead.current)) setUnreadBoundary(lastRead.current);
+  }, [messages, atLatest, unreadBoundary, user.id]);
   const markRead = useCallback(async () => {
     if (
       !selected ||
       !messages.length ||
+      loading ||
+      tab !== 'chats' ||
+      !atLatest ||
+      initialUnreadScroll.current ||
+      !stickToBottom.current ||
       document.visibilityState !== 'visible' ||
       !document.hasFocus()
     )
@@ -503,7 +596,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       lastRead.current = 0;
       onError(e.message);
     }
-  }, [selected, messages, loadConversations, onError]);
+  }, [selected, messages, loading, atLatest, tab, loadConversations, onError]);
   useEffect(() => {
     void markRead();
     const seen = () => void markRead();
@@ -536,6 +629,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     setSelected(cid);
     setLibraryKind(null);
     setShowSafety(false);
+    setShowDisappearing(false);
     setHighlightMessage(null);
     setMessages([]);
     setFile(null);
@@ -543,13 +637,29 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     setReplyTo(null);
     setPicker(false);
     setTyping(false);
-    lastRead.current = 0;
+    const conversation = conversationsRef.current.find(c => c.id === cid);
+    const readSeq = Number(conversation?.read_seq || 0);
+    lastRead.current = readSeq;
+    setUnreadBoundary(Number(conversation?.unread || 0) > 0 ? readSeq : null);
+    initialUnreadScroll.current = true;
+    setAtLatest(false);
     attempt.current = null;
-    stickToBottom.current = true;
+    stickToBottom.current = false;
     setLoading(true);
     const version = ++generation.current;
     try {
       await loadMessages(cid, undefined, true);
+      if (Number(conversation?.unread || 0) > 0) {
+        let after = readSeq;
+        let more = true;
+        while (more && selectedRef.current === cid && version === generation.current) {
+          const page = await api(`/conversations/${cid}/messages?after=${after}`);
+          if (selectedRef.current !== cid) return;
+          setMessages(old => mergeMessages(old, page.messages));
+          more = page.has_more && page.messages.length > 0;
+          if (page.messages.length) after = Number(page.messages.at(-1).seq);
+        }
+      }
       const history = await api(`/conversations/${cid}/calls`);
       if (version === generation.current) setCalls(history);
     } catch (e) {
@@ -579,7 +689,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     setContactError('');
     try {
       const handles = values.handles.split(/[\s,]+/).filter(Boolean).map(handle => handle.replace(/^@/, '').toLowerCase());
-      const result = await api('/conversations/groups', { method: 'POST', body: { name: values.name, handles } });
+      const result = await api('/conversations/groups', { method: 'POST', body: { name: values.name, description: values.description || undefined, handles } });
       await loadConversations();
       setShowGroup(false);
       setShowContact(false);
@@ -611,22 +721,25 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     navigator.serviceWorker.addEventListener('message', open);
     return () => navigator.serviceWorker.removeEventListener('message', open);
   }, [user.id, loadConversations, onError]);
-  const sendMessage = async (sticker) => {
+  const sendMessage = async (sticker, queuedFile) => {
+    const outgoing = queuedFile || file;
     const cid = selectedRef.current;
-    if (!cid || sending || (!draft.trim() && !file && !sticker)) return;
+    if (!cid || sending || (!draft.trim() && !outgoing && !sticker)) return;
     const detected = detectReaction(draft, sticker);
     if (detected) triggerReaction(detected);
+    if (queuedFile) setFile(queuedFile);
     setSending(true);
     try {
-      let attachment = file?.attachment;
-      if (file && !attachment) {
+      let attachment = outgoing?.attachment;
+      if (outgoing && !attachment) {
         const form = new FormData();
-        form.append('file', file.file);
-        attachment = await api(`/conversations/${cid}/uploads`, { method: 'POST', body: form });
-        setFile({ ...file, attachment });
+        form.append('file', outgoing.file);
+        setFile({ ...outgoing, error: '', progress: 0 });
+        attachment = await uploadFile(`/conversations/${cid}/uploads`, form, progress => setFile(current => current ? { ...current, progress } : current));
+        setFile({ ...outgoing, attachment, progress: 100, error: '' });
       }
       const input = {
-        text: draft,
+        text: outgoing?.caption ?? draft,
         source_language: source,
         ...(replyTo ? { reply_to_id: replyTo.id } : {}),
         ...(sticker ? { sticker } : {}),
@@ -649,7 +762,9 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         await loadMessages(cid);
       }
       await loadConversations();
+      return true;
     } catch (e) {
+      if (outgoing) setFile(current => current ? { ...current, error: e.message } : current);
       onError(e.message);
     } finally {
       setSending(false);
@@ -683,61 +798,18 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
   };
 
   const sendCustomSticker = async (blob, dataUrl) => {
-    const cid = selectedRef.current;
-    if (!cid) return;
+    if (!selectedRef.current || sending) return;
     if (dataUrl) saveCustomSticker(dataUrl);
-    setSending(true);
-    try {
-      const form = new FormData();
-      form.append('file', blob, `sticker-${Date.now()}.png`);
-      const attachment = await api(`/conversations/${cid}/uploads`, { method: 'POST', body: form });
-      await api(`/conversations/${cid}/messages`, {
-        method: 'POST',
-        body: { client_id: crypto.randomUUID(), attachment_id: attachment.id, text: '', ...(replyTo ? { reply_to_id: replyTo.id } : {}) },
-      });
-      setPicker(false);
-      setShowStickerCreator(false);
-      setReplyTo(null);
-      stickToBottom.current = true;
-      await loadMessages(cid);
-      await loadConversations();
-    } catch (e) {
-      onError(e.message);
-    } finally {
-      setSending(false);
-    }
+    const queued = { file: new File([blob], 'sticker-' + Date.now() + '.png', { type: blob.type || 'image/png' }), caption: '' };
+    setShowStickerCreator(false);
+    await sendMessage(null, queued);
   };
 
   const sendDoodleToChat = async (blob, caption = '') => {
-    const cid = selectedRef.current;
-    if (!cid) return;
-    setSending(true);
-    try {
-      const form = new FormData();
-      form.append('file', blob, `doodle-${Date.now()}.png`);
-      const attachment = await api(`/conversations/${cid}/uploads`, {
-        method: 'POST',
-        body: form,
-      });
-      await api(`/conversations/${cid}/messages`, {
-        method: 'POST',
-        body: {
-          client_id: crypto.randomUUID(),
-          attachment_id: attachment.id,
-          text: caption,
-          ...(replyTo ? { reply_to_id: replyTo.id } : {}),
-        },
-      });
-      setShowDoodle(false);
-      setReplyTo(null);
-      stickToBottom.current = true;
-      await loadMessages(cid);
-      await loadConversations();
-    } catch (e) {
-      onError(e.message);
-    } finally {
-      setSending(false);
-    }
+    if (!selectedRef.current || sending) return;
+    const queued = { file: new File([blob], 'doodle-' + Date.now() + '.png', { type: blob.type || 'image/png' }), caption };
+    setShowDoodle(false);
+    await sendMessage(null, queued);
   };
 
   const sendHeartbeatToChat = async (text) => {
@@ -766,21 +838,21 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     }
   };
 
-  const sendSavedCustomSticker = async (sticker) => {
+  const sendDailyPromptToChat = async (text) => {
     const cid = selectedRef.current;
-    if (!cid || sending) return;
+    if (!cid) return;
     setSending(true);
     try {
-      const res = await fetch(sticker.dataUrl);
-      const blob = await res.blob();
-      const form = new FormData();
-      form.append('file', blob, `sticker-${Date.now()}.png`);
-      const attachment = await api(`/conversations/${cid}/uploads`, { method: 'POST', body: form });
       await api(`/conversations/${cid}/messages`, {
         method: 'POST',
-        body: { client_id: crypto.randomUUID(), attachment_id: attachment.id, text: '', ...(replyTo ? { reply_to_id: replyTo.id } : {}) },
+        body: {
+          client_id: crypto.randomUUID(),
+          text,
+          source_language: user.language || 'ml',
+          ...(replyTo ? { reply_to_id: replyTo.id } : {}),
+        },
       });
-      setPicker(false);
+      setShowDailyPrompt(false);
       setReplyTo(null);
       stickToBottom.current = true;
       await loadMessages(cid);
@@ -790,6 +862,15 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     } finally {
       setSending(false);
     }
+  };
+
+  const sendSavedCustomSticker = async (sticker) => {
+    if (!selectedRef.current || sending) return;
+    try {
+      const response = await fetch(sticker.dataUrl);
+      const blob = await response.blob();
+      await sendCustomSticker(blob);
+    } catch (error) { onError(error.message); }
   };
   const record = async () => {
     if (recording) {
@@ -890,7 +971,8 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           </ButtonIcon>
         </div>
         <div className="rail-bottom">
-          <InstallApp compact />
+          <ButtonIcon label="Export chat" onClick={() => setExportChat({ id: selected, title: chosen.is_group ? chosen.name || chosen.peer.name : chosen.peer.name })}><Download size={20} /></ButtonIcon>
+                <InstallApp compact />
           <ButtonIcon
             label={isDark ? 'Switch to light theme (ലൈറ്റ്)' : 'Switch to dark theme (ഡാർക്ക്)'}
             className="rail-btn theme-toggle-icon-btn"
@@ -1050,6 +1132,14 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 </p>
               </div>
               <div className="header-actions">
+                {chosen.is_group && (
+                  <ButtonIcon label="Group Settings" onClick={() => setShowGroupSettings(true)}>
+                    <Users size={20} />
+                  </ButtonIcon>
+                )}
+                <ButtonIcon label="Disappearing messages" onClick={() => setShowDisappearing(true)}><Clock size={20} /></ButtonIcon>
+                <ButtonIcon label="Starred messages" onClick={() => setLibraryKind("starred")}><Star size={20} /></ButtonIcon>
+                <ButtonIcon label="Pinned messages" onClick={() => setLibraryKind("pinned")}><Pin size={20} /></ButtonIcon>
                 {!chosen.is_group && <ButtonIcon label="Block or report user" onClick={() => setShowSafety(true)}><ShieldCheck size={20} /></ButtonIcon>}
                 <ButtonIcon label="Search this chat" onClick={() => setLibraryKind("messages")}><Search size={20} /></ButtonIcon>
                 <ButtonIcon label="Shared photos and documents" onClick={() => setLibraryKind("photos")}><Paperclip size={20} /></ButtonIcon>
@@ -1113,6 +1203,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 </ButtonIcon>
               </div>
             </header>
+            {chosen.disappearing_seconds > 0 && <div className="expiry-banner" role="status">New messages disappear after {expiryOptions[chosen.disappearing_seconds]}. <button type="button" className="text-btn" onClick={() => setShowDisappearing(true)}>Change</button></div>}
             <div className="translation-banner">
               <Globe2 size={15} />
               <span>
@@ -1177,6 +1268,43 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 </div>
               </div>
             )}
+            {dailyPromptInvite && (
+              <div className="daily-prompt-invite-banner" role="alert">
+                <div className="daily-prompt-invite-left">
+                  <span className="daily-prompt-banner-icon">✨</span>
+                  <span>
+                    {dailyPromptInvite.type === 'answered' ? (
+                      <>
+                        <strong>{dailyPromptInvite.sender_name || 'Your partner'}</strong> answered today&apos;s &ldquo;Us&rdquo; Prompt! (ഇന്നത്തെ ചോദ്യത്തിന് ഉത്തരം നൽകി · തുറക്കാൻ നിങ്ങളുടെ ഉത്തരം എഴുതൂ 🔒)
+                      </>
+                    ) : dailyPromptInvite.type === 'revealed' ? (
+                      <>
+                        <strong>Mutual Reveal Unlocked! 🎉</strong> Both of you answered today&apos;s prompt! (രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ തുറന്നു!)
+                      </>
+                    ) : (
+                      <>
+                        <strong>{dailyPromptInvite.sender_name || 'Your partner'}</strong> nudged you to answer today&apos;s &ldquo;Us&rdquo; Prompt! 💌 (ഇന്നത്തെ ചോദ്യം കാത്തിരിക്കുന്നു)
+                      </>
+                    )}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="daily-prompt-invite-join-btn"
+                    onClick={() => {
+                      setShowDailyPrompt(true);
+                      setDailyPromptInvite(null);
+                    }}
+                  >
+                    {dailyPromptInvite.type === 'revealed' ? 'View Secrets 💕' : 'Open Prompt ✨'}
+                  </button>
+                  <ButtonIcon label="Dismiss" onClick={() => setDailyPromptInvite(null)}>
+                    <X size={15} />
+                  </ButtonIcon>
+                </div>
+              </div>
+            )}
             {tab === 'calls' ? (
               <div className="history">
                 <h2>Our Moments Together</h2>
@@ -1210,7 +1338,8 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                   onScroll={(e) => {
                     const box = e.currentTarget;
                     stickToBottom.current =
-                      box.scrollHeight - box.scrollTop - box.clientHeight < 120;
+                      isNearLatest(box);
+                    setAtLatest(stickToBottom.current);
                   }}
                 >
                   {loading ? (
@@ -1230,6 +1359,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                               await loadMessages(selected, messages[0].seq);
                               requestAnimationFrame(() => {
                                 box.scrollTop += box.scrollHeight - height;
+                                setAtLatest(isNearLatest(box));
                               });
                             } catch (e) {
                               onError(e.message);
@@ -1263,9 +1393,11 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                               </span>
                             </div>
                           )}
+                          {m.id === firstUnread?.id && <div id="unread-divider" className="unread-divider" role="separator" aria-label="Unread messages"><span>Unread messages</span></div>}
                           <Message
                             key={`${m.id}:${m.edited_at || ""}:${m.deleted_at || ""}`}
                             message={m}
+                            contactBlocked={chosen.contact_blocked}
                             highlighted={highlightMessage === m.id}
                             onReply={sending || recording ? undefined : setReplyTo}
                             onChanged={async () => {
@@ -1279,6 +1411,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                             user={user}
                             capabilities={capabilities}
                             onError={onError}
+                            onOpenDailyPrompt={() => setShowDailyPrompt(true)}
                           />
                         </div>
                       ))}
@@ -1294,6 +1427,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     </>
                   )}
                 </div>
+                {!atLatest && !loading && messages.length > 0 && <button type="button" className="jump-latest" onClick={() => {
+                  stickToBottom.current = true; setAtLatest(true);
+                  bottom.current?.scrollIntoView({ behavior:'instant', block:'end' });
+                }}>Jump to latest <ChevronDown size={16} />{pendingUnread > 0 && <span aria-label={pendingUnread + ' unread messages'}>{pendingUnread} unread</span>}</button>}
                 <footer className="composer-area">
                   {chosen.contact_blocked && <p className="blocked-notice" role="status">Messaging is unavailable while a user is blocked.{chosen.blocked_by_me && <button type="button" className="text-btn" onClick={() => setShowSafety(true)}>Unblock user</button>}</p>}
                   <fieldset className="composer-controls" disabled={chosen.contact_blocked}>
@@ -1309,6 +1446,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                       <span>
                         {file.file.name}
                         <small>{(file.file.size / 1024 / 1024).toFixed(1)} MB</small>
+                        {sending && <span role="status">{file.attachment ? 'Sending…' : file.progress === 100 ? 'Processing upload…' : 'Uploading ' + (file.progress ?? 0) + '%'}</span>}
+                        {sending && !file.attachment && <progress aria-label="Upload progress" max="100" value={file.progress ?? 0} />}
+                        {file.error && <span role="alert">{file.error}</span>}
+                        {file.error && <button type="button" disabled={sending} onClick={() => void sendMessage()}>Retry {file.attachment ? 'send' : 'upload'}</button>}
                       </span>
                       <ButtonIcon
                         label="Remove attachment"
@@ -1482,6 +1623,16 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                       <Heart size={21} className="heartbeat-action-pulse" />
                     </ButtonIcon>
                     <ButtonIcon
+                      label="Daily 'Us' Prompt ✨ (ഇന്നത്തെ ചോദ്യം)"
+                      disabled={sending || recording || chosen.is_group}
+                      onClick={() => {
+                        setShowDailyPrompt(true);
+                        setDailyPromptInvite(null);
+                      }}
+                    >
+                      <Sparkles size={21} className="daily-prompt-toolbar-icon" />
+                    </ButtonIcon>
+                    <ButtonIcon
                       label="Attach file"
                       disabled={sending || recording}
                       onClick={() => fileInput.current.click()}
@@ -1608,13 +1759,16 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           </div>
         )}
       </main>
+      {showDisappearing && chosen && <DisappearingSettings conversation={chosen} onClose={() => setShowDisappearing(false)} onChanged={loadConversations} onError={onError} />}
       {showSafety && chosen && <UserSafety person={chosen.peer} blocked={chosen.blocked_by_me} onClose={() => setShowSafety(false)} onChanged={loadConversations} />}
+      {exportChat && <ChatExport conversationId={exportChat.id} title={exportChat.title} onClose={() => setExportChat(null)} />}
       {libraryKind && selected && <ChatLibrary conversationId={selected} initialKind={libraryKind} onClose={() => setLibraryKind(null)} onOpen={async message => {
         const cid = selectedRef.current;
         try {
           const page = await api(`/conversations/${cid}/messages?before=${Number(message.seq)+1}`);
           if (selectedRef.current !== cid) return;
           stickToBottom.current = false;
+          setAtLatest(false);
           setMessages(old => mergeMessages(old, page.messages));
           setHasMore(page.has_more);
           setTab('chats'); setHighlightMessage(message.id); setLibraryKind(null);
@@ -1662,6 +1816,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         <p className="modal-description">Add at least two people. Each member reads messages in their selected language when AI translation is enabled.</p>
         <form onSubmit={createGroup}>
           <label>Group name<input name="name" required maxLength={80} placeholder="Friends and family" /></label>
+          <label>Description (optional)<textarea name="description" maxLength={500} placeholder="What's this group about?" rows={3} /></label>
           <label>Member handles<textarea name="handles" required maxLength={1600} placeholder="@friend_one, @friend_two" /></label>
           {contactError && <p className="form-error" role="alert">{contactError}</p>}
           <button className="primary" disabled={contactBusy}>{contactBusy ? 'Creating…' : 'Create group'}</button>
@@ -1695,6 +1850,25 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onClose={() => setShowHeartbeat(false)}
           onSendToChat={sendHeartbeatToChat}
           onError={onError}
+        />
+      )}
+      {showDailyPrompt && chosen && !chosen.is_group && (
+        <DailyPromptModal
+          conversationId={selected}
+          user={user}
+          peer={chosen.peer}
+          socket={socket}
+          onClose={() => setShowDailyPrompt(false)}
+          onSendToChat={sendDailyPromptToChat}
+          onError={onError}
+        />
+      )}
+      {showGroupSettings && chosen && chosen.is_group && (
+        <GroupSettingsModal
+          conversation={chosen}
+          user={user}
+          onClose={() => setShowGroupSettings(false)}
+          onUpdate={loadConversations}
         />
       )}
       <CallOverlay controller={call} user={user} peer={callPeer} />

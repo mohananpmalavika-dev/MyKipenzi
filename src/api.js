@@ -25,9 +25,9 @@ export async function api(path, options = {}) {
   if (!response.ok) throw new Error(data.error || 'Request failed');
   return data;
 }
-export async function fileBlob(id) {
-  const { url } = await api(`/attachments/${id}`);
-  const response = await fetch(url);
+export async function fileBlob(id, signal) {
+  const { url } = await api(`/attachments/${id}`, signal ? { signal } : {});
+  const response = await fetch(url, { signal });
   if (!response.ok) throw new Error('File download failed.');
   return response.blob();
 }
@@ -39,4 +39,28 @@ export async function downloadFile(attachment) {
   a.download = attachment.name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export function uploadFile(path, body, onProgress) {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open('POST', '/api' + path);
+    request.timeout = 120000;
+    if (csrf) request.setRequestHeader('x-csrf-token', csrf);
+    request.upload.onprogress = event => {
+      if (event.lengthComputable) onProgress(Math.min(100, Math.round(event.loaded / event.total * 100)));
+    };
+    request.onerror = () => reject(new Error('Upload failed. Check your connection and retry.'));
+    request.ontimeout = () => reject(new Error('Upload timed out. Please retry.'));
+    request.onabort = () => reject(new Error('Upload cancelled.'));
+    request.onload = () => {
+      try {
+        const data = JSON.parse(request.responseText);
+        if (request.status < 200 || request.status >= 300) throw new Error(data.error || 'Upload failed. Please retry.');
+        resolve(data);
+      } catch (error) { reject(error instanceof SyntaxError ? new Error('The service could not be reached. Please retry.') : error); }
+    };
+    onProgress(0);
+    request.send(body);
+  });
 }

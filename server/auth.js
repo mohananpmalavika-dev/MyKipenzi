@@ -15,6 +15,8 @@ export const publicUser = (u) => ({
   online_status_visibility: u.online_status_visibility,
   last_seen_visibility: u.last_seen_visibility,
   last_seen: u.last_seen,
+  who_can_add_to_groups: u.who_can_add_to_groups,
+  require_group_approval: u.require_group_approval,
 });
 export async function getSession(cookieHeader) {
   const raw = parse(cookieHeader || '').kipenzi_session;

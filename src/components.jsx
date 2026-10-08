@@ -30,6 +30,8 @@ import {
   Heart,
   Activity,
 } from 'lucide-react';
+import { PhotoViewer } from './PhotoViewer.jsx';
+import { hasExpired } from '../shared/disappearing.js';
 import { api, fileBlob, downloadFile } from './api.js';
 import { languages, stickers } from '../shared/constants.js';
 import { startLovingRingtone, stopLovingRingtone } from './ringtone.js';
@@ -87,6 +89,7 @@ export function Modal({ title, onClose, children, wide = false }) {
   return (
     <dialog
       ref={dialog}
+      aria-label={title}
       className={wide ? 'modal wide' : 'modal'}
       onCancel={(event) => {
         event.preventDefault();
@@ -444,6 +447,8 @@ export function Settings({
 }
 export function Attachment({ attachment, onError }) {
   const [preview, setPreview] = useState(null);
+  const [viewing, setViewing] = useState(false);
+  const photoTrigger = useRef(null);
   const audio =
     attachment.mime.startsWith('audio/') ||
     (/^voice-note-/.test(attachment.name) && attachment.mime === 'video/webm');
@@ -483,11 +488,12 @@ export function Attachment({ attachment, onError }) {
 
   return (
     <div className="attachment">
+      {viewing && preview && <PhotoViewer src={preview} attachment={attachment} onError={onError} returnFocus={photoTrigger} onClose={() => setViewing(false)} />}
       {preview &&
         (audio ? (
           <audio controls preload="metadata" aria-label="Play voice note" src={preview} />
         ) : (
-          <img className="attachment-preview" src={preview} alt={attachment.name} />
+          <button type="button" ref={photoTrigger} className="photo-preview-button" aria-label={'View photo ' + attachment.name} onClick={() => setViewing(true)}><img className="attachment-preview" src={preview} alt={attachment.name} /></button>
         ))}
       <button
         type="button"
@@ -551,7 +557,76 @@ export function HeartbeatCard({ text }) {
   );
 }
 
-export function Message({ message, mine, peerRead, user, capabilities, onError, onReply, onChanged, highlighted, group }) {
+export function DailyPromptCard({ text, onOpenPrompt }) {
+  const dateMatch = text.match(/\[Daily Us Prompt · (\d{4}-\d{2}-\d{2})\]/);
+  const promptDate = dateMatch ? dateMatch[1] : '';
+
+  const questionMatch = text.match(/❓\s*"([^"]+)"/);
+  const questionText = questionMatch ? questionMatch[1] : '';
+
+  const enMatch = text.match(/\(([^)]+)\)/);
+  const questionEn = enMatch ? enMatch[1] : '';
+
+  const answers = [];
+  const lines = text.split('\n');
+  for (const line of lines) {
+    const ansMatch = line.match(/^💬\s*([^:]+):\s*"([^"]+)"/);
+    if (ansMatch) {
+      answers.push({ name: ansMatch[1].trim(), text: ansMatch[2].trim() });
+    }
+  }
+
+  return (
+    <div className="daily-prompt-chat-card">
+      <div className="prompt-card-top">
+        <div className="prompt-card-badge">
+          <Sparkles size={14} className="sparkle-anim" />
+          <span>Daily &ldquo;Us&rdquo; Prompt · ഇന്നത്തെ ചോദ്യം</span>
+        </div>
+        {promptDate && <span className="prompt-card-date">{promptDate}</span>}
+      </div>
+
+      {questionText && (
+        <div className="prompt-card-question-box">
+          <h4 className="prompt-card-q-ml" dir="auto">
+            {questionText}
+          </h4>
+          {questionEn && <p className="prompt-card-q-en">&ldquo;{questionEn}&rdquo;</p>}
+        </div>
+      )}
+
+      {answers.length > 0 ? (
+        <div className="prompt-card-answers-list">
+          {answers.map((ans, idx) => (
+            <div key={idx} className="prompt-card-bubble">
+              <span className="bubble-author-name">{ans.name}:</span>
+              <p className="bubble-answer-content" dir="auto">
+                &ldquo;{ans.text}&rdquo;
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p dir="auto">{text}</p>
+      )}
+
+      <div className="prompt-card-footer">
+        <span className="keepsake-tag">Mutual Reveal Keepsake 💖 (തുറന്ന ഉത്തരങ്ങൾ)</span>
+        {onOpenPrompt && (
+          <button
+            type="button"
+            className="prompt-card-open-btn"
+            onClick={() => onOpenPrompt(promptDate)}
+          >
+            <span>Open &amp; React ✨</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function Message({ message, mine, peerRead, user, capabilities, onError, onReply, onChanged, highlighted, group, contactBlocked, onOpenDailyPrompt }) {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(message.text);
   const [actionBusy, setActionBusy] = useState(false);
@@ -569,6 +644,14 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
     } catch (e) { onError(e.message); } finally { setActionBusy(false); }
   };
 
+  const saveMessage = async kind => {
+    setActionBusy(true);
+    try {
+      const enabled = kind==='star' ? message.starred : message.pinned;
+      await api(`/messages/${message.id}/${kind}`, { method:enabled?'DELETE':'PUT' });
+      await onChanged?.();
+    } catch(e) { onError(e.message); } finally { setActionBusy(false); }
+  };
   const toggleReaction = async (emoji) => {
     try {
       await api(`/messages/${message.id}/reactions`, {
@@ -762,7 +845,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
             ))}
           </div>
         )}
-        {message.reply && <blockquote className="quoted-reply"><strong>{message.reply.sender}</strong><p>{message.reply.deleted_at ? 'Message deleted' : message.reply.text || (message.reply.sticker ? stickers[message.reply.sticker] : 'Attachment')}</p></blockquote>}
+        {message.reply && !hasExpired(message.reply) && <blockquote className="quoted-reply"><strong>{message.reply.sender}</strong><p>{message.reply.deleted_at ? 'Message deleted' : message.reply.text || (message.reply.sticker ? stickers[message.reply.sticker] : 'Attachment')}</p></blockquote>}
         {group && !mine && <small className="group-sender">{message.sender?.name || 'Member'}</small>}
         {message.sticker && (
           <div className="sticker" aria-label={message.sticker}>
@@ -780,6 +863,8 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
           message.text ? <p dir="auto" className="voice-caption">{message.text}</p> : null
         ) : !message.deleted_at && message.text?.startsWith('💓 [Heartbeat Pulse') ? (
           <HeartbeatCard text={message.text} />
+        ) : !message.deleted_at && message.text?.startsWith('✨ [Daily Us Prompt') ? (
+          <DailyPromptCard text={message.text} onOpenPrompt={onOpenDailyPrompt} />
         ) : (
           <p dir="auto">{message.deleted_at ? 'Message deleted' : translated ? message.translation.text : message.text}</p>
         )}
@@ -891,6 +976,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
           </button>
         )}
         <div className="message-meta">
+          {message.expires_at && <small title={"Disappears " + new Date(message.expires_at).toLocaleString()}>Disappearing</small>}
           {message.edited_at && !message.deleted_at && <small>Edited</small>}
           <time dateTime={message.created_at}>
             {new Date(message.created_at).toLocaleTimeString([], {
@@ -923,6 +1009,8 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
         )}
       </div>
       {!message.deleted_at && <div className="message-actions">
+        <button type="button" aria-pressed={!!message.starred} disabled={actionBusy} onClick={() => void saveMessage("star")}>{message.starred ? "Unstar" : "Star"}</button>
+        <button type="button" aria-pressed={!!message.pinned} disabled={actionBusy || contactBlocked} onClick={() => void saveMessage("pin")}>{message.pinned ? "Unpin" : "Pin"}</button>
         {onReply && <button type="button" disabled={actionBusy} onClick={() => onReply(message)}>Reply</button>}
         {mine && message.text && <button type="button" disabled={actionBusy} onClick={() => { setEditText(message.text); setEditing(true); }}>Edit</button>}
         {mine && <button type="button" disabled={actionBusy} onClick={() => setConfirmDelete(true)}>Delete</button>}

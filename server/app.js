@@ -1,3 +1,4 @@
+import { hasExpired } from '../shared/disappearing.js';
 import express from 'express';
 import helmet from 'helmet';
 import multer from 'multer';
@@ -20,11 +21,31 @@ import {
   sendMessage,
   ensureReaderTranslations,
   changeMessage,
+  saveMessage,
   toggleReaction,
   changeCall,
   conversationEvent,
   enqueue,
 } from './service.js';
+import {
+  updateGroupProfile,
+  addGroupMember,
+  removeGroupMember,
+  leaveGroup,
+  promoteToAdmin,
+  demoteFromAdmin,
+  updateMemberPermissions,
+  toggleGroupMute,
+  deleteGroup,
+  getGroupDetails,
+  createInviteLink,
+  getInviteLinks,
+  revokeInviteLink,
+  joinViaInviteLink,
+  getJoinRequests,
+  respondToJoinRequest,
+  getGroupActivity,
+} from './group-management.js';
 import {
   registration,
   login,
@@ -35,6 +56,7 @@ import {
   language,
   stickers,
 } from '../shared/contracts.js';
+import { getPromptForDate, getTodayDateKey } from '../shared/dailyPrompts.js';
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 25 * 1024 * 1024, files: 1, fields: 4, fieldSize: 1000 },
@@ -169,13 +191,17 @@ export function createApp(io) {
   });
   app.patch('/api/profile', async (req, res) => {
     const input = profile.parse(req.body);
+    const extraFields = z.object({
+      who_can_add_to_groups: z.enum(['everyone','contacts','nobody']).optional(),
+      require_group_approval: z.boolean().optional(),
+    }).parse(req.body);
     const user = await transaction(async (c) => {
       const current = await one('SELECT * FROM users WHERE id=$1 FOR UPDATE', [req.user.id], c);
       if (!input.likeness_consent && current.voice_id)
         await enqueue(c, 'delete_voice', { voice_id: current.voice_id });
       return one(
-        `UPDATE users SET name=$2,language=$3,ai_consent=$4,likeness_consent=$5,voice_id=CASE WHEN $5 THEN voice_id ELSE NULL END,voice_verified=CASE WHEN $5 THEN voice_verified ELSE false END,online_status_visibility=COALESCE($6,online_status_visibility),last_seen_visibility=COALESCE($7,last_seen_visibility) WHERE id=$1 RETURNING *`,
-        [req.user.id, input.name, input.language, input.ai_consent, input.likeness_consent, input.online_status_visibility, input.last_seen_visibility],
+        `UPDATE users SET name=$2,language=$3,ai_consent=$4,likeness_consent=$5,voice_id=CASE WHEN $5 THEN voice_id ELSE NULL END,voice_verified=CASE WHEN $5 THEN voice_verified ELSE false END,online_status_visibility=COALESCE($6,online_status_visibility),last_seen_visibility=COALESCE($7,last_seen_visibility),who_can_add_to_groups=COALESCE($8,who_can_add_to_groups),require_group_approval=COALESCE($9,require_group_approval) WHERE id=$1 RETURNING *`,
+        [req.user.id, input.name, input.language, input.ai_consent, input.likeness_consent, input.online_status_visibility, input.last_seen_visibility, extraFields.who_can_add_to_groups, extraFields.require_group_approval],
         c,
       );
     });
@@ -189,6 +215,12 @@ export function createApp(io) {
     await ensureReaderTranslations(req.user, [message]);
     res.json(message);
   });
+  for (const kind of ['star','pin']) {
+    for (const method of ['put','delete']) app[method](`/api/messages/:id/${kind}`, async (req,res) => {
+      await limit(`saved-messages:${req.user.id}`,60,60);
+      res.json(await saveMessage(req.user,id.parse(req.params.id),kind,method==='put'));
+    });
+  }
   app.patch('/api/messages/:id', async (req, res) => {
     await limit(`messages:${req.user.id}`, 40, 60);
     res.json(await changeMessage(req.user, id.parse(req.params.id), messageEdit.parse(req.body).text));
@@ -232,6 +264,47 @@ export function createApp(io) {
       req.user.id,
     ]);
     res.json(publicUser(user));
+  });
+  app.post('/api/conversations/:id/photo', upload.single('file'), async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    const type = await inspectFile(req.file, 'avatar');
+    const fileId = randomUUID(),
+      key = `group-photos/${cid}/${fileId}.${type.ext}`;
+    await putObject(key, req.file.buffer, type.mime);
+    try {
+      await transaction(async (c) => {
+        const group = await one('SELECT id FROM conversations WHERE id=$1 AND direct_key IS NULL', [cid], c);
+        if (!group) throw new HttpError(400, 'Only groups can have profile photos.');
+        const member = await one('SELECT is_admin FROM members WHERE conversation_id=$1 AND user_id=$2', [cid, req.user.id], c);
+        if (!member || !member.is_admin) throw new HttpError(403, 'Only group admins can update the group photo.');
+        await c.query(
+          "INSERT INTO attachments(id,owner_id,conversation_id,purpose,object_key,name,mime,size) VALUES($1,$2,$3,'group_avatar',$4,$5,$6,$7)",
+          [fileId, req.user.id, cid, key, type.name, type.mime, req.file.size],
+        );
+        await c.query('UPDATE conversations SET avatar_id=$2 WHERE id=$1', [cid, fileId]);
+        await c.query('INSERT INTO group_activities(id,conversation_id,actor_id,action,metadata) VALUES($1,$2,$3,$4,$5)', [randomUUID(), cid, req.user.id, 'group_updated', JSON.stringify({ field: 'avatar' })]);
+        await c.query('INSERT INTO system_messages(id,conversation_id,message_type,actor_id) VALUES($1,$2,$3,$4)', [randomUUID(), cid, 'group_avatar_changed', req.user.id]);
+        await conversationEvent(c, cid, 'conversation:changed', { conversation_id: cid });
+      });
+      res.json({ ok: true, avatar_id: fileId });
+    } catch (e) {
+      await removeObject(key);
+      throw e;
+    }
+  });
+  app.delete('/api/conversations/:id/photo', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await transaction(async (c) => {
+      await membership(req.user.id, cid, c);
+      const group = await one('SELECT id FROM conversations WHERE id=$1 AND direct_key IS NULL', [cid], c);
+      if (!group) throw new HttpError(400, 'Only groups have profile photos.');
+      const member = await one('SELECT is_admin FROM members WHERE conversation_id=$1 AND user_id=$2', [cid, req.user.id], c);
+      if (!member || !member.is_admin) throw new HttpError(403, 'Only group admins can update the group photo.');
+      await c.query('UPDATE conversations SET avatar_id=NULL WHERE id=$1', [cid]);
+      await conversationEvent(c, cid, 'conversation:changed', { conversation_id: cid });
+    });
+    res.json({ ok: true });
   });
   app.post('/api/profile/voice', upload.single('file'), async (req, res) => {
     if (!req.user.ai_consent || !req.user.likeness_consent)
@@ -365,7 +438,7 @@ export function createApp(io) {
     res.status(201).json(result);
   });
   app.post('/api/conversations/groups', async (req, res) => {
-    const input = z.object({ name: z.string().trim().min(1).max(80), handles: z.array(z.string().regex(/^[a-z0-9_]{3,30}$/)).min(2).max(49) }).parse(req.body);
+    const input = z.object({ name: z.string().trim().min(1).max(80), handles: z.array(z.string().regex(/^[a-z0-9_]{3,30}$/)).min(2).max(49), description: z.string().trim().max(500).optional() }).parse(req.body);
     const handles = [...new Set(input.handles)].filter(handle => handle !== req.user.handle);
     if (handles.length < 2) throw new HttpError(400, 'Choose at least two other members.');
     const conversation = await transaction(async c => {
@@ -373,8 +446,15 @@ export function createApp(io) {
       if (peers.length !== handles.length) throw new HttpError(404, 'One or more members were not found.');
       const ids = [req.user.id, ...peers.map(peer => peer.id)];
       if (await one('SELECT 1 FROM user_blocks WHERE blocker_id=ANY($1::uuid[]) AND blocked_id=ANY($1::uuid[]) LIMIT 1', [ids], c)) throw new HttpError(403, 'A blocked contact cannot be added to this group.');
-      const result = await one('INSERT INTO conversations(id,name) VALUES($1,$2) RETURNING id', [randomUUID(), input.name], c);
-      await c.query('INSERT INTO members(conversation_id,user_id) SELECT $1,unnest($2::uuid[])', [result.id, ids]);
+      const result = await one('INSERT INTO conversations(id,name,description,created_by_id) VALUES($1,$2,$3,$4) RETURNING id', [randomUUID(), input.name, input.description || null, req.user.id], c);
+      // Add creator as admin, others as regular members
+      await c.query('INSERT INTO members(conversation_id,user_id,is_admin,added_by_id) VALUES($1,$2,true,NULL)', [result.id, req.user.id]);
+      for (const peerId of peers.map(p => p.id)) {
+        await c.query('INSERT INTO members(conversation_id,user_id,is_admin,added_by_id) VALUES($1,$2,false,$3)', [result.id, peerId, req.user.id]);
+      }
+      // Log group creation
+      await c.query('INSERT INTO group_activities(id,conversation_id,actor_id,action,metadata) VALUES($1,$2,$3,$4,$5)', [randomUUID(), result.id, req.user.id, 'group_created', JSON.stringify({ member_count: ids.length })]);
+      await c.query('INSERT INTO system_messages(id,conversation_id,message_type,actor_id,metadata) VALUES($1,$2,$3,$4,$5)', [randomUUID(), result.id, 'group_created', req.user.id, JSON.stringify({ name: input.name })]);
       await conversationEvent(c, result.id, 'conversation:changed', { conversation_id: result.id });
       return result;
     });
@@ -384,13 +464,13 @@ export function createApp(io) {
     // Update last_seen timestamp on activity
     await db.query('UPDATE users SET last_seen=now() WHERE id=$1', [req.user.id]);
     const result = await db.query(
-      `SELECT EXISTS(SELECT 1 FROM user_blocks WHERE blocker_id=$1 AND blocked_id=u.id) AS blocked_by_me, EXISTS(SELECT 1 FROM user_blocks b JOIN members bm ON bm.user_id=CASE WHEN b.blocker_id=$1 THEN b.blocked_id ELSE b.blocker_id END WHERE bm.conversation_id=c.id AND (b.blocker_id=$1 OR b.blocked_id=$1)) AS contact_blocked,c.id,c.name,c.direct_key IS NULL AS is_group,me.read_seq,
-      (SELECT jsonb_agg(jsonb_build_object('id',gu.id,'name',gu.name,'handle',gu.handle,'language',gu.language) ORDER BY gu.name) FROM members gm JOIN users gu ON gu.id=gm.user_id WHERE gm.conversation_id=c.id) AS members,
+      `SELECT EXISTS(SELECT 1 FROM user_blocks WHERE blocker_id=$1 AND blocked_id=u.id) AS blocked_by_me, EXISTS(SELECT 1 FROM user_blocks b JOIN members bm ON bm.user_id=CASE WHEN b.blocker_id=$1 THEN b.blocked_id ELSE b.blocker_id END WHERE bm.conversation_id=c.id AND (b.blocker_id=$1 OR b.blocked_id=$1)) AS contact_blocked,c.disappearing_seconds,c.id,c.name,c.description,c.avatar_id,c.direct_key IS NULL AS is_group,me.read_seq,me.is_admin,me.can_send_messages,me.can_add_members,me.muted,
+      (SELECT jsonb_agg(jsonb_build_object('id',gu.id,'name',gu.name,'handle',gu.handle,'language',gu.language,'is_admin',gm.is_admin) ORDER BY gm.is_admin DESC, gu.name) FROM members gm JOIN users gu ON gu.id=gm.user_id WHERE gm.conversation_id=c.id) AS members,
       jsonb_build_object('id',u.id,'name',u.name,'handle',u.handle,'language',u.language,'avatar_id',u.avatar_id,'last_seen',u.last_seen,'online_status_visibility',u.online_status_visibility,'last_seen_visibility',u.last_seen_visibility) AS peer,
-      (SELECT count(*)::int FROM messages m WHERE m.conversation_id=c.id AND m.seq>me.read_seq AND m.sender_id<>$1) AS unread,
-      (SELECT jsonb_build_object('text',m.text,'sticker',m.sticker,'attachment',m.attachment_id IS NOT NULL,'created_at',m.created_at) FROM messages m WHERE m.conversation_id=c.id ORDER BY m.seq DESC LIMIT 1) AS last_message,
-      (SELECT coalesce(max(m.created_at),c.created_at) FROM messages m WHERE m.conversation_id=c.id) AS updated_at,
-      (SELECT min(read_seq) FROM members WHERE conversation_id=c.id AND user_id<>$1) AS peer_read_seq FROM conversations c JOIN members me ON me.conversation_id=c.id AND me.user_id=$1 JOIN LATERAL (SELECT user_id FROM members WHERE conversation_id=c.id AND user_id<>$1 ORDER BY user_id LIMIT 1) other ON true JOIN users u ON u.id=other.user_id ORDER BY updated_at DESC LIMIT 200`,
+      (SELECT count(*)::int FROM messages m WHERE (m.expires_at IS NULL OR m.expires_at>now()) AND m.conversation_id=c.id AND m.seq>me.read_seq AND m.sender_id<>$1) AS unread,
+      (SELECT jsonb_build_object('text',m.text,'sticker',m.sticker,'attachment',m.attachment_id IS NOT NULL,'created_at',m.created_at) FROM messages m WHERE (m.expires_at IS NULL OR m.expires_at>now()) AND m.conversation_id=c.id ORDER BY m.seq DESC LIMIT 1) AS last_message,
+      (SELECT coalesce(max(m.created_at),c.created_at) FROM messages m WHERE (m.expires_at IS NULL OR m.expires_at>now()) AND m.conversation_id=c.id) AS updated_at,
+      (SELECT min(read_seq) FROM members WHERE conversation_id=c.id AND user_id<>$1) AS peer_read_seq FROM conversations c JOIN members me ON me.conversation_id=c.id AND me.user_id=$1 JOIN LATERAL (SELECT user_id FROM members WHERE conversation_id=c.id AND user_id<>$1 ORDER BY user_id LIMIT 1) other ON true JOIN users u ON u.id=other.user_id WHERE c.deleted_at IS NULL ORDER BY updated_at DESC LIMIT 200`,
       [req.user.id],
     );
     // Apply privacy filtering for peer status
@@ -414,15 +494,296 @@ export function createApp(io) {
     });
     res.json(conversations);
   });
+  
+  // Group management endpoints
+  app.get('/api/conversations/:id/details', getGroupDetails);
+  app.patch('/api/conversations/:id/profile', updateGroupProfile);
+  app.post('/api/conversations/:id/members', addGroupMember);
+  app.delete('/api/conversations/:id/members/:userId', removeGroupMember);
+  app.post('/api/conversations/:id/leave', leaveGroup);
+  app.post('/api/conversations/:id/members/:userId/promote', promoteToAdmin);
+  app.post('/api/conversations/:id/members/:userId/demote', demoteFromAdmin);
+  app.patch('/api/conversations/:id/members/:userId/permissions', updateMemberPermissions);
+  app.patch('/api/conversations/:id/mute', toggleGroupMute);
+  app.delete('/api/conversations/:id', deleteGroup);
+  app.post('/api/conversations/:id/invites', createInviteLink);
+  app.get('/api/conversations/:id/invites', getInviteLinks);
+  app.delete('/api/conversations/:id/invites/:inviteId', revokeInviteLink);
+  app.post('/api/groups/join', joinViaInviteLink);
+  app.get('/api/conversations/:id/join-requests', getJoinRequests);
+  app.post('/api/conversations/:id/join-requests/:requestId', respondToJoinRequest);
+  app.get('/api/conversations/:id/activity', getGroupActivity);
+  // Daily "Us" Prompts endpoints (Question of the Day with double-blind mutual reveal)
+  app.get('/api/conversations/:id/daily-prompt', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    const dateInput = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().parse(req.query.date);
+    const offsetInput = z.coerce.number().int().default(0).parse(req.query.offset || 0);
+    const targetDate = dateInput || getTodayDateKey();
+    const prompt = getPromptForDate(targetDate, offsetInput);
+
+    const peer = await one(
+      'SELECT u.id as user_id, u.name, u.handle FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+
+    const answers = (
+      await db.query(
+        'SELECT a.*, u.name as user_name FROM daily_prompt_answers a JOIN users u ON u.id=a.user_id WHERE a.conversation_id=$1 AND a.prompt_date=$2',
+        [cid, targetDate],
+      )
+    ).rows;
+
+    const myAnswerRow = answers.find((a) => a.user_id === req.user.id);
+    const partnerAnswerRow = peer ? answers.find((a) => a.user_id === peer.user_id) : null;
+    const revealed = Boolean(myAnswerRow && partnerAnswerRow);
+
+    res.json({
+      date: targetDate,
+      prompt_id: prompt.id,
+      question_ml: prompt.question_ml,
+      question_en: prompt.question_en,
+      category: prompt.category,
+      icon: prompt.icon,
+      sparks: prompt.sparks,
+      revealed,
+      my_answer: myAnswerRow ? myAnswerRow.answer : null,
+      my_answered_at: myAnswerRow ? myAnswerRow.created_at : null,
+      partner_answered: Boolean(partnerAnswerRow),
+      partner_name: peer ? peer.name : 'Partner',
+      partner_answer: revealed ? partnerAnswerRow.answer : null,
+      partner_answered_at: partnerAnswerRow ? partnerAnswerRow.created_at : null,
+      my_reaction: myAnswerRow?.reaction || null,
+      partner_reaction: revealed ? partnerAnswerRow?.reaction || null : null,
+    });
+  });
+
+  app.post('/api/conversations/:id/daily-prompt/answer', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await assertCanContact(req.user.id, cid);
+    const input = z
+      .object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).default(() => getTodayDateKey()),
+        prompt_id: z.string().default(''),
+        answer: z
+          .string()
+          .trim()
+          .min(1, 'Please write your answer.')
+          .max(2000, 'Answer must be under 2000 characters.'),
+      })
+      .parse(req.body);
+
+    const prompt = getPromptForDate(input.date);
+    const promptId = input.prompt_id || prompt.id;
+
+    const peer = await one(
+      'SELECT u.id as user_id, u.name FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+
+    const answerId = randomUUID();
+    const myAnswer = await one(
+      `INSERT INTO daily_prompt_answers(id, conversation_id, prompt_date, prompt_id, user_id, answer, created_at, updated_at)
+       VALUES($1, $2, $3, $4, $5, $6, now(), now())
+       ON CONFLICT(conversation_id, prompt_date, user_id)
+       DO UPDATE SET answer=EXCLUDED.answer, prompt_id=EXCLUDED.prompt_id, updated_at=now()
+       RETURNING *`,
+      [answerId, cid, input.date, promptId, req.user.id, input.answer],
+    );
+
+    const peerAnswer = peer
+      ? await one(
+          'SELECT * FROM daily_prompt_answers WHERE conversation_id=$1 AND prompt_date=$2 AND user_id=$3',
+          [cid, input.date, peer.user_id],
+        )
+      : null;
+
+    const revealed = Boolean(myAnswer && peerAnswer);
+
+    if (revealed) {
+      if (io && peer) {
+        io.to(`user:${peer.user_id}`).emit('daily_prompt:revealed', {
+          conversation_id: cid,
+          date: input.date,
+          prompt_id: promptId,
+          partner_name: req.user.name,
+        });
+        io.to(`user:${req.user.id}`).emit('daily_prompt:revealed', {
+          conversation_id: cid,
+          date: input.date,
+          prompt_id: promptId,
+          partner_name: peer.name,
+        });
+      }
+    } else if (io && peer) {
+      io.to(`user:${peer.user_id}`).emit('daily_prompt:answered', {
+        conversation_id: cid,
+        date: input.date,
+        sender_id: req.user.id,
+        sender_name: req.user.name,
+      });
+    }
+
+    res.json({
+      ok: true,
+      revealed,
+      date: input.date,
+      my_answer: myAnswer.answer,
+      my_answered_at: myAnswer.created_at,
+      partner_answered: Boolean(peerAnswer),
+      partner_name: peer ? peer.name : 'Partner',
+      partner_answer: revealed ? peerAnswer.answer : null,
+      partner_answered_at: peerAnswer ? peerAnswer.created_at : null,
+    });
+  });
+
+  app.post('/api/conversations/:id/daily-prompt/reaction', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    const input = z
+      .object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        reaction: z.string().min(1).max(10),
+      })
+      .parse(req.body);
+
+    await db.query(
+      'UPDATE daily_prompt_answers SET reaction=$1 WHERE conversation_id=$2 AND prompt_date=$3 AND user_id=$4',
+      [input.reaction, cid, input.date, req.user.id],
+    );
+
+    const peer = await one(
+      'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+      [cid, req.user.id],
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('daily_prompt:reaction', {
+        conversation_id: cid,
+        date: input.date,
+        user_id: req.user.id,
+        reaction: input.reaction,
+      });
+    }
+    res.json({ ok: true });
+  });
+
+  app.post('/api/conversations/:id/daily-prompt/nudge', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await assertCanContact(req.user.id, cid);
+    const peer = await one(
+      'SELECT u.id as user_id, u.name FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+    const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().parse(req.body?.date) || getTodayDateKey();
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('daily_prompt:nudge', {
+        conversation_id: cid,
+        sender_id: req.user.id,
+        sender_name: req.user.name,
+        date,
+      });
+    }
+    res.json({ ok: true });
+  });
+
+  app.get('/api/conversations/:id/daily-prompt/history', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    const peer = await one(
+      'SELECT u.id as user_id, u.name FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+
+    const rows = (
+      await db.query(
+        `SELECT to_char(prompt_date, 'YYYY-MM-DD') as prompt_date_str, *
+         FROM daily_prompt_answers
+         WHERE conversation_id=$1
+         ORDER BY prompt_date DESC, created_at ASC`,
+        [cid],
+      )
+    ).rows;
+
+    const byDate = new Map();
+    for (const r of rows) {
+      const d = r.prompt_date_str;
+      if (!byDate.has(d)) byDate.set(d, []);
+      byDate.get(d).push(r);
+    }
+
+    const history = [];
+    for (const [date, answers] of byDate.entries()) {
+      const prompt = getPromptForDate(date);
+      const myAnswer = answers.find((a) => a.user_id === req.user.id);
+      const partnerAnswer = peer ? answers.find((a) => a.user_id === peer.user_id) : null;
+      const revealed = Boolean(myAnswer && partnerAnswer);
+
+      history.push({
+        date,
+        prompt_id: prompt.id,
+        question_ml: prompt.question_ml,
+        question_en: prompt.question_en,
+        category: prompt.category,
+        icon: prompt.icon,
+        revealed,
+        my_answer: myAnswer ? myAnswer.answer : null,
+        my_answered_at: myAnswer ? myAnswer.created_at : null,
+        partner_answered: Boolean(partnerAnswer),
+        partner_name: peer ? peer.name : 'Partner',
+        partner_answer: revealed ? partnerAnswer.answer : null,
+        partner_answered_at: partnerAnswer ? partnerAnswer.created_at : null,
+        my_reaction: myAnswer?.reaction || null,
+        partner_reaction: revealed ? partnerAnswer?.reaction || null : null,
+      });
+    }
+    res.json({ history });
+  });
+  app.patch('/api/conversations/:id/disappearing', async (req,res) => {
+    const cid=id.parse(req.params.id);
+    const {seconds}=z.object({seconds:z.union([z.literal(0),z.literal(3600),z.literal(86400),z.literal(604800),z.literal(2592000)])}).parse(req.body);
+    await transaction(async c => {
+      await membership(req.user.id,cid,c);
+      await assertCanContact(req.user.id,cid,c);
+      const conversation=await one('SELECT direct_key FROM conversations WHERE id=$1 FOR UPDATE',[cid],c);
+      if(conversation.direct_key===null && !(await one('SELECT 1 FROM members WHERE conversation_id=$1 AND user_id=$2 AND is_admin',[cid,req.user.id],c))) throw new HttpError(403,'Only group admins can change disappearing messages.');
+      await c.query('UPDATE conversations SET disappearing_seconds=$2 WHERE id=$1',[cid,seconds]);
+      await conversationEvent(c,cid,'conversation:changed',{conversation_id:cid});
+    });
+    res.json({seconds});
+  });
+  app.get('/api/conversations/:id/export', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await limit('exports:' + req.user.id, 120, 60);
+    const cursor = z.string().regex(/^\d{1,19}$/).refine(value => BigInt(value) <= 9223372036854775807n);
+    const input = z.object({ after: cursor.default('0'), through: cursor.optional() }).parse(req.query);
+    const conversation = await one('SELECT id,name FROM conversations WHERE id=$1', [cid]);
+    const through = input.through ?? (await one('SELECT coalesce(max(seq),0)::text AS seq FROM messages WHERE conversation_id=$1', [cid])).seq;
+    const result = await db.query(
+      `SELECT m.id,m.seq::text,m.text,m.sticker,m.created_at,m.edited_at,m.expires_at,
+       jsonb_build_object('name',u.name,'handle',u.handle) AS sender,
+       CASE WHEN a.id IS NOT NULL AND a.expired_at IS NULL THEN jsonb_build_object('id',a.id,'name',a.name,'mime',a.mime,'size',a.size) ELSE NULL END AS attachment,
+       CASE WHEN t.status='ready' THEN jsonb_build_object('language',t.language,'text',t.text) ELSE NULL END AS translation
+       FROM messages m JOIN users u ON u.id=m.sender_id LEFT JOIN attachments a ON a.id=m.attachment_id
+       LEFT JOIN translations t ON t.message_id=m.id AND t.language=$4
+       WHERE m.conversation_id=$1 AND m.seq>$2::bigint AND m.seq<=$3::bigint
+       AND m.deleted_at IS NULL AND (m.expires_at IS NULL OR m.expires_at>now())
+       ORDER BY m.seq ASC LIMIT 201`, [cid,input.after,through,req.user.language],
+    );
+    res.set('Cache-Control','no-store');
+    res.json({ conversation, through, messages: result.rows.slice(0,200), has_more: result.rows.length>200 });
+  });
   app.get('/api/conversations/:id/library', async (req, res) => {
     const cid = id.parse(req.params.id);
     await membership(req.user.id, cid);
-    const input = z.object({ q: z.string().trim().max(200).default(''), kind: z.enum(['messages','photos','documents','media']).default('messages'), before: z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER).optional() }).parse(req.query);
+    const input = z.object({ q: z.string().trim().max(200).default(''), kind: z.enum(['messages','photos','documents','media','starred','pinned']).default('messages'), before: z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER).optional() }).parse(req.query);
     const result = await db.query(
       `${messageSelect} WHERE m.conversation_id=$1 AND m.deleted_at IS NULL
        AND ($4::bigint IS NULL OR m.seq<$4)
        AND ($5='' OR strpos(lower(m.text),lower($5))>0 OR strpos(lower(a.name),lower($5))>0 OR strpos(lower(t.text),lower($5))>0)
-       AND ($6='messages' OR ($6='photos' AND a.mime LIKE 'image/%') OR ($6='media' AND (a.mime LIKE 'image/%' OR a.mime LIKE 'video/%' OR a.mime LIKE 'audio/%')) OR ($6='documents' AND a.id IS NOT NULL AND a.mime NOT LIKE 'image/%' AND a.mime NOT LIKE 'video/%' AND a.mime NOT LIKE 'audio/%'))
+       AND ($6='messages' OR ($6='starred' AND EXISTS(SELECT 1 FROM message_stars ms WHERE ms.message_id=m.id AND ms.user_id=$3)) OR ($6='pinned' AND EXISTS(SELECT 1 FROM message_pins mp WHERE mp.message_id=m.id)) OR ($6='photos' AND a.mime LIKE 'image/%') OR ($6='media' AND (a.mime LIKE 'image/%' OR a.mime LIKE 'video/%' OR a.mime LIKE 'audio/%')) OR ($6='documents' AND a.id IS NOT NULL AND a.mime NOT LIKE 'image/%' AND a.mime NOT LIKE 'video/%' AND a.mime NOT LIKE 'audio/%'))
        ORDER BY m.seq DESC LIMIT 31`,
       [cid, req.user.language, req.user.id, input.before || null, input.q, input.kind],
     );
@@ -516,7 +877,7 @@ export function createApp(io) {
     const attachment = await one('SELECT * FROM attachments WHERE id=$1', [
       id.parse(req.params.id),
     ]);
-    if (!attachment) throw new HttpError(404, 'File not found.');
+    if (!attachment || attachment.expired_at || await one('SELECT 1 FROM messages WHERE attachment_id=$1 AND expires_at<=now()',[attachment.id])) throw new HttpError(404, 'File not found.');
     if (attachment.owner_id !== req.user.id) {
       if (attachment.purpose === 'chat') {
         await membership(req.user.id, attachment.conversation_id);
@@ -547,7 +908,7 @@ export function createApp(io) {
       'SELECT m.*,u.ai_consent,a.mime,a.name FROM messages m JOIN users u ON u.id=m.sender_id LEFT JOIN attachments a ON a.id=m.attachment_id WHERE m.id=$1',
       [mid],
     );
-    if (!m || m.deleted_at) throw new HttpError(404, 'Message not found.');
+    if (!m || m.deleted_at || hasExpired(m)) throw new HttpError(404, 'Message not found.');
     await membership(req.user.id, m.conversation_id);
     if (!m.ai_consent || !req.user.ai_consent)
       throw new HttpError(
@@ -584,7 +945,7 @@ export function createApp(io) {
       'SELECT m.*,u.ai_consent FROM messages m JOIN users u ON u.id=m.sender_id WHERE m.id=$1',
       [mid],
     );
-    if (!m || m.deleted_at) throw new HttpError(404, 'Message not found.');
+    if (!m || m.deleted_at || hasExpired(m)) throw new HttpError(404, 'Message not found.');
     await membership(req.user.id, m.conversation_id);
     if (!m.text) throw new HttpError(400, 'Choose a text message.');
     if (!req.user.ai_consent || !m.ai_consent)
@@ -617,7 +978,7 @@ export function createApp(io) {
     res.status(202).json({ id: jobId, status: 'pending' });
   });
   app.get('/api/media/:id', async (req, res) => {
-    const job = await one('SELECT * FROM media_jobs WHERE id=$1 AND user_id=$2', [
+    const job = await one('SELECT j.* FROM media_jobs j JOIN messages m ON m.id=j.message_id WHERE j.id=$1 AND j.user_id=$2 AND (m.expires_at IS NULL OR m.expires_at>now())', [
       id.parse(req.params.id),
       req.user.id,
     ]);
@@ -633,7 +994,7 @@ export function createApp(io) {
   });
   app.get('/api/media/:id/content', async (req, res) => {
     const job = await one(
-      "SELECT * FROM media_jobs WHERE id=$1 AND user_id=$2 AND status='ready'",
+      "SELECT j.* FROM media_jobs j JOIN messages m ON m.id=j.message_id WHERE j.id=$1 AND j.user_id=$2 AND j.status='ready' AND (m.expires_at IS NULL OR m.expires_at>now())",
       [id.parse(req.params.id), req.user.id],
     );
     if (!job) throw new HttpError(404, 'Media not found.');

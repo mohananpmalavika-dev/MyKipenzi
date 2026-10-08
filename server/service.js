@@ -1,3 +1,4 @@
+import { hasExpired } from '../shared/disappearing.js';
 import { randomUUID } from 'node:crypto';
 import { db, one, transaction } from './db.js';
 import { HttpError } from './security.js';
@@ -37,7 +38,9 @@ export async function conversationEvent(client, conversationId, event, data) {
   ).rows;
   await enqueue(client, 'event', { users: members.map((m) => m.user_id), event, data });
 }
-export const messageSelect = `SELECT m.*,jsonb_build_object('id',u.id,'name',u.name,'handle',u.handle) AS sender,
+export const messageSelect = `SELECT m.*,
+ EXISTS(SELECT 1 FROM message_stars ms WHERE ms.message_id=m.id AND ms.user_id=$3::uuid) AS starred,
+ EXISTS(SELECT 1 FROM message_pins mp WHERE mp.message_id=m.id) AS pinned,jsonb_build_object('id',u.id,'name',u.name,'handle',u.handle) AS sender,
  CASE WHEN a.id IS NOT NULL THEN jsonb_build_object('id',a.id,'name',a.name,'mime',a.mime,'size',a.size) ELSE NULL END AS attachment,
  CASE WHEN t.message_id IS NOT NULL THEN jsonb_build_object('language',t.language,'status',t.status,'text',t.text) ELSE NULL END AS translation,
  (SELECT COALESCE(jsonb_object_agg(t_all.language, jsonb_build_object('status', t_all.status, 'text', t_all.text)), '{}'::jsonb)
@@ -47,8 +50,8 @@ export const messageSelect = `SELECT m.*,jsonb_build_object('id',u.id,'name',u.n
   JOIN translations rt ON rt.message_id=m.id AND rt.language=recipient.language
   WHERE rm.conversation_id=m.conversation_id AND rm.user_id<>m.sender_id
     AND (SELECT count(*) FROM members WHERE conversation_id=m.conversation_id)=2 LIMIT 1) AS receiver_translation
- ,(SELECT jsonb_build_object('id',r.id,'sender',ru.name,'text',r.text,'sticker',r.sticker,'attachment',r.attachment_id IS NOT NULL,'deleted_at',r.deleted_at)
- FROM messages r JOIN users ru ON ru.id=r.sender_id WHERE r.id=m.reply_to_id AND r.conversation_id=m.conversation_id) AS reply
+ ,(SELECT jsonb_build_object('id',r.id,'sender',ru.name,'text',r.text,'sticker',r.sticker,'attachment',r.attachment_id IS NOT NULL,'deleted_at',r.deleted_at,'expires_at',r.expires_at)
+ FROM messages r JOIN users ru ON ru.id=r.sender_id WHERE r.id=m.reply_to_id AND r.conversation_id=m.conversation_id AND (r.expires_at IS NULL OR r.expires_at>now())) AS reply
  ,(SELECT COALESCE(jsonb_object_agg(
    react.emoji,
    jsonb_build_object(
@@ -67,12 +70,23 @@ export const messageSelect = `SELECT m.*,jsonb_build_object('id',u.id,'name',u.n
     GROUP BY r.emoji
   ) react
  ) AS reactions
- FROM messages m JOIN users u ON u.id=m.sender_id LEFT JOIN attachments a ON a.id=m.attachment_id
+ FROM (SELECT * FROM messages WHERE expires_at IS NULL OR expires_at>now()) m JOIN users u ON u.id=m.sender_id LEFT JOIN attachments a ON a.id=m.attachment_id
  LEFT JOIN translations t ON t.message_id=m.id AND t.language=$2::text`;
 export async function sendMessage(user, input, conversationId) {
   return transaction(async (c) => {
     await membership(user.id, conversationId, c);
     await assertCanContact(user.id, conversationId, c);
+    
+    // Check if user has permission to send messages in groups
+    const member = await one(
+      'SELECT m.can_send_messages, c.direct_key IS NULL as is_group FROM members m JOIN conversations c ON c.id=m.conversation_id WHERE m.user_id=$1 AND m.conversation_id=$2',
+      [user.id, conversationId],
+      c,
+    );
+    if (member.is_group && !member.can_send_messages) {
+      throw new HttpError(403, 'You do not have permission to send messages in this group.');
+    }
+    
     await c.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [
       `${user.id}:${input.client_id}`,
     ]);
@@ -84,10 +98,11 @@ export async function sendMessage(user, input, conversationId) {
     if (duplicate) {
       if (duplicate.conversation_id !== conversationId)
         throw new HttpError(409, 'Message identifier already used.');
+      if (hasExpired(duplicate)) throw new HttpError(409, 'Message has expired.');
       return duplicate;
     }
     if (input.reply_to_id) {
-      const reply = await one('SELECT id FROM messages WHERE id=$1 AND conversation_id=$2 AND deleted_at IS NULL FOR UPDATE', [input.reply_to_id, conversationId], c);
+      const reply = await one('SELECT id FROM messages WHERE id=$1 AND conversation_id=$2 AND deleted_at IS NULL AND (expires_at IS NULL OR expires_at>now()) FOR UPDATE', [input.reply_to_id, conversationId], c);
       if (!reply) throw new HttpError(400, 'Reply message is unavailable in this conversation.');
     }
     let isVoiceNote = false;
@@ -111,7 +126,7 @@ export async function sendMessage(user, input, conversationId) {
         (/^voice-note-/.test(attachment.name || '') && attachment.mime === 'video/webm');
     }
     const m = await one(
-      `INSERT INTO messages(id,conversation_id,sender_id,client_id,text,source_language,sticker,attachment_id,reply_to_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+      `INSERT INTO messages(id,conversation_id,sender_id,client_id,text,source_language,sticker,attachment_id,reply_to_id,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,(SELECT CASE WHEN disappearing_seconds=0 THEN NULL ELSE now()+make_interval(secs=>disappearing_seconds) END FROM conversations WHERE id=$2)) RETURNING *`,
       [
         randomUUID(),
         conversationId,
@@ -162,7 +177,7 @@ export async function sendMessage(user, input, conversationId) {
 export async function changeMessage(user, messageId, text) {
   return transaction(async (c) => {
     const m = await one('SELECT * FROM messages WHERE id=$1 FOR UPDATE', [messageId], c);
-    if (!m) throw new HttpError(404, 'Message not found.');
+    if (!m || hasExpired(m)) throw new HttpError(404, 'Message not found.');
     await membership(user.id, m.conversation_id, c);
     if (m.sender_id !== user.id) throw new HttpError(403, 'Only the sender can change this message.');
     if (m.deleted_at) {
@@ -173,6 +188,10 @@ export async function changeMessage(user, messageId, text) {
     const result = text === undefined
       ? await one("UPDATE messages SET text='Message deleted',sticker=NULL,attachment_id=NULL,deleted_at=now() WHERE id=$1 RETURNING *", [messageId], c)
       : await one('UPDATE messages SET text=$2,edited_at=clock_timestamp() WHERE id=$1 RETURNING *', [messageId, text], c);
+    if (text === undefined) {
+      await c.query('DELETE FROM message_stars WHERE message_id=$1', [messageId]);
+      await c.query('DELETE FROM message_pins WHERE message_id=$1', [messageId]);
+    }
     await c.query('DELETE FROM translations WHERE message_id=$1', [messageId]);
     await c.query('DELETE FROM media_jobs WHERE message_id=$1', [messageId]);
     if (text !== undefined && user.ai_consent && config.GEMINI_API_KEY) {
@@ -225,7 +244,7 @@ export async function changeCall(userId, callId, action) {
 export async function toggleReaction(user, messageId, emoji) {
   return transaction(async (c) => {
     const m = await one('SELECT * FROM messages WHERE id=$1', [messageId], c);
-    if (!m) throw new HttpError(404, 'Message not found.');
+    if (!m || hasExpired(m)) throw new HttpError(404, 'Message not found.');
     await membership(user.id, m.conversation_id, c);
     if (m.deleted_at) throw new HttpError(400, 'Cannot react to deleted message.');
     
@@ -253,5 +272,25 @@ export async function toggleReaction(user, messageId, emoji) {
     });
     
     return { removed: !!existing };
+  });
+}
+
+export async function saveMessage(user, messageId, kind, enabled) {
+  return transaction(async c => {
+    const message = await one('SELECT * FROM messages WHERE id=$1 FOR UPDATE', [messageId], c);
+    if (!message || hasExpired(message)) throw new HttpError(404,'Message not found.');
+    await membership(user.id,message.conversation_id,c);
+    if (message.deleted_at) throw new HttpError(409,'Deleted messages cannot be saved.');
+    if (kind==='pin') {
+      await assertCanContact(user.id,message.conversation_id,c);
+      if (enabled) await c.query('INSERT INTO message_pins(message_id,pinned_by) VALUES($1,$2) ON CONFLICT DO NOTHING',[messageId,user.id]);
+      else await c.query('DELETE FROM message_pins WHERE message_id=$1',[messageId]);
+      await conversationEvent(c,message.conversation_id,'message:changed',{conversation_id:message.conversation_id,message_id:messageId});
+    } else {
+      if (enabled) await c.query('INSERT INTO message_stars(message_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING',[messageId,user.id]);
+      else await c.query('DELETE FROM message_stars WHERE message_id=$1 AND user_id=$2',[messageId,user.id]);
+      await enqueue(c,'event',{users:[user.id],event:'message:changed',data:{conversation_id:message.conversation_id,message_id:messageId}});
+    }
+    return { [kind==='pin'?'pinned':'starred']:enabled };
   });
 }

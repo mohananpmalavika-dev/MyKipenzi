@@ -25,6 +25,11 @@ await db.query(await readFile(new URL('../../server/message-actions-schema.sql',
 await db.query(await readFile(new URL('../../server/safety-schema.sql', import.meta.url), 'utf8'));
 await db.query(await readFile(new URL('../../server/reactions-schema.sql', import.meta.url), 'utf8'));
 await db.query(await readFile(new URL('../../server/group-schema.sql', import.meta.url), 'utf8'));
+await db.query(await readFile(new URL('../../server/group-features-migration.sql', import.meta.url), 'utf8'));
+await db.query(await readFile(new URL('../../server/saved-messages-schema.sql', import.meta.url), 'utf8'));
+await db.query(await readFile(new URL('../../server/daily-prompt-schema.sql', import.meta.url), 'utf8'));
+await db.query(await readFile(new URL('../../server/disappearing-schema.sql', import.meta.url), 'utf8'));
+const { expireMessages } = await import('../../server/disappearing.js');
 const server = createServer(createApp());
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
@@ -483,6 +488,75 @@ test('API integration against an isolated PostgreSQL schema', async (t) => {
       assert.equal(jobs[0].payload.language, 'sw');
       assert.equal(jobs[0].payload.requester_ids.length, 2);
       assert.equal((await request('/conversations/groups', { name: 'Invalid', handles: [bob.user.handle, bob.user.handle] }, alice)).status, 400);
+    });
+    await t.test('stars are personal, pins are shared, and deleted messages leave saved lists', async () => {
+      const sent = await request(`/conversations/${conversation}/messages`,{client_id:randomUUID(),text:'Important address: 12 Garden Road'},alice);
+      const mid=sent.data.id;
+      assert.equal((await request(`/messages/${mid}/star`,{},alice,'PUT')).status,200);
+      assert.equal((await request(`/messages/${mid}/star`,{},alice,'PUT')).status,200);
+      assert.equal((await request(`/messages/${mid}`,undefined,alice)).data.starred,true);
+      assert.equal((await request(`/messages/${mid}`,undefined,bob)).data.starred,false);
+      assert.equal((await request(`/messages/${mid}/star`,{},eve,'PUT')).status,404);
+      assert.equal((await request(`/messages/${mid}/pin`,{},eve,'PUT')).status,404);
+      assert.equal((await request(`/messages/${mid}/pin`,{},bob,'PUT')).status,200);
+      assert.equal((await request(`/messages/${mid}`,undefined,alice)).data.pinned,true);
+      const starred=(await request(`/conversations/${conversation}/library?kind=starred&q=Garden`,undefined,alice)).data;
+      assert.equal(starred.messages[0].id,mid);
+      assert.equal((await request(`/conversations/${conversation}/library?kind=starred`,undefined,bob)).data.messages.length,0);
+      assert.equal((await request(`/conversations/${conversation}/library?kind=pinned`,undefined,bob)).data.messages[0].id,mid);
+      await request(`/messages/${mid}/pin`,undefined,alice,'DELETE');
+      assert.equal((await request(`/messages/${mid}`,undefined,bob)).data.pinned,false);
+      await request(`/messages/${mid}/star`,undefined,alice,'DELETE');
+      assert.equal((await request(`/messages/${mid}`,undefined,alice)).data.starred,false);
+      await request(`/messages/${mid}/star`,{},bob,'PUT');
+      await request(`/messages/${mid}/pin`,{},alice,'PUT');
+      await request(`/messages/${mid}`,undefined,alice,'DELETE');
+      assert.equal((await request(`/conversations/${conversation}/library?kind=starred`,undefined,bob)).data.messages.length,0);
+      assert.equal((await request(`/conversations/${conversation}/library?kind=pinned`,undefined,bob)).data.messages.length,0);
+      assert.equal((await request(`/messages/${mid}/star`,{},alice,'PUT')).status,409);
+    });
+    await t.test('disappearing settings apply to new messages and expired content is inaccessible', async () => {
+      assert.equal((await request(`/conversations/${conversation}/disappearing`,{seconds:123},alice,'PATCH')).status,400);
+      assert.equal((await request(`/conversations/${conversation}/disappearing`,{seconds:86400},eve,'PATCH')).status,404);
+      const previous = (await request(`/conversations/${conversation}/messages`,{client_id:randomUUID(),text:'Keep previous message'},alice)).data;
+      for(const seconds of [3600,86400,604800,2592000]) {
+        assert.equal((await request(`/conversations/${conversation}/disappearing`,{seconds},alice,'PATCH')).status,200);
+        const sent = (await request(`/conversations/${conversation}/messages`,{client_id:randomUUID(),text:'Temporary '+seconds},alice)).data;
+        assert.ok(Math.abs((new Date(sent.expires_at)-new Date(sent.created_at))/1000-seconds)<2);
+        assert.equal((await request(`/messages/${previous.id}`,undefined,bob)).data.expires_at,null);
+        await request(`/messages/${sent.id}/star`,{},bob,'PUT');
+        await request(`/messages/${sent.id}/pin`,{},alice,'PUT');
+        await db.query("UPDATE messages SET expires_at=now()-interval '1 second' WHERE id=$1",[sent.id]);
+        assert.equal((await request(`/messages/${sent.id}`,undefined,bob)).status,404);
+        assert.equal((await request(`/messages/${sent.id}`,{text:'Restore'},alice,'PATCH')).status,404);
+        assert.equal((await request(`/messages/${sent.id}/star`,{},bob,'PUT')).status,404);
+        assert.equal((await request(`/conversations/${conversation}/library?q=Temporary`,undefined,bob)).data.messages.length,0);
+        assert.equal((await request(`/conversations/${conversation}/messages`,{client_id:randomUUID(),text:'Reply',reply_to_id:sent.id},bob)).status,400);
+        const client=await db.connect();
+        try{await client.query('BEGIN');assert.ok(await expireMessages(client)>0);await client.query('COMMIT');}finally{client.release();}
+        assert.equal((await db.query('SELECT text FROM messages WHERE id=$1',[sent.id])).rows[0].text,'Message expired');
+        assert.equal((await db.query('SELECT count(*)::int AS count FROM message_stars WHERE message_id=$1',[sent.id])).rows[0].count,0);
+      }
+      assert.equal((await request(`/conversations/${conversation}/disappearing`,{seconds:0},bob,'PATCH')).status,200);
+      const permanent=(await request(`/conversations/${conversation}/messages`,{client_id:randomUUID(),text:'Permanent'},bob)).data;
+      assert.equal(permanent.expires_at,null);
+    });
+    await t.test('export is member-only, paginates a fixed range, and excludes deleted and expired messages', async () => {
+      assert.equal((await request('/conversations/'+conversation+'/export',undefined,eve)).status,404);
+      assert.equal((await request('/conversations/'+conversation+'/export?after=-1',undefined,alice)).status,400);
+      const start = (await db.query('SELECT coalesce(max(seq),0)::text AS seq FROM messages WHERE conversation_id=$1',[conversation])).rows[0].seq;
+      await db.query(`INSERT INTO messages(id,conversation_id,sender_id,client_id,text,source_language)
+        SELECT gen_random_uuid(),$1,$2,gen_random_uuid(),'Export line ' || i,'en' FROM generate_series(1,205) i`,[conversation,alice.user.id]);
+      await db.query("UPDATE messages SET deleted_at=now() WHERE conversation_id=$1 AND text='Export line 2'",[conversation]);
+      await db.query("UPDATE messages SET expires_at=now()-interval '1 second' WHERE conversation_id=$1 AND text='Export line 3'",[conversation]);
+      const first=await request('/conversations/'+conversation+'/export?after='+start,undefined,alice);
+      assert.equal(first.status,200); assert.equal(first.data.messages.length,200); assert.equal(first.data.has_more,true);
+      await request('/conversations/'+conversation+'/messages',{client_id:randomUUID(),text:'Sent after export began'},alice);
+      const last=await request('/conversations/'+conversation+'/export?after='+first.data.messages.at(-1).seq+'&through='+first.data.through,undefined,alice);
+      assert.equal(last.data.messages.length,3); assert.equal(last.data.has_more,false);
+      const messages=[...first.data.messages,...last.data.messages];
+      assert.ok(messages.every(message => !['Export line 2','Export line 3','Sent after export began'].includes(message.text)));
+      assert.ok(messages.every(message => !Object.hasOwn(message,'client_id')));
     });
     await t.test('logout invalidates the session', async () => {
       await request('/notifications/subscription', { endpoint: 'https://fcm.googleapis.com/fcm/send/logout-test', keys: { p256dh: testPushKeys.publicKey, auth: 'A'.repeat(22) } }, alice);
