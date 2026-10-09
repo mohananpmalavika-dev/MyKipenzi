@@ -159,11 +159,11 @@ export function InvisibleInkCard({
     ctx.fillStyle = '#1e293b';
     ctx.font = 'bold 12px "DM Sans", -apple-system, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('🪄 രഹസ്യ മഷി (Invisible Ink)', width / 2, badgeY + 17);
+    ctx.fillText('🪄 Invisible Ink', width / 2, badgeY + 17);
 
     ctx.fillStyle = theme.primaryColor;
     ctx.font = '500 11px "DM Sans", -apple-system, sans-serif';
-    ctx.fillText('✨ വിരൽ കൊണ്ട് ഉരച്ചു മായ്ക്കൂ (Scratch to reveal)', width / 2, badgeY + 33);
+    ctx.fillText('✨ Scratch to reveal', width / 2, badgeY + 33);
   }, [theme]);
 
   // Resize canvas to match container dimensions
@@ -395,10 +395,10 @@ export function InvisibleInkCard({
       <div className="invisible-ink-header">
         <div className="invisible-ink-title">
           <Wand2 size={16} className="ink-wand-icon" />
-          <strong>രഹസ്യ മഷി 🪄 ({theme.name})</strong>
+          <strong>Invisible Ink 🪄 ({theme.name})</strong>
         </div>
         <div className="invisible-ink-meta-tags">
-          <span className="ink-theme-pill">{theme.emoji} {theme.malayalamName}</span>
+          <span className="ink-theme-pill">{theme.emoji} {theme.name}</span>
           {!isConcealed && (
             <span className="ink-countdown-pill" title={`Auto-refog in ${countdown}s`}>
               <Clock size={12} /> {countdown}s
@@ -420,7 +420,7 @@ export function InvisibleInkCard({
               {mediaLoading ? (
                 <div className="ink-media-loading">
                   <LoaderCircle size={24} className="spin" />
-                  <span>രഹസ്യ ചിത്രം ഒരുങ്ങുന്നു...</span>
+                  <span>Loading secret photo...</span>
                 </div>
               ) : mediaUrl ? (
                 <img
@@ -432,7 +432,7 @@ export function InvisibleInkCard({
               ) : (
                 <div className="ink-media-placeholder">
                   <Heart size={32} />
-                  <span>രഹസ്യ ചിത്രം</span>
+                  <span>Secret photo</span>
                 </div>
               )}
             </div>
@@ -448,7 +448,7 @@ export function InvisibleInkCard({
 
           {!attachment && !parsed.content && (
             <p className="ink-secret-text italic" dir="auto">
-              (രഹസ്യ സന്ദേശം)
+              (Secret message)
             </p>
           )}
         </div>
@@ -487,11 +487,11 @@ export function InvisibleInkCard({
         <div className="invisible-ink-status">
           {isConcealed ? (
             <span className="ink-hint-text">
-              <Sparkles size={13} className="sparkle-anim" /> വിരൽ കൊണ്ട് ഉരച്ചു മായ്ക്കൂ (Scratch fog)
+              <Sparkles size={13} className="sparkle-anim" /> Scratch to reveal
             </span>
           ) : (
             <span className="ink-revealed-notice">
-              <Eye size={13} /> തെളിഞ്ഞു വരച്ചു ({scratchPercent}%) · {countdown}s-ൽ വീണ്ടും മൂടും 🌫️
+              <Eye size={13} /> Revealed ({scratchPercent}%) · Conceals again in {countdown}s 🌫️
             </span>
           )}
         </div>
@@ -502,9 +502,9 @@ export function InvisibleInkCard({
               type="button"
               className="ink-action-btn refog-btn"
               onClick={handleRefog}
-              title="ഇപ്പോൾ തന്നെ വീണ്ടും മൂടുക (Hide back now)"
+              title="Conceal again"
             >
-              <EyeOff size={13} /> മൂടുക (Hide)
+              <EyeOff size={13} /> Hide
             </button>
           )}
           {isConcealed && (
@@ -512,9 +512,9 @@ export function InvisibleInkCard({
               type="button"
               className="ink-action-btn reveal-btn"
               onClick={handleRevealAll}
-              title="മുഴുവൻ കാണുക (Reveal all)"
+              title="Reveal all"
             >
-              <Eye size={13} /> തുറക്കുക (Reveal)
+              <Eye size={13} /> Reveal
             </button>
           )}
           {!isConcealed && (
@@ -522,9 +522,9 @@ export function InvisibleInkCard({
               type="button"
               className="ink-action-btn reset-btn"
               onClick={handleRevealAll}
-              title="വീണ്ടും വ്യക്തമാക്കുക (Clear fog)"
+              title="Clear fog"
             >
-              <RotateCcw size={13} /> ക്ലിയർ
+              <RotateCcw size={13} /> Clear
             </button>
           )}
         </div>

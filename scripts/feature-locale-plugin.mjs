@@ -1,12 +1,13 @@
 import { normalizeFeatureText } from '../shared/featureLanguage.js';
+import { featureText } from '../shared/featureLocale.js';
 
-const excluded = /[\\/](App|components|FriendshipLocale|InstallApp|AppLock|StealthDisguise|DecoyLists|MessageStatus|MessageThread|PhotoViewer|MediaPlayer|GlobalSearch|UserDirectory|ContactManagement|ChatExport|ChatLibrary|UserSafety|GroupManagement|AppearanceOptions|CapturePrivacy|ViewOnceMedia)\.jsx$/;
+const excluded = /[\\/](FriendshipLocale|MediaPlayer|MessageThread)\.jsx$/;
 
-// Localize rendered feature content while keeping the app shell and navigation English.
+// Normalize built-in interface copy to English, independently of message receive language.
 // Text remains a React text node: this adds no DOM wrappers or mutation observers.
 export default function featureLocalePlugin({ types: t }) {
   const contentField = value => t.isMemberExpression(value) && (
-    /^(label(?:Ml|En|_ml)?|title(?:Ml|En)|question(?:Ml|En|_ml|_en)|text(?:Ml|En)|option[AB]_(?:Ml|En))$/.test(value.property.name || '') ||
+    /^(label(?:Ml|En|_ml)?|name(?:Ml|En)|malayalamName|title(?:Ml|En)|question(?:Ml|En|_ml|_en)|text(?:Ml|En)|option[AB]_(?:Ml|En))$/.test(value.property.name || '') ||
     (t.isIdentifier(value.object, { name: 'action' }) && ['title', 'description', 'category', 'reason'].includes(value.property.name))
   );
   const safeContent = value => t.isStringLiteral(value) || contentField(value) || (t.isConditionalExpression(value) && safeContent(value.consequent) && safeContent(value.alternate));
@@ -46,6 +47,10 @@ export default function featureLocalePlugin({ types: t }) {
             return t.jsxElement(t.jsxOpeningElement(t.jsxIdentifier('KipenziFeatureText'), [t.jsxAttribute(t.jsxIdentifier('value'), t.jsxExpressionContainer(expression))], true), null, [], true);
           });
         },
+      },
+      JSXAttribute(path, state) {
+        if (!state.featureLocale || !['title', 'aria-label', 'placeholder', 'alt', 'label'].includes(path.node.name.name)) return;
+        if (t.isStringLiteral(path.node.value)) path.node.value.value = featureText(path.node.value.value);
       },
     },
   };

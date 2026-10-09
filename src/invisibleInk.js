@@ -1,3 +1,5 @@
+import { safeVibrate } from './safeVibrate.js';
+
 // Invisible Ink & Magic Fog Messages (രഹസ്യ മഷി 🪄🌫️)
 // Utility, Themes, Audio Synthesizer, Haptics & Formatters
 
@@ -212,23 +214,11 @@ export function playRevealTada() {
 }
 
 export function triggerScratchHaptics() {
-  if (typeof navigator !== 'undefined' && navigator.vibrate) {
-    try {
-      navigator.vibrate(8);
-    } catch {
-      // Ignore vibration errors
-    }
-  }
+  safeVibrate(8);
 }
 
 export function triggerRevealHaptics() {
-  if (typeof navigator !== 'undefined' && navigator.vibrate) {
-    try {
-      navigator.vibrate([25, 30, 40]);
-    } catch {
-      // Ignore vibration errors
-    }
-  }
+  safeVibrate([25, 30, 40]);
 }
 
 // Detection and Parsing
@@ -313,7 +303,7 @@ export function getInvisibleInkPreviewText(text) {
   if (!isMessageInvisibleInk(text)) return text;
   const parsed = parseInvisibleInk(text);
   if (parsed.isPhoto) {
-    return '🪄 രഹസ്യ ഫോട്ടോ (Invisible Ink Photo · Scratch to reveal 🌫️)';
+    return '🪄 Invisible Ink Photo · Scratch to reveal 🌫️';
   }
-  return '🪄 രഹസ്യ സന്ദേശം (Invisible Ink · Scratch to reveal 🌫️)';
+  return '🪄 Invisible Ink · Scratch to reveal 🌫️';
 }

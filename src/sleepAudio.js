@@ -1,3 +1,5 @@
+import { safeVibrate } from './safeVibrate.js';
+
 // Web Audio API Synthesizers for "Sleep Together" Synchronized Night Room
 // Zero external audio files required: all soundscapes are procedurally generated in real time
 
@@ -672,13 +674,7 @@ export function playGoodnightChime() {
  * Trigger subtle soothing vibration if supported
  */
 export function triggerSleepHaptics(pattern = [30]) {
-  if (typeof navigator !== 'undefined' && navigator.vibrate) {
-    try {
-      navigator.vibrate(pattern);
-    } catch {
-      /* ignore */
-    }
-  }
+  safeVibrate(pattern);
 }
 
 export function formatRemainingTime(seconds) {

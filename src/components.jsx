@@ -1131,7 +1131,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
     [ownVoice, setOwnVoice] = useState(false);
   const translatedText = !mine && !message.deleted_at ? receiverMessageText(message, user.language) : null;
   const translated = Boolean(translatedText);
-  const label = text => featureText(text, user.language);
+  const label = text => featureText(text, 'en');
 
   const isAudioNote =
     message.attachment &&
@@ -2068,7 +2068,7 @@ export function CallOverlay({ controller, user, peer, musicController, socket, o
 
   if (!call) return null;
   const activeFilter = getFilterById(activeFilterId);
-  const isMl = user?.language === 'ml' || user?.language === 'manglish' || true;
+  const isMl = false;
 
   return (
     <div

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { safeVibrate } from './safeVibrate.js';
 
 export function detectReaction(text, sticker, translatedText) {
   if (sticker) {
@@ -105,27 +106,22 @@ export function detectReaction(text, sticker, translatedText) {
 }
 
 export function triggerDeviceVibration(type) {
-  if (typeof navigator === 'undefined' || !('vibrate' in navigator)) return;
-  try {
-    switch (type) {
-      case 'kiss':
-        navigator.vibrate([90, 40, 90, 40, 180, 50, 120]);
-        break;
-      case 'hug':
-        navigator.vibrate([120, 60, 200, 80, 250]);
-        break;
-      case 'love':
-      case 'miss':
-        navigator.vibrate([140, 90, 140, 180, 160]);
-        break;
-      case 'heart':
-        navigator.vibrate([60, 40, 80]);
-        break;
-      default:
-        break;
-    }
-  } catch {
-    // Ignore unsupported vibration permissions
+  switch (type) {
+    case 'kiss':
+      safeVibrate([90, 40, 90, 40, 180, 50, 120]);
+      break;
+    case 'hug':
+      safeVibrate([120, 60, 200, 80, 250]);
+      break;
+    case 'love':
+    case 'miss':
+      safeVibrate([140, 90, 140, 180, 160]);
+      break;
+    case 'heart':
+      safeVibrate([60, 40, 80]);
+      break;
+    default:
+      break;
   }
 }
 

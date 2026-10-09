@@ -1,4 +1,5 @@
 // Web Audio API Synthesizers & Haptic Engine for Virtual Touch & Haptic Hug
+import { safeVibrate } from './safeVibrate.js';
 
 let sharedAudioCtx = null;
 
@@ -70,15 +71,7 @@ export const HAPTIC_PATTERNS = {
  * Trigger mobile haptic vibration with safe fallbacks
  */
 export function triggerTouchHaptics(pattern = HAPTIC_PATTERNS.pulse) {
-  try {
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      navigator.vibrate(pattern);
-      return true;
-    }
-  } catch {
-    /* Haptics unsupported or user interaction blocked */
-  }
-  return false;
+  return safeVibrate(pattern);
 }
 
 /**

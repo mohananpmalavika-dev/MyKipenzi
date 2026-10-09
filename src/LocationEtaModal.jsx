@@ -115,7 +115,7 @@ export function LocationEtaModal({
     fetchLocation();
   }, [fetchLocation]);
 
-  const isMalayalam = user?.language === 'ml' || user?.language === 'manglish';
+  const isMalayalam = false;
 
   const handleSendEta = () => {
     const lat = coords?.lat ? coords.lat.toFixed(4) : null;

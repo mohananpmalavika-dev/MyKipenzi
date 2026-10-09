@@ -4,6 +4,8 @@
  * multi-tap combos, and particle physics during video & voice calls.
  */
 
+import { safeVibrate } from './safeVibrate.js';
+
 export const CALL_REACTIONS = [
   {
     id: 'heart',
@@ -287,28 +289,23 @@ export function playCallReactionSound(type, isMuted = false) {
  * Haptic feedback during call reactions
  */
 export function triggerCallReactionVibration(type) {
-  if (typeof navigator === 'undefined' || !('vibrate' in navigator)) return;
-  try {
-    switch (type) {
-      case 'heart':
-      case 'love_pulse':
-        navigator.vibrate([60, 40, 80]);
-        break;
-      case 'rose':
-      case 'blossom':
-        navigator.vibrate([40, 50, 40, 50, 60]);
-        break;
-      case 'kiss':
-        navigator.vibrate([90, 40, 120]);
-        break;
-      case 'fire':
-        navigator.vibrate([70, 30, 90, 40, 110]);
-        break;
-      default:
-        navigator.vibrate([50, 30, 50]);
-        break;
-    }
-  } catch {
-    // Ignore haptic failures
+  switch (type) {
+    case 'heart':
+    case 'love_pulse':
+      safeVibrate([60, 40, 80]);
+      break;
+    case 'rose':
+    case 'blossom':
+      safeVibrate([40, 50, 40, 50, 60]);
+      break;
+    case 'kiss':
+      safeVibrate([90, 40, 120]);
+      break;
+    case 'fire':
+      safeVibrate([70, 30, 90, 40, 110]);
+      break;
+    default:
+      safeVibrate([50, 30, 50]);
+      break;
   }
 }

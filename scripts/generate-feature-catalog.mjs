@@ -26,6 +26,13 @@ for (const directory of ['src', 'shared']) {
     catch { process.stderr.write(`Skipping unparseable feature file ${file}\n`); continue; }
     traverse(ast, { StringLiteral(path) { addBilingual(path.node.value); }, JSXText(path) { addBilingual(path.node.value); }, ObjectExpression(path) {
       const fields = Object.fromEntries(path.node.properties.filter(property => property.type === 'ObjectProperty' && ['StringLiteral', 'Identifier'].includes(property.key.type) && property.value.type === 'StringLiteral').map(property => [property.key.name || property.key.value, property.value.value]));
+      for (const [english, malayalam] of [[fields.name, fields.malayalamName], [fields.label, fields.labelMl], [fields.label, fields.label_ml]]) {
+        if (english && malayalam) {
+          const pair = { en: english, ml: malayalam };
+          catalog[normalizeFeatureText(english)] = pair;
+          catalog[normalizeFeatureText(malayalam)] = pair;
+        }
+      }
       for (const [key, english] of Object.entries(fields)) {
         const match = key.match(/^(.*?)(?:_en|En|_En)$/);
         if (!match) continue;

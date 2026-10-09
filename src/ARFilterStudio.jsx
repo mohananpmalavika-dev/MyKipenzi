@@ -24,7 +24,7 @@ export function ARFilterStudio({
   onCaptureSnapshot,
   onSendSnapshot,
   processor = null,
-  isMalayalam = true,
+  isMalayalam = false,
   isOpen = false,
   onClose,
 }) {

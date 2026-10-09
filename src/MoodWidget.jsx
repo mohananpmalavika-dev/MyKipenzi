@@ -4,14 +4,14 @@ import { api } from './api.js';
 import { MOODS, currentMood, getMood, mergeMoodStatus } from '../shared/moods.js';
 import './mood-styles.css';
 
-function PersonMood({ name, status, language }) {
+function PersonMood({ name, status }) {
   const mood = getMood(status?.mood);
   return (
     <div className="mood-person">
       <span className="mood-person-emoji" aria-hidden="true">{mood?.emoji || '🤍'}</span>
       <div>
         <span className="mood-person-name" dir="auto">{name}</span>
-        <strong>{mood ? (language === 'ml' ? mood.label_ml : mood.label) : 'No check-in yet'}</strong>
+        <strong>{mood ? mood.label : 'No check-in yet'}</strong>
         {status && <time dateTime={status.updated_at}>{new Date(status.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>}
       </div>
     </div>
@@ -106,7 +106,7 @@ export function MoodWidget({ conversationId, user, peer, socket, online }) {
     <section className="mood-widget" aria-label="Mood check-in">
       <div className="mood-widget-heading">
         <div><Heart size={15} aria-hidden="true" /><h3>How is your heart today?</h3></div>
-        <span>{user.language === 'ml' ? 'ഇന്നത്തെ മനസ്സ്' : 'Daily check-in'}</span>
+        <span>Daily check-in</span>
       </div>
       <div className="mood-people" aria-live="polite">
         <PersonMood name="You" status={mine} language={user.language} />
@@ -120,7 +120,7 @@ export function MoodWidget({ conversationId, user, peer, socket, online }) {
             aria-label={`Share mood: ${mood.label}`}
             aria-pressed={mine?.mood === mood.id}
             disabled={loading || !!busy || !online}
-            title={user.language === 'ml' ? mood.label_ml : mood.hint}
+            title={mood.hint}
             onClick={() => void share(mood.id)}>
             <span className="mood-option-emoji" aria-hidden="true">{mood.emoji}</span>
             <span>{mood.label}</span>

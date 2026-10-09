@@ -44,12 +44,12 @@ export function InvisibleInkModal({
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      if (onError) onError('ദയവായി ഒരു ചിത്രം (Image) തിരഞ്ഞെടുക്കുക.');
+      if (onError) onError('Please choose an image.');
       return;
     }
 
     if (file.size > 20 * 1024 * 1024) {
-      if (onError) onError('ഫയൽ സൈസ് 20 MB-യിൽ താഴെയായിരിക്കണം.');
+      if (onError) onError('Choose an image smaller than 20 MB.');
       return;
     }
 
@@ -67,7 +67,7 @@ export function InvisibleInkModal({
   };
 
   const handleSelectPrompt = (prompt) => {
-    setSecretText(prompt.textMl);
+    setSecretText(prompt.textEn);
     setShowPromptPicker(false);
   };
 
@@ -194,7 +194,7 @@ export function InvisibleInkModal({
                   >
                     <span className="ink-theme-emoji">{th.emoji}</span>
                     <div className="ink-theme-names">
-                      <strong>{th.malayalamName}</strong>
+                      <strong>{th.name}</strong>
                       <small>{th.name}</small>
                     </div>
                     {isSelected && (

@@ -1404,7 +1404,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
   ];
 
   return (
-    <FeatureLocaleProvider language={user.language}>
+    <FeatureLocaleProvider>
     <CaptureGuard conversationId={selected} user={user} active={!!chosen && !chosen.is_group && !chosen.contact_blocked && !isStealthDisguised}>
     <>
       <ReactionOverlay reaction={reaction} onDone={() => setReaction(null)} />

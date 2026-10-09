@@ -863,6 +863,70 @@
     "en": "Mute sounds",
     "ml": "ശബ്ദം ഓഫാക്കുക"
   },
+  "Hearts": {
+    "en": "Hearts",
+    "ml": "ഹാർട്ടുകൾ"
+  },
+  "ഹാർട്ടുകൾ": {
+    "en": "Hearts",
+    "ml": "ഹാർട്ടുകൾ"
+  },
+  "Roses": {
+    "en": "Roses",
+    "ml": "റോസാപ്പൂക്കൾ"
+  },
+  "റോസാപ്പൂക്കൾ": {
+    "en": "Roses",
+    "ml": "റോസാപ്പൂക്കൾ"
+  },
+  "Kisses": {
+    "en": "Kisses",
+    "ml": "ചുംബനങ്ങൾ"
+  },
+  "ചുംബനങ്ങൾ": {
+    "en": "Kisses",
+    "ml": "ചുംബനങ്ങൾ"
+  },
+  "Love Pulse": {
+    "en": "Love Pulse",
+    "ml": "സ്പന്ദനം"
+  },
+  "സ്പന്ദനം": {
+    "en": "Love Pulse",
+    "ml": "സ്പന്ദനം"
+  },
+  "Blossom": {
+    "en": "Blossom",
+    "ml": "പൂമഴ"
+  },
+  "പൂമഴ": {
+    "en": "Blossom",
+    "ml": "പൂമഴ"
+  },
+  "Fire": {
+    "en": "Fire",
+    "ml": "തീക്ഷ്ണ പ്രണയം"
+  },
+  "തീക്ഷ്ണ പ്രണയം": {
+    "en": "Fire",
+    "ml": "തീക്ഷ്ണ പ്രണയം"
+  },
+  "Warm Hug": {
+    "en": "Warm Hug",
+    "ml": "ആലിംഗനം"
+  },
+  "ആലിംഗനം": {
+    "en": "Warm Hug",
+    "ml": "ആലിംഗനം"
+  },
+  "Celebrate": {
+    "en": "Celebrate",
+    "ml": "ആഘോഷം"
+  },
+  "ആഘോഷം": {
+    "en": "Celebrate",
+    "ml": "ആഘോഷം"
+  },
   "📸 Open in Polaroid Scrapbook (പോളറോയ്ഡ് പ്രണയ ആൽബം)": {
     "en": "📸 Open in Polaroid Scrapbook",
     "ml": "പോളറോയ്ഡ് പ്രണയ ആൽബം"
@@ -1730,6 +1794,38 @@
   "രഹസ്യമായി സമർപ്പിക്കൂ": {
     "en": "Lock In My Answer 🔒",
     "ml": "രഹസ്യമായി സമർപ്പിക്കൂ"
+  },
+  "Rose Petal Mist": {
+    "en": "Rose Petal Mist",
+    "ml": "പ്രണയ റോസ് മഞ്ഞ്"
+  },
+  "പ്രണയ റോസ് മഞ്ഞ്": {
+    "en": "Rose Petal Mist",
+    "ml": "പ്രണയ റോസ് മഞ്ഞ്"
+  },
+  "Mystic Lavender Fog": {
+    "en": "Mystic Lavender Fog",
+    "ml": "രഹസ്യ ലാവെൻഡർ പുക"
+  },
+  "രഹസ്യ ലാവെൻഡർ പുക": {
+    "en": "Mystic Lavender Fog",
+    "ml": "രഹസ്യ ലാവെൻഡർ പുക"
+  },
+  "Golden Starlight": {
+    "en": "Golden Starlight",
+    "ml": "സ്വർണ്ണ നക്ഷത്രമഞ്ഞ്"
+  },
+  "സ്വർണ്ണ നക്ഷത്രമഞ്ഞ്": {
+    "en": "Golden Starlight",
+    "ml": "സ്വർണ്ണ നക്ഷത്രമഞ്ഞ്"
+  },
+  "Emerald Aurora": {
+    "en": "Emerald Aurora",
+    "ml": "മാന്ത്രിക മഞ്ഞ്"
+  },
+  "മാന്ത്രിക മഞ്ഞ്": {
+    "en": "Emerald Aurora",
+    "ml": "മാന്ത്രിക മഞ്ഞ്"
   },
   "5 സെക്കൻഡ് (Fast)": {
     "en": "Fast",
@@ -4463,6 +4559,46 @@
     "en": "Warm Passion",
     "ml": "ഹൃദയാഗ്നി"
   },
+  "Small": {
+    "en": "Small",
+    "ml": "ചെറുത്"
+  },
+  "ചെറുത്": {
+    "en": "Small",
+    "ml": "ചെറുത്"
+  },
+  "Standard": {
+    "en": "Standard",
+    "ml": "സാധാരണ"
+  },
+  "സാധാരണ": {
+    "en": "Normal",
+    "ml": "സാധാരണ"
+  },
+  "Comfortable": {
+    "en": "Comfortable",
+    "ml": "സുഖകരം"
+  },
+  "സുഖകരം": {
+    "en": "Comfortable",
+    "ml": "സുഖകരം"
+  },
+  "Large": {
+    "en": "Large",
+    "ml": "വലുത്"
+  },
+  "വലുത്": {
+    "en": "Large",
+    "ml": "വലുത്"
+  },
+  "Extra Large": {
+    "en": "Extra Large",
+    "ml": "വളരെ വലുത്"
+  },
+  "വളരെ വലുത്": {
+    "en": "Extra Large",
+    "ml": "വളരെ വലുത്"
+  },
   "Malare Ninne · Premam Classic": {
     "en": "Malare Ninne · Premam Classic",
     "ml": "മലരേ നിന്നെ കാണാതിരുന്നാൽ · പ്രേമം"
@@ -4770,6 +4906,46 @@
   "ചാറ്റിലേക്ക് പങ്കിടുക 🎶": {
     "en": "Send Duet to Chat",
     "ml": "ചാറ്റിലേക്ക് പങ്കിടുക 🎶"
+  },
+  "Original": {
+    "en": "Original",
+    "ml": "സാധാരണ ശബ്ദം"
+  },
+  "സാധാരണ ശബ്ദം": {
+    "en": "Original",
+    "ml": "സാധാരണ ശബ്ദം"
+  },
+  "Cute Chipmunk": {
+    "en": "Cute Chipmunk",
+    "ml": "ക്യൂട്ട് ചിപ്‌മങ്ക്"
+  },
+  "ക്യൂട്ട് ചിപ്‌മങ്ക്": {
+    "en": "Cute Chipmunk",
+    "ml": "ക്യൂട്ട് ചിപ്‌മങ്ക്"
+  },
+  "Romantic Echo": {
+    "en": "Romantic Echo",
+    "ml": "റൊമാന്റിക് എക്കോ"
+  },
+  "റൊമാന്റിക് എക്കോ": {
+    "en": "Romantic Echo",
+    "ml": "റൊമാന്റിക് എക്കോ"
+  },
+  "Deep Voice": {
+    "en": "Deep Voice",
+    "ml": "ഡീപ് വോയ്സ്"
+  },
+  "ഡീപ് വോയ്സ്": {
+    "en": "Deep Voice",
+    "ml": "ഡീപ് വോയ്സ്"
+  },
+  "Walkie-Talkie": {
+    "en": "Walkie-Talkie",
+    "ml": "വാക്കി-ടോക്കി"
+  },
+  "വാക്കി-ടോക്കി": {
+    "en": "Walkie-Talkie",
+    "ml": "വാക്കി-ടോക്കി"
   },
   "Voice Filter Studio · ശബ്ദ ഇഫക്റ്റുകൾ": {
     "en": "Voice Filter Studio",
@@ -5215,10 +5391,6 @@
     "en": "Normal",
     "ml": "സാധാരണ"
   },
-  "സാധാരണ": {
-    "en": "Normal",
-    "ml": "സാധാരണ"
-  },
   "High": {
     "en": "High",
     "ml": "ഉയർന്നത്"
@@ -5490,6 +5662,38 @@
   "നമ്മുടെ പ്രതിമാസ ഓർമ്മകൾ": {
     "en": "Our Month in Review",
     "ml": "നമ്മുടെ പ്രതിമാസ ഓർമ്മകൾ"
+  },
+  "Happy": {
+    "en": "Happy",
+    "ml": "സന്തോഷം"
+  },
+  "സന്തോഷം": {
+    "en": "Happy",
+    "ml": "സന്തോഷം"
+  },
+  "Tired": {
+    "en": "Tired",
+    "ml": "ക്ഷീണം"
+  },
+  "ക്ഷീണം": {
+    "en": "Tired",
+    "ml": "ക്ഷീണം"
+  },
+  "Missing You": {
+    "en": "Missing You",
+    "ml": "നിന്നെ മിസ് ചെയ്യുന്നു"
+  },
+  "നിന്നെ മിസ് ചെയ്യുന്നു": {
+    "en": "Missing You",
+    "ml": "നിന്നെ മിസ് ചെയ്യുന്നു"
+  },
+  "Need a Hug": {
+    "en": "Need a Hug",
+    "ml": "ഒരു ആലിംഗനം വേണം"
+  },
+  "ഒരു ആലിംഗനം വേണം": {
+    "en": "Need a Hug",
+    "ml": "ഒരു ആലിംഗനം വേണം"
   },
   "First Chat": {
     "en": "First Chat",

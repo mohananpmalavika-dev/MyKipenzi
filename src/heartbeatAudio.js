@@ -1,3 +1,5 @@
+import { safeVibrate } from './safeVibrate.js';
+
 // Audio Context Singleton for low latency
 let sharedAudioCtx = null;
 function getAudioContext() {
@@ -127,11 +129,5 @@ export function playSyncChime() {
  * Trigger mobile haptic vibration
  */
 export function triggerHeartbeatHaptics(pattern = [60, 70, 80, 180]) {
-  try {
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      navigator.vibrate(pattern);
-    }
-  } catch {
-    /* haptic vibration unsupported or blocked fallback */
-  }
+  safeVibrate(pattern);
 }

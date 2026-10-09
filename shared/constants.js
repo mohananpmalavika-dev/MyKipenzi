@@ -1,6 +1,6 @@
 export const languages = Object.freeze({
   en: 'English',
-  ml: 'മലയാളം',
+  ml: 'Malayalam',
   manglish: 'Manglish',
   sw: 'Kiswahili',
 });

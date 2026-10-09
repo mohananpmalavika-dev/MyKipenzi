@@ -1,3 +1,5 @@
+import { safeVibrate } from './safeVibrate.js';
+
 let audioCtx = null;
 let chimeTimer = null;
 let speechTimer = null;
@@ -111,17 +113,11 @@ export function startLovingRingtone(callerName, userLanguage = 'en') {
   }, 7500);
 
   // 4. Phone vibration rhythm
-  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-    try {
-      navigator.vibrate([400, 200, 400, 200, 800, 500]);
-      vibrateTimer = setInterval(() => {
-        if (!isPlaying) return;
-        try {
-          navigator.vibrate([400, 200, 400, 200, 800, 500]);
-        } catch { /* Vibration may be unavailable on this device. */ }
-      }, 3000);
-    } catch { /* Vibration may be unavailable on this device. */ }
-  }
+  safeVibrate([400, 200, 400, 200, 800, 500]);
+  vibrateTimer = setInterval(() => {
+    if (!isPlaying) return;
+    safeVibrate([400, 200, 400, 200, 800, 500]);
+  }, 3000);
 }
 
 export function stopLovingRingtone() {
@@ -139,9 +135,5 @@ export function stopLovingRingtone() {
     } catch { /* Speech may have already stopped. */ }
   }
 
-  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-    try {
-      navigator.vibrate(0);
-    } catch { /* Vibration may be unavailable on this device. */ }
-  }
+  safeVibrate(0);
 }

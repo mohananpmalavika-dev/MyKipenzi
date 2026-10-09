@@ -356,7 +356,7 @@ export function CoupleGamesModal({
     }
   };
 
-  const isMalayalam = user?.language === 'ml' || user?.language === 'manglish';
+  const isMalayalam = false;
   const currentTrivia = TRIVIA_PRESETS[selectedTriviaIndex];
   const triviaState = triviaAnswers[currentTrivia.id] || {};
   const currentWyr = WOULD_YOU_RATHER[wyrIndex];
