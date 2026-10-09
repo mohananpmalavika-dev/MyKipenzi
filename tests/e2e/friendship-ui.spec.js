@@ -1,10 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { setupPrivacy, peer, cid, mediaId } from './privacy-fixture.js';
-import { featureText } from '../../shared/featureLocale.js';
 const artifacts = 'artifacts/friendship-e2e';
 
 for (const language of ['ml', 'manglish', 'sw']) {
-  test(`receiver ${language}: English navigation, local feature content and the unchanged sender message`, async ({ page }) => {
+  test(`receiver ${language}: English interface with translated chat and unchanged sender message`, async ({ page }) => {
     const errors = [], requests = [];
     page.on('pageerror', error => errors.push(error.message));
     page.on('request', request => requests.push(request.url()));
@@ -15,17 +14,22 @@ for (const language of ['ml', 'manglish', 'sw']) {
     const message = page.locator(`#message-${mediaId}`);
     await expect(message.getByText(translated, { exact: true })).toBeVisible();
     await expect(message.locator('.sender-original p')).toHaveText(original);
-    await expect(message.locator('.sender-original small')).toContainText(featureText('Sender’s original message', language));
+    await expect(message.locator('.sender-original small')).toContainText('Sender’s original message');
     await expect(page.locator('.rail-items').getByRole('button', { name: 'Chats', exact: true })).toBeVisible();
     await page.locator('.together-button').click();
     const dialog = page.getByRole('dialog', { name: 'Together · Your friendship toolkit' });
-    await expect(dialog.locator('.friendship-feature-card strong').filter({ hasText: featureText('Listen together', language) })).toBeVisible();
-    await dialog.getByLabel('Search friendship features').fill(featureText('Game night', language));
+    await expect(dialog.locator('.friendship-feature-card strong').filter({ hasText: 'Listen together' })).toBeVisible();
+    await expect(dialog).not.toContainText(/[\u0d00-\u0d7f]/);
+    await expect(page.locator('.friendship-dock')).toContainText('Our little world');
+    await expect(page.locator('.mood-widget')).toContainText('How is your heart today?');
+    await expect(page.locator('.composer-hint')).toContainText('Invisible Ink');
+    await dialog.getByLabel('Search friendship features').fill('Game night');
     await expect(dialog.locator('.friendship-feature-card')).toHaveCount(1);
     await dialog.locator('.friendship-feature-card').click();
     const game = page.getByRole('dialog', { name: 'Couple Games and Trivia' });
     await expect(game).toBeVisible();
-    await expect(game.getByText(featureText("What is my absolute comfort food when I'm stressed or down?", language), { exact: true })).toBeVisible();
+    await expect(game.getByText("What is my absolute comfort food when I'm stressed or down?", { exact: true })).toBeVisible();
+    await expect(game).not.toContainText(/[\u0d00-\u0d7f]/);
     expect(requests.some(url => url.includes('/features/localize') || url.includes('generativelanguage.googleapis.com'))).toBe(false);
     expect(errors).toEqual([]);
     await page.screenshot({ path: `${artifacts}/receiver-${language}-game.png` });

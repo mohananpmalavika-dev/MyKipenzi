@@ -2,11 +2,11 @@
 
 The app uses a cream, plum, and coral friendship theme, with labeled navigation, conversation filters, a searchable Together toolkit, and a friendship activity panel on wide screens. The mobile composer keeps message entry on its own row so attachment, voice, sticker, and scheduling controls remain accessible.
 
-Navigation and account structure stay in English. Feature copy uses the current account's receive language: English, Malayalam, Manglish, or Kiswahili. Changing the receive language in Settings updates the feature context and refreshes message translations. Sender names, notes, and original messages remain intact.
+All interface copy stays in English: navigation, feature names, menus, controls, instructions, mood labels, and invisible-ink labels. The receive-language setting affects chat-message translation only. Changing it refreshes message translations; it does not change the interface language. Sender names, notes, and original messages remain intact.
 
-Feature localization is bundled inside the app and makes no provider requests. `shared/featureLanguage.js` holds toolkit and common feature copy. `shared/feature-pairs.json` extracts existing built-in Malayalam/English pairs, with local Kiswahili and supplemental copy in the adjacent catalogues. Manglish uses authored translations for common copy and deterministic Malayalam transliteration for the remaining built-in pairs. Unrecognized custom content retains its original text.
+Legacy bilingual UI labels are normalized to English locally, without provider requests. `shared/feature-pairs.json` contains existing bilingual aliases; `shared/english-ui.json` covers remaining legacy interface copy. The feature-language provider is fixed to English regardless of the account's message language. Unrecognized custom content retains its original text.
 
-`scripts/feature-locale-plugin.mjs` wraps rendered built-in feature labels in `FeatureText` at build time. It adds no DOM wrappers, skips the app shell, editable fields, and user-authored message/answer expressions, and leaves underlying protocol values unchanged. Regenerate built-in pairs after changing preset copy:
+`scripts/feature-locale-plugin.mjs` normalizes rendered built-in labels and static interface attributes at build time. It adds no DOM wrappers, preserves editable fields and user-authored message/answer expressions, and leaves underlying protocol values unchanged. Regenerate built-in pairs after changing preset copy:
 
 ```powershell
 node scripts/generate-feature-catalog.mjs

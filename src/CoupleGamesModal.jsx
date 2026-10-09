@@ -155,7 +155,7 @@ const WOULD_YOU_RATHER = [
 
 export function CoupleGamesModal({
   conversationId,
-  user,
+  user: _user,
   peer,
   socket,
   onClose,

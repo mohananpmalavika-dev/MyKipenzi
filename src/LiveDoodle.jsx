@@ -892,7 +892,7 @@ export function LiveDoodleModal({
             <div className="doodle-prompt-pill">
               <Sparkles size={14} className="prompt-sparkle" />
               <div className="prompt-content">
-                <strong>{DOODLE_PROMPTS[activePromptIndex].ml}</strong>
+                <strong>{DOODLE_PROMPTS[activePromptIndex].en}</strong>
                 <small>{DOODLE_PROMPTS[activePromptIndex].en}</small>
               </div>
               <button

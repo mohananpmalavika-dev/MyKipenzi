@@ -29,7 +29,7 @@ export function AILovePoetModal({
   onError,
 }) {
   const [selectedTone, setSelectedTone] = useState('romantic_deep');
-  const [selectedLang, setSelectedLang] = useState('ml'); // 'ml' | 'manglish' | 'en'
+  const [selectedLang, setSelectedLang] = useState('en'); // Language of the message to compose.
   const [selectedStyle, setSelectedStyle] = useState('letter'); // 'short' | 'poetic' | 'letter'
   const [userPrompt, setUserPrompt] = useState(initialDraft);
   const [generatedText, setGeneratedText] = useState('');
@@ -154,7 +154,6 @@ export function AILovePoetModal({
                     title={t.description}
                   >
                     <span className="poet-tone-icon">{t.icon}</span>
-                    <span className="poet-tone-ml">{t.labelMl}</span>
                     <span className="poet-tone-en">{t.labelEn}</span>
                   </button>
                 );
@@ -172,7 +171,7 @@ export function AILovePoetModal({
                   className={selectedLang === 'ml' ? 'active' : ''}
                   onClick={() => setSelectedLang('ml')}
                 >
-                  മലയാളം
+                  Malayalam
                 </button>
                 <button
                   type="button"

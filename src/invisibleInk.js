@@ -70,10 +70,10 @@ export const FOG_THEMES = {
 };
 
 export const AUTO_CONCEAL_DURATIONS = [
-  { value: 5, label: '5s', labelFull: '5 സെക്കൻഡ് (Fast)' },
-  { value: 8, label: '8s', labelFull: '8 സെക്കൻഡ് (Default)' },
-  { value: 12, label: '12s', labelFull: '12 സെക്കൻഡ് (Relaxed)' },
-  { value: 20, label: '20s', labelFull: '20 സെക്കൻഡ് (Long)' },
+  { value: 5, label: '5s', labelFull: '5 seconds (Fast)' },
+  { value: 8, label: '8s', labelFull: '8 seconds (Default)' },
+  { value: 12, label: '12s', labelFull: '12 seconds (Relaxed)' },
+  { value: 20, label: '20s', labelFull: '20 seconds (Long)' },
 ];
 
 export const ROMANTIC_SECRET_PROMPTS = [

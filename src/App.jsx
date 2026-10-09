@@ -2595,7 +2595,6 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                                   <div className="vf-item-text">
                                     <div className="vf-item-heading">
                                       <strong>{f.name}</strong>
-                                      <span className="vf-item-ml">{f.malayalamName}</span>
                                     </div>
                                     <small>{f.description}</small>
                                   </div>

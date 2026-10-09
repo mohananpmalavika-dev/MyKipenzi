@@ -87,12 +87,12 @@ test('formatInvisibleInkMessage formats messages with chosen theme and conceal d
 test('getInvisibleInkPreviewText conceals secret message content in conversation lists', () => {
   const secretText = '🪄 [Invisible Ink 🌫️] അതീവ രഹസ്യ പ്രണയലേഖനം!';
   const previewText = getInvisibleInkPreviewText(secretText);
-  assert.ok(previewText.includes('രഹസ്യ സന്ദേശം'));
+  assert.ok(previewText.includes('Invisible Ink'));
   assert.ok(!previewText.includes('അതീവ രഹസ്യ പ്രണയലേഖനം'));
 
   const secretPhoto = '🪄 [Invisible Ink Photo 📷 🌫️] ഞമ്മന്റെ ഫോട്ടോ';
   const previewPhoto = getInvisibleInkPreviewText(secretPhoto);
-  assert.ok(previewPhoto.includes('രഹസ്യ ഫോട്ടോ'));
+  assert.ok(previewPhoto.includes('Invisible Ink Photo'));
   assert.ok(!previewPhoto.includes('ഞമ്മന്റെ ഫോട്ടോ'));
 
   assert.equal(getInvisibleInkPreviewText('സാധാരണ ടെക്സ്റ്റ്'), 'സാധാരണ ടെക്സ്റ്റ്');

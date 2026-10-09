@@ -78,7 +78,7 @@ export function InvisibleInkModal({
     }
 
     if (mode === 'photo' && !photoFile) {
-      if (onError) onError('ദയവായി ഒരു രഹസ്യ ഫോട്ടോ തിരഞ്ഞെടുക്കുക.');
+      if (onError) onError('Please choose a secret photo.');
       return;
     }
 
@@ -307,8 +307,7 @@ export function InvisibleInkModal({
                         className="ink-prompt-item"
                         onClick={() => handleSelectPrompt(p)}
                       >
-                        <p className="prompt-ml">{p.textMl}</p>
-                        <small className="prompt-en">{p.textEn}</small>
+                        <p className="prompt-en">{p.textEn}</p>
                       </button>
                     ))}
                   </div>

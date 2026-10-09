@@ -248,7 +248,7 @@ export function MediaVaultModal({
               >
                 {SCRAPBOOK_THEMES.map((t) => (
                   <option key={t.id} value={t.id}>
-                    {t.labelMl} ({t.labelEn})
+                    {t.labelEn}
                   </option>
                 ))}
               </select>
@@ -448,7 +448,7 @@ export function MediaVaultModal({
                   <div className="scrapbook-month-header">
                     <span className="scrapbook-pin-deco">📌</span>
                     <h3 className="scrapbook-month-title">
-                      {group.labelMl} <span className="month-en">({group.labelEn})</span>
+                      {group.labelEn}
                     </h3>
                     <span className="scrapbook-month-badge">
                       {group.items.length} {group.items.length === 1 ? 'memory' : 'memories'}

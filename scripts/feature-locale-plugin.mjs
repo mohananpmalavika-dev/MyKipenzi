@@ -7,7 +7,7 @@ const excluded = /[\\/](FriendshipLocale|MediaPlayer|MessageThread)\.jsx$/;
 // Text remains a React text node: this adds no DOM wrappers or mutation observers.
 export default function featureLocalePlugin({ types: t }) {
   const contentField = value => t.isMemberExpression(value) && (
-    /^(label(?:Ml|En|_ml)?|name(?:Ml|En)|malayalamName|title(?:Ml|En)|question(?:Ml|En|_ml|_en)|text(?:Ml|En)|option[AB]_(?:Ml|En))$/.test(value.property.name || '') ||
+    /^(label(?:Ml|En|_ml|Full)?|name(?:Ml|En)|malayalamName|description(?:Ml|En)|desc(?:Ml|En)|title(?:Ml|En)|question(?:Ml|En|_ml|_en)|text(?:Ml|En)|option[AB]_(?:Ml|En))$/.test(value.property.name || '') ||
     (t.isIdentifier(value.object, { name: 'action' }) && ['title', 'description', 'category', 'reason'].includes(value.property.name))
   );
   const safeContent = value => t.isStringLiteral(value) || contentField(value) || (t.isConditionalExpression(value) && safeContent(value.consequent) && safeContent(value.alternate));

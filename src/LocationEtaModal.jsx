@@ -60,7 +60,7 @@ const ETA_PRESETS = [
 
 export function LocationEtaModal({
   conversationId,
-  user,
+  user: _user,
   peer,
   socket,
   onClose,

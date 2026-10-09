@@ -27,7 +27,7 @@ export function InvisibleInkCard({
   attachment: overrideAttachment,
   mine,
   onError,
-  isPreview = false,
+  isPreview: _isPreview = false,
 }) {
   const text = message ? message.text : rawText || '';
   const attachment = message ? message.attachment : overrideAttachment;

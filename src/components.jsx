@@ -309,7 +309,6 @@ export function Settings({
                 >
                   <span className="font-size-chip-title">{item.label}</span>
                   <span className="font-size-chip-size">{item.size}</span>
-                  <span className="font-size-chip-ml">{item.labelMl}</span>
                 </button>
               ))}
             </div>
@@ -540,7 +539,6 @@ export function Attachment({ attachment, onError }) {
         <div className={`voice-filter-tag-badge ${voiceFilter.badgeClass}`}>
           <span className="vft-icon">{voiceFilter.icon}</span>
           <span className="vft-name">{voiceFilter.name}</span>
-          <span className="vft-ml">({voiceFilter.malayalamName})</span>
         </div>
       )}
       {viewing && preview && <PhotoViewer src={preview} attachment={attachment} onError={onError} returnFocus={photoTrigger} onClose={() => setViewing(false)} />}
@@ -560,7 +558,7 @@ export function Attachment({ attachment, onError }) {
         <span>
           <strong>
             {voiceFilter
-              ? `${voiceFilter.icon} ${voiceFilter.name} Voice Note (${voiceFilter.malayalamName})`
+              ? `${voiceFilter.icon} ${voiceFilter.name} Voice Note`
               : attachment.name}
           </strong>
           <small>{(attachment.size / 1024 / 1024).toFixed(1)} MB · Download</small>

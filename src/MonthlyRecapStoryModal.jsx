@@ -244,7 +244,7 @@ export function MonthlyRecapStoryModal({
               <span className="recap-header-name">
                 {peer?.name || 'Us'} · {monthLabel.en}
               </span>
-              <span className="recap-header-sub">{monthLabel.ml}</span>
+              <span className="recap-header-sub">Monthly memories</span>
             </div>
           </div>
 
@@ -331,7 +331,7 @@ export function MonthlyRecapStoryModal({
                     </div>
                   </div>
                   <h1 className="recap-cover-heading">{monthLabel.en}</h1>
-                  <h2 className="recap-cover-sub">{monthLabel.ml} ഓർമ്മകൾ</h2>
+                  <h2 className="recap-cover-sub">{monthLabel.en} memories</h2>
                   <p className="recap-cover-caption">
                     A celebration of our laughter, whispered voices, and every beautiful heartbeat
                     shared this month.
@@ -459,10 +459,7 @@ export function MonthlyRecapStoryModal({
 
                   <div className="recap-chronicle-scroll">
                     <div className="recap-chronicle-card">
-                      <h3 className="chronicle-title">{recapData.chronicle?.titleMl}</h3>
-                      <p className="chronicle-poem-ml">{recapData.chronicle?.poemMl}</p>
-                      <hr className="chronicle-divider" />
-                      <h4 className="chronicle-title-en">{recapData.chronicle?.titleEn}</h4>
+                      <h3 className="chronicle-title">{recapData.chronicle?.titleEn}</h3>
                       <p className="chronicle-poem-en">{recapData.chronicle?.poemEn}</p>
                     </div>
                   </div>
@@ -501,7 +498,7 @@ export function MonthlyRecapStoryModal({
             >
               {availableMonths.map((m) => (
                 <option key={m.key} value={m.key}>
-                  {m.en} ({m.ml}) {m.isCurrent ? '· നിലവിലെ മാസം' : ''}
+                  {m.en} {m.isCurrent ? '· Current month' : ''}
                 </option>
               ))}
             </select>
