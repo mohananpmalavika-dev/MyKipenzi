@@ -86,6 +86,7 @@ import {
   exportContacts,
   importContacts,
 } from './contact-management.js';
+import wellnessRouter from './wellness.js';
 
 import {
   registration,
@@ -3726,6 +3727,9 @@ Guidelines:
 
     res.json({ ok: true });
   });
+
+  // Wellness & Care Features API Routes
+  app.use('/api/wellness', wellnessRouter);
 
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'API route not found.')));
   if (production) {
