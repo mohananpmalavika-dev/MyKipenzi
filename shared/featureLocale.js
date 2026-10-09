@@ -1,11 +1,25 @@
 import pairs from './feature-pairs.json' with { type: 'json' };
-import swahili from './feature-swahili.json' with { type: 'json' };
+import swahiliContent from './feature-swahili.json' with { type: 'json' };
+import swahiliUi from './feature-swahili-ui.json' with { type: 'json' };
+import extra from './feature-extra.json' with { type: 'json' };
 import { FEATURE_LANGUAGES, featureCopy, normalizeFeatureText, localFeatureCopy } from './featureLanguage.js';
 
 const canonical = new Map();
+const swahili = { ...swahiliContent, ...swahiliUi };
+const sourceEnglish = {
+  'മഴയുള്ള രാത്രിയിൽ ബ്ലാങ്കറ്റിൽ സിനിമ കാണൽ 🌧️': 'Watching a film under a blanket on a rainy night 🌧️',
+  'ബീച്ചിൽ സൂര്യാസ്തമയ നടപ്പ് 🌅': 'A sunset walk on the beach 🌅',
+  'മിഡ്‌നൈറ്റ് ലോങ് ഡ്രൈവ് & മ്യൂസിക് 🚗': 'A midnight drive with music 🚗',
+  'വീട്ടിൽ ഉണ്ടാക്കിയ ക്യാൻഡിൽ ലൈറ്റ് ഡിന്നർ 🕯️': 'A homemade candlelight dinner 🕯️',
+  'വികാരങ്ങൾ വാക്കുകളാക്കാൻ AI പ്രണയ സഹായി': 'A writing assistant to turn feelings into words',
+};
 for (const [english, translations] of Object.entries(featureCopy)) {
   canonical.set(normalizeFeatureText(english).toLowerCase(), english);
   translations.forEach(text => canonical.set(normalizeFeatureText(text).toLowerCase(), english));
+}
+for (const [english, translations] of Object.entries(extra)) {
+  canonical.set(normalizeFeatureText(english).toLowerCase(), english);
+  canonical.set(normalizeFeatureText(translations[0]).toLowerCase(), english);
 }
 
 // Deterministic Malayalam transliteration for built-in feature content.
@@ -32,9 +46,10 @@ export function featureText(value, requestedLanguage = 'en', values = {}) {
   if (typeof value !== 'string') return value;
   const language = FEATURE_LANGUAGES.includes(requestedLanguage) ? requestedLanguage : 'en';
   const source = normalizeFeatureText(value);
-  const pair = pairs[source];
+  const supplemental = extra[source];
+  const pair = supplemental ? { en: source, ml: supplemental[0], sw: supplemental[1] } : pairs[source];
   const english = canonical.get(source.toLowerCase()) || pair?.en || source;
-  let translated = language === 'en' ? english : localFeatureCopy(english, language) || pair?.[language] || (language === 'sw' ? swahili[english] : null) || localFeatureCopy(source, language);
+  let translated = language === 'en' ? sourceEnglish[source] || english : localFeatureCopy(english, language) || (language === 'ml' ? extra[english]?.[0] : language === 'sw' ? extra[english]?.[1] : null) || pair?.[language] || (language === 'sw' ? swahili[english] : null) || localFeatureCopy(source, language);
   if (!translated && language === 'manglish') translated = malayalamToManglish(pair?.ml || source);
   translated ||= source;
   const withValues = translated.replace(/\{([a-zA-Z][a-zA-Z0-9_]*)\}/g, (placeholder, key) => Object.hasOwn(values, key) ? String(values[key]) : placeholder);

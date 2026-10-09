@@ -12,6 +12,7 @@ export function receiverMessageText(message, language) {
 // The toolkit is available in every supported language without a translation service.
 // English remains the navigation language. Only feature copy goes through this catalogue.
 export const featureCopy = {
+  'Realtime games with {name}': ['{name}-നൊപ്പം തത്സമയ കളികൾ', '{name}-noppam thalsamaya kalikal', 'Michezo mubashara pamoja na {name}'],
   'Ice cream / Sweets 🍨': ['ഐസ്ക്രീം / മധുരം 🍨', 'Ice cream / Madhuram 🍨', 'Aiskrimu / Pipi 🍨'],
   'Biryani / Spicy food 🍛': ['ബിരിയാണി / എരിവുള്ള ഭക്ഷണം 🍛', 'Biriyani / Erivulla bhakshanam 🍛', 'Biryani / Chakula chenye viungo 🍛'],
   'Chai / Coffee ☕': ['ചായ / കാപ്പി ☕', 'Chaya / Kappi ☕', 'Chai / Kahawa ☕'],

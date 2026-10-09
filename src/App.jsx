@@ -838,7 +838,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       connection.disconnect();
       clearTimeout(typingTimer.current);
     };
-  }, [csrf, loadConversations, loadMessages, onError, receive, receiveMood, receiveCapture, updateAlert, dismiss, user.id]);
+  }, [csrf, loadConversations, loadMessages, onError, receive, receiveMood, receiveCapture, updateAlert, dismiss, user.id, user.language]);
   useEffect(() => {
     let cleanup = () => {};
     void initBatteryMonitoring((b) => {
@@ -1003,7 +1003,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     } finally {
       if (version === generation.current) setLoading(false);
     }
-  }, [recording, sending, loadMessages, onError]);
+  }, [recording, sending, loadMessages, onError, socket]);
   const addContact = async (handle) => {
     setContactBusy(true);
     setContactError('');

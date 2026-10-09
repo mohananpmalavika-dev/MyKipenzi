@@ -379,9 +379,7 @@ export function CoupleGamesModal({
             <div>
               <h3>{isMalayalam ? 'നമ്മുടെ കളിമുറി 🎮💖' : 'Our Playroom 🎮💖'}</h3>
               <p>
-                {isMalayalam
-                  ? `${peer?.name || 'പങ്കാളി'}-യോടൊപ്പം റിയൽടൈം കപ്പിൾ ഗെയിംസ്`
-                  : `Realtime couple games with ${peer?.name || 'your partner'}`}
+                {t('Realtime games with {name}', { name: peer?.name || 'your friend' })}
               </p>
             </div>
           </div>

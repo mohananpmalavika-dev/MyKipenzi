@@ -5,7 +5,7 @@ export default defineConfig({
   testMatch: 'friendship-ui.spec.js',
   workers: 1,
   timeout: 30000,
-  outputDir: '../artifacts/friendship-e2e',
+  outputDir: '../artifacts/friendship-e2e/results',
   reporter: 'list',
   use: { baseURL: 'http://127.0.0.1:5192', headless: true, screenshot: 'only-on-failure', serviceWorkers: 'block' },
   webServer: {

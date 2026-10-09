@@ -177,6 +177,8 @@ input:focus, textarea:focus, select:focus { border-color: var(--forest); box-sha
 :root :is(.couple-games-header h3, .story-modal-title, .tc-header-title, .romantic-header-title, .love-poet-header h2, .voice-duet-header h2) { color: var(--text-heading); }
 :root :is(.couple-games-header p, .story-modal-subtitle, .tc-header-subtitle, .romantic-header-subtitle, .love-poet-header p, .voice-duet-header p) { color: var(--muted); }
 :root :is(.prompt-tabs, .couple-games-tabs, .story-tabs, .romantic-tabs-nav) { border-color: var(--line); background: var(--bg-panel); }
+:root .couple-games-tabs-nav, :root .couple-games-footer { background: var(--bg-panel); border-color: var(--line); color: var(--muted); }
+:root .nav-tab-btn { color: var(--text-muted); }
 :root :is(.prompt-tab-btn.active, .nav-tab-btn.active, .story-tab-btn.active, .romantic-tab-btn.active) { background: var(--accent-soft); color: var(--forest); border-color: var(--card-border); }
 :root :is(.trivia-card, .td-card, .wyr-card, .prompt-hero-card, .answer-card, .my-saved-answer-box, .partner-mystery-box) { border-color: var(--card-border); background: var(--card-bg); color: var(--text-main); }
 :root :is(.trivia-question-text, .td-prompt-text, .prompt-question-ml, .prompt-question-en) { color: var(--text-heading); }
