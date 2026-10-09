@@ -4,6 +4,7 @@
 # =================================================================
 
 $ErrorActionPreference = "Stop"
+$env:CLOUDSDK_METRICS_ENVIRONMENT = "datacloud.antigravity"
 
 $Project = "project-7866fc3f-5dd5-4495-804"
 $Zone = "asia-south1-b"

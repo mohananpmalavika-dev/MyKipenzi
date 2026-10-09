@@ -99,6 +99,14 @@ try {
       await c.query(await readFile(new URL('./romantic-surprises-schema.sql', import.meta.url), 'utf8'));
       await c.query('INSERT INTO schema_migrations(version) VALUES(23)');
     }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=24')).rowCount) {
+      await c.query(await readFile(new URL('./forward-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(24)');
+    }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=25')).rowCount) {
+      await c.query(await readFile(new URL('./contacts-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(25)');
+    }
   });
   console.log('Database migrations complete.');
 } finally {
