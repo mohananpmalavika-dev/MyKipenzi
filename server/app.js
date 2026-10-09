@@ -135,7 +135,7 @@ export function createApp(io) {
         ? {
             directives: {
               defaultSrc: ["'self'"],
-              scriptSrc: ["'self'"],
+              scriptSrc: ["'self'", "'sha256-IcrcEMTXWDBvS90wcxFl779holWjLCi9Cy4lxkyBH8A='"],
               styleSrc: ["'self'", "'unsafe-inline'"],
               imgSrc: ["'self'", 'blob:', 'data:'],
               mediaSrc: ["'self'", 'blob:'],
