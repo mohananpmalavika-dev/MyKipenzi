@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { ButtonIcon, Avatar } from './components.jsx';
 import { api } from './api.js';
+import { useFeatureLanguage } from './FriendshipLocale.jsx';
 import {
   PROMPT_CATEGORIES,
   getTodayDateKey,
@@ -37,6 +38,7 @@ export function DailyPromptModal({
   onSendToChat,
   onError,
 }) {
+  const { t } = useFeatureLanguage();
   const [activeTab, setActiveTab] = useState('today'); // 'today' | 'history'
   const [currentDate, setCurrentDate] = useState(() => getTodayDateKey());
   const [promptData, setPromptData] = useState(null);
@@ -392,8 +394,7 @@ export function DailyPromptModal({
                       </span>
                     </div>
 
-                    <h4 className="history-item-question-ml">{item.question_ml}</h4>
-                    <p className="history-item-question-en">{item.question_en}</p>
+                    <h4 className="history-item-question-en">{item.question_en}</h4>
 
                     {item.revealed ? (
                       <div className="history-answers-grid">
@@ -467,7 +468,7 @@ export function DailyPromptModal({
                 >
                   <div className="prompt-meta-row">
                     <span className="prompt-category-tag">
-                      {promptData.icon} {categoryMeta.labelMl}
+                      {promptData.icon} {categoryMeta.labelEn}
                     </span>
                     <span className="prompt-date-label">
                       <Calendar size={13} />
@@ -476,11 +477,8 @@ export function DailyPromptModal({
                   </div>
 
                   <h2 className="prompt-question-ml" dir="auto">
-                    {promptData.question_ml}
+                    {promptData.question_en}
                   </h2>
-                  <p className="prompt-question-en">
-                    &ldquo;{promptData.question_en}&rdquo;
-                  </p>
 
                   {/* Spark ideas chips */}
                   {promptData.sparks && promptData.sparks.length > 0 && !promptData.revealed && isEditing && (
@@ -493,12 +491,12 @@ export function DailyPromptModal({
                           className="prompt-spark-chip"
                           onClick={() => {
                             setAnswerDraft((prev) =>
-                              prev ? `${prev} · ${spark}` : spark,
+                              prev ? `${prev} · ${t(spark)}` : t(spark),
                             );
                             textareaRef.current?.focus();
                           }}
                         >
-                          {spark}
+                          {t(spark)}
                         </button>
                       ))}
                     </div>

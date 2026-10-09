@@ -45,6 +45,27 @@ test('deleted messages never disclose a retained source or translation', async (
   await expect(page.getByText('Deleted translation', { exact: true })).toHaveCount(0);
 });
 
+test('invisible-ink controls and theme menus are English while the actual secret stays unchanged', async ({ page }) => {
+  await page.setViewportSize({ width: 1512, height: 982 });
+  const secret = 'നിനക്കായി ഒരു ചെറിയ സർപ്രൈസ് 🤍';
+  await setupPrivacy(page, { language: 'sw', messages: [{ id: mediaId, conversation_id: cid, sender_id: peer, client_id: mediaId, seq: '1', source_language: 'ml', text: `🪄 [Invisible Ink 🌫️ · theme:rose · hide:8s] ${secret}`, created_at: new Date().toISOString() }] });
+  const card = page.locator('.invisible-ink-card');
+  await expect(card.locator('.invisible-ink-header')).toContainText('Invisible Ink');
+  await expect(card.locator('.ink-theme-pill')).toContainText('Rose Petal Mist');
+  await expect(card.locator('.invisible-ink-header')).not.toContainText(/[\u0d00-\u0d7f]/);
+  await expect(card.locator('.invisible-ink-footer')).not.toContainText(/[\u0d00-\u0d7f]/);
+  await expect(card.locator('.ink-secret-text')).toHaveText(secret);
+  await expect(page.locator('.friendship-dock')).toContainText('Our little world');
+  await page.screenshot({ path: `${artifacts}/english-invisible-ink.png` });
+  await page.locator('.together-button').click();
+  await page.getByLabel('Search friendship features').fill('Invisible ink');
+  await page.locator('.friendship-feature-card').click();
+  const modal = page.getByRole('dialog', { name: 'Invisible Ink Message Studio' });
+  await expect(modal).toBeVisible();
+  await expect(modal).not.toContainText(/[\u0d00-\u0d7f]/);
+  await page.screenshot({ path: `${artifacts}/english-invisible-ink-menu.png` });
+});
+
 test('friendship toolkit supports search, categories, and opening saved messages', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));

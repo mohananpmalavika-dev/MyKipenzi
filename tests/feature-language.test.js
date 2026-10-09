@@ -9,7 +9,7 @@ import pairs from '../shared/feature-pairs.json' with { type: 'json' };
 test('feature UI remains English for every message receive language', () => {
   for (const language of ['en', 'ml', 'manglish', 'sw']) {
     assert.equal(featureText('Listen together', language), 'Listen together');
-    assert.equal(featureText('ഒരുമിച്ച് കേൾക്കാം', language), 'Listen Together');
+    assert.equal(featureText('ഒരുമിച്ച് കേൾക്കാം', language), 'Listen together');
     assert.equal(featureText('🪄 രഹസ്യ മഷി', language), '🪄 Invisible Ink');
     assert.equal(featureText('പ്രണയ റോസ് മഞ്ഞ്', language), 'Rose Petal Mist');
     assert.equal(featureText('Malayalam', language), 'Malayalam');

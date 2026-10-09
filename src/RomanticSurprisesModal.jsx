@@ -633,7 +633,7 @@ export function RomanticSurprisesModal({
       ctx.shadowBlur = 3;
 
       const title = idea?.emoji
-        ? `${idea.emoji} ${(idea.titleMl || idea.titleEn).slice(0, 14)}...`
+        ? `${idea.emoji} ${idea.titleEn.slice(0, 14)}...`
         : `Idea ${i + 1}`;
       ctx.fillText(title, radius - 16, 5);
       ctx.restore();

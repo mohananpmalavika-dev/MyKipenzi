@@ -1,6 +1,7 @@
 import pairs from './feature-pairs.json' with { type: 'json' };
 import extra from './feature-extra.json' with { type: 'json' };
 import englishUi from './english-ui.json' with { type: 'json' };
+import englishSparks from './english-ui-sparks.json' with { type: 'json' };
 import { featureCopy, normalizeFeatureText } from './featureLanguage.js';
 
 const canonical = new Map();
@@ -27,7 +28,7 @@ export function featureText(value, _requestedLanguage = 'en', values = {}) {
   const supplemental = extra[source];
   const pair = supplemental ? { en: source, ml: supplemental[0], sw: supplemental[1] } : pairs[source];
   const english = canonical.get(source.toLowerCase()) || pair?.en || source;
-  const translated = englishUi[source] || sourceEnglish[source] || englishUi[english] || english;
+  const translated = englishUi[source] || englishSparks[source] || sourceEnglish[source] || englishUi[english] || english;
   const withValues = translated.replace(/\{([a-zA-Z][a-zA-Z0-9_]*)\}/g, (placeholder, key) => Object.hasOwn(values, key) ? String(values[key]) : placeholder);
   const first = value.search(/\S/), last = value.length - value.trimEnd().length;
   return `${first > 0 ? value.slice(0, first) : ''}${withValues}${last ? value.slice(-last) : ''}`;

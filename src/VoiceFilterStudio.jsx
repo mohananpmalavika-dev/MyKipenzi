@@ -248,9 +248,8 @@ export function VoiceFilterStudio({
         <div className="active-filter-text">
           <div className="active-filter-names">
             <strong>{activeFilterInfo.name}</strong>
-            <span className="active-filter-ml">{activeFilterInfo.malayalamName}</span>
           </div>
-          <p>{activeFilterInfo.description} · {activeFilterInfo.malayalamDesc}</p>
+          <p>{activeFilterInfo.description}</p>
         </div>
       </div>
 
@@ -271,7 +270,6 @@ export function VoiceFilterStudio({
               <span className="filter-chip-icon">{filter.icon}</span>
               <div className="filter-chip-info">
                 <span className="filter-chip-name">{filter.name}</span>
-                <span className="filter-chip-ml">{filter.malayalamName}</span>
               </div>
             </button>
           );
