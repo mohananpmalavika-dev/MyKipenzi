@@ -45,6 +45,7 @@ export function RelationshipStoryModal({
   onClose,
   onSendToChat,
   onError,
+  onOpenRecap,
 }) {
   const [activeTab, setActiveTab] = useState('timeline'); // 'timeline' | 'milestones' | 'settings'
   const [storyData, setStoryData] = useState(null);
@@ -507,6 +508,20 @@ export function RelationshipStoryModal({
             <Calendar size={16} />
             <span>Key Dates & Settings (ക്രമീകരണങ്ങൾ)</span>
           </button>
+          {onOpenRecap && (
+            <button
+              type="button"
+              className="story-tab-btn recap-highlight"
+              onClick={() => {
+                onClose?.();
+                onOpenRecap();
+              }}
+              title="View our monthly Instagram-style story recap"
+            >
+              <Camera size={16} />
+              <span>Month in Review 📸🎞️ (റീക്യാപ്പ്)</span>
+            </button>
+          )}
         </nav>
 
         {/* TAB 1: MEMORIES TIMELINE */}

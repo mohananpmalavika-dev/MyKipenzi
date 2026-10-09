@@ -44,7 +44,7 @@ import './romantic-surprises.css';
 /**
  * Interactive Scratch Card Canvas Overlay
  */
-function ScratchCardOverlay({ couponId, onRevealed, isAlreadyScratched }) {
+function ScratchCardOverlay({ _couponId, onRevealed, isAlreadyScratched }) {
   const canvasRef = useRef(null);
   const isDrawing = useRef(false);
   const scratched = useRef(isAlreadyScratched);
@@ -270,7 +270,7 @@ export function RomanticSurprisesModal({
   const [activeTab, setActiveTab] = useState('coupons'); // 'coupons' | 'bucketlist' | 'datewheel'
   const [coupons, setCoupons] = useState([]);
   const [bucketList, setBucketList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
 
   // Confetti trigger tick
   const [confettiTick, setConfettiTick] = useState(0);

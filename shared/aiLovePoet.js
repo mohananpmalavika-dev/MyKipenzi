@@ -109,7 +109,7 @@ const POETIC_LIBRARY = {
       `കാറ്റിന്റെ ചിറകിൽ വന്നണയും\nകുളിർതെന്നൽ പോലെ നിൻ സാമീപ്യം...\nവാക്കുകൾക്കപ്പുറം വാഴുന്നൊരെൻ\nഅമൃത പ്രണയത്തിൻ പുണ്യമേ നീ! 🍃💖`,
     ],
     manglish: [
-      `Mazhavillazhakulla nin mizhikalil\nMayangunnu yen praanante swapnangal...\nMaravi than kadalilum maayathe\Mozhiyunnu nin pranaya manthrangal! 🌸✨`,
+      `Mazhavillazhakulla nin mizhikalil\nMayangunnu yen praanante swapnangal...\nMaravi than kadalilum maayathe\nMozhiyunnu nin pranaya manthrangal! 🌸✨`,
       `Irulil theliyum thaarakam pole,\nIdavazhiyil pookkum mulla pole,\nEn hridayathin oro thaalathilum\nIdavidaathe thulumpunnu nin ormakal! 🌺💫`,
       `Kaatinte chirakil vannanayum\nKulirthennal pole nin saameepyam...\nVaakkukalkkappuram vaazhunnoren\nAmrutha pranayathin punyame nee! 🍃💖`,
     ],
@@ -220,7 +220,7 @@ export function generateLoveText({
 
   // Personalize partner name replacement if placeholder found
   if (partnerName) {
-    text = text.replace(/പ്രിയേ/g, `${partnerName}`).replace(/Sweetheart/g, partnerName);
+    text = text.replace(/പ്രിയേ|എന്റെ പ്രാണനേ/g, partnerName).replace(/Sweetheart/g, partnerName);
   }
 
   // Adjust style length

@@ -37,3 +37,9 @@ Validation commands:
 - `node scripts/verify-privacy.mjs` (builds a stable production bundle and runs the eight browser checks with simulated accounts and notifications)
 
 Integration tests create and remove an isolated database schema. Browser checks cover the real/decoy paths, settings authorization, other-tab locking, mobile layout, view-once context, truthful partner alerts, and retries.
+
+## Verified locally (2026-10-09)
+
+All 23 checks passed: 8 PIN/notification unit tests, 7 capture API integration checks, and 8 browser checks against the production bundle. The production build and lint of the focused privacy modules passed. Migration 22 and all eight capture_alerts columns were verified in the local database.
+
+The broader lint run still reports unrelated existing/workspace errors in src/App.jsx (unused blob/url and a socket dependency warning) and server/app.js (unused provider/poetic/love-text imports and a route argument). These do not prevent the production build or privacy checks.

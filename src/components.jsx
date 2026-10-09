@@ -48,6 +48,7 @@ import {
 } from 'lucide-react';
 import { playTouchSound, triggerTouchHaptics, HAPTIC_PATTERNS } from './touchAudio.js';
 import { parseStoryShare, STORY_CATEGORIES } from '../shared/relationshipStory.js';
+import { parseMonthlyRecapShare } from '../shared/monthlyRecap.js';
 import {
   parseTimeCapsuleChatShare,
   calculateCapsuleCountdown,
@@ -975,7 +976,89 @@ export function TimeCapsuleChatCard({ text, onOpenTimeCapsule }) {
   );
 }
 
-export function Message({ message, mine, peerRead, user, capabilities, onError, onReply, onForward, onChanged, highlighted, group, contactBlocked, onOpenDailyPrompt, onOpenMusic, onOpenWatchParty, onOpenStory, onOpenTouch, onOpenTimeCapsule, onOpenSleep }) {
+export function MonthlyRecapCard({ text, onOpenRecap }) {
+  const parsed = parseMonthlyRecapShare(text);
+  if (!parsed) {
+    return <p dir="auto">{text}</p>;
+  }
+
+  return (
+    <div className="monthly-recap-chat-card">
+      <div className="recap-chat-top">
+        <div className="recap-chat-badge">
+          <Sparkles size={14} className="sparkle-icon" />
+          <strong>Our Month in Review · പ്രതിമാസ റീക്യാപ്പ്</strong>
+        </div>
+        <span className="recap-chat-stamp">📸🎞️</span>
+      </div>
+
+      <h4 className="recap-chat-title">{parsed.titleMl || parsed.titleEn}</h4>
+      <span className="recap-chat-sub">{parsed.titleEn}</span>
+
+      <div className="recap-chat-metrics">
+        <span className="recap-metric-pill">💬 {parsed.stats?.messagesCount || 0} സന്ദേശങ്ങൾ</span>
+        <span className="recap-metric-pill">📸 {parsed.stats?.photosCount || 0} ചിത്രങ്ങൾ</span>
+        <span className="recap-metric-pill">🎙️ {parsed.stats?.voiceNotesCount || 0} വോയ്സുകൾ</span>
+        <span className="recap-metric-pill">💓 {parsed.stats?.heartbeatsCount || 0} സ്പന്ദനങ്ങൾ</span>
+      </div>
+
+      {(parsed.highlightMl || parsed.highlightEn) && (
+        <p className="recap-chat-quote" dir="auto">
+          &ldquo;{parsed.highlightMl || parsed.highlightEn}&rdquo;
+        </p>
+      )}
+
+      <div className="recap-chat-footer">
+        <span className="recap-chat-hint">Instagram Story രൂപത്തിലുള്ള ഓർമ്മകൾ ✨</span>
+        {onOpenRecap && (
+          <button
+            type="button"
+            className="recap-chat-open-btn"
+            onClick={() => onOpenRecap(parsed.month)}
+          >
+            <span>Open Story 🎞️ (റീക്യാപ്പ് കാണുക)</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function VoiceDuetCard({ text, onOpenDuet }) {
+  const cleanTitle = text.replace(/^🎙️🎶\s*\[Voice Duet:\s*/i, '').replace(/\]$/, '') || 'Our Love Duet';
+
+  return (
+    <div className="voice-duet-chat-card">
+      <div className="duet-chat-top">
+        <div className="duet-chat-badge">
+          <Music size={14} />
+          <strong>Voice Note Duet · രണ്ടുപേരും ചേർന്ന പാട്ട്</strong>
+        </div>
+        <span className="duet-chat-stamp">🎙️🎶</span>
+      </div>
+
+      <h4 className="duet-chat-title">{cleanTitle}</h4>
+      <p className="duet-chat-desc">
+        പങ്കാളിയുടെ വരികൾക്ക് മറുപടിയായി പാടി ചേർത്തുവെച്ച പ്രണയഗാനം (Our Joint Harmony) 💖
+      </p>
+
+      <div className="duet-chat-footer">
+        <span className="duet-chat-sub">Voice Note Duet Studio</span>
+        {onOpenDuet && (
+          <button
+            type="button"
+            className="duet-chat-open-btn"
+            onClick={() => onOpenDuet()}
+          >
+            <span>Duet Studio 🎙️ (തുറക്കുക)</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function Message({ message, mine, peerRead, user, capabilities, onError, onReply, onForward, onChanged, highlighted, group, contactBlocked, onOpenDailyPrompt, onOpenMusic, onOpenWatchParty, onOpenStory, onOpenTouch, onOpenTimeCapsule, onOpenSleep, onOpenMonthlyRecap, onOpenVoiceDuet, onDuetVoiceNote }) {
   const [showHistory, setShowHistory] = useState(false);
   const { canDelete, expiration } = useMessageClock(message);
   const [editing, setEditing] = useState(false);
@@ -1246,6 +1329,10 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
           <TimeCapsuleChatCard text={message.text} onOpenTimeCapsule={onOpenTimeCapsule} />
         ) : !message.deleted_at && message.text?.startsWith('🌌 [Sleep Together') ? (
           <SleepTogetherCard text={message.text} onOpenSleep={onOpenSleep} />
+        ) : !message.deleted_at && (message.text?.startsWith('[MONTHLY_RECAP:') || message.text?.startsWith('📸🎞️ [Monthly Recap')) ? (
+          <MonthlyRecapCard text={message.text} onOpenRecap={onOpenMonthlyRecap} />
+        ) : !message.deleted_at && message.text?.startsWith('🎙️🎶 [Voice Duet:') ? (
+          <VoiceDuetCard text={message.text} onOpenDuet={onOpenVoiceDuet} />
         ) : isInvisibleInk ? (
           <InvisibleInkCard message={message} mine={mine} onError={onError} />
         ) : (
@@ -1368,6 +1455,19 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
                 </small>
               </div>
             )}
+          </div>
+        )}
+        {isAudioNote && !mine && onDuetVoiceNote && message.attachment && (
+          <div className="voice-duet-cta-container">
+            <button
+              type="button"
+              className="voice-duet-quick-btn"
+              onClick={() => onDuetVoiceNote(message.attachment)}
+              title="പങ്കാളി പാടിയ ഈ വരിക്ക് മറുപടി പാടി ഡ്യുയറ്റ് ഗാനം ഉണ്ടാക്കൂ"
+            >
+              <Music size={13} />
+              <span>ഡ്യുയറ്റ് പാടുക 🎙️🎶 (Sing Duet with this line)</span>
+            </button>
           </div>
         )}
         {!isAudioNote && translated && (

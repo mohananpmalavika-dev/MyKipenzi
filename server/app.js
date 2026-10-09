@@ -3686,7 +3686,7 @@ Guidelines:
     }
   });
 
-  app.post('/api/backups/:id/restore', async (req, res) => {
+  app.post('/api/backups/:id/restore', async (req, _res) => {
     const backupId = id.parse(req.params.id);
     await limit(`backup-restore:${req.user.id}`, 2, 86400); // 2 restores per day
 

@@ -79,10 +79,10 @@ export function generateMonthlyPoeticChronicle(stats, partnerName = 'Sweetheart'
   const { en: monthEn, ml: monthMl } = getMonthLabel(monthKey);
   const messagesCount = stats?.messagesCount || 0;
   const photosCount = stats?.photosCount || 0;
-  const voiceNotesCount = stats?.voiceNotesCount || 0;
+  const _voiceNotesCount = stats?.voiceNotesCount || 0;
   const heartbeatsCount = stats?.heartbeatsCount || 0;
   const touchesCount = stats?.touchesCount || 0;
-  const duetCount = stats?.duetCount || 0;
+  const _duetCount = stats?.duetCount || 0;
 
   // Malayalam Poetic Summary
   let poemMl = '';

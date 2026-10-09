@@ -43,6 +43,8 @@ import {
   Gamepad2,
   Navigation,
   EyeOff,
+  Feather,
+  Music,
   Ghost,
   BedDouble,
   Battery,
@@ -81,6 +83,9 @@ import { MoodWidget } from './MoodWidget.jsx';
 import { CaptureGuard, CapturePrivacyNotice } from './CapturePrivacy.jsx';
 import { RelationshipStoryModal } from './RelationshipStoryModal.jsx';
 import { TimeCapsuleModal } from './TimeCapsuleModal.jsx';
+import { MonthlyRecapStoryModal } from './MonthlyRecapStoryModal.jsx';
+import { AILovePoetModal } from './AILovePoetModal.jsx';
+import { VoiceDuetStudio } from './VoiceDuetStudio.jsx';
 import {
   ListenTogetherModal,
   ListenTogetherMiniPlayer,
@@ -440,7 +445,12 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     [showInvisibleInk, setShowInvisibleInk] = useState(false),
     [invisibleInkActive, setInvisibleInkActive] = useState(false),
     [showRomanticSurprises, setShowRomanticSurprises] = useState(false),
-    [romanticInvite, setRomanticInvite] = useState(null);
+    [romanticInvite, setRomanticInvite] = useState(null),
+    [showMonthlyRecap, setShowMonthlyRecap] = useState(false),
+    [selectedRecapMonth, setSelectedRecapMonth] = useState(null),
+    [showLovePoet, setShowLovePoet] = useState(false),
+    [showVoiceDuet, setShowVoiceDuet] = useState(false),
+    [duetPartnerAudioUrl, setDuetPartnerAudioUrl] = useState(null);
   const userBatteryRef = useRef(userBattery);
   userBatteryRef.current = userBattery;
   const selectedRef = useRef(null),
@@ -1729,6 +1739,16 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                   <Ticket size={20} className="romantic-action-icon" />
                 </ButtonIcon>
                 <ButtonIcon
+                  label="Our Month in Review 📸🎞️ (പ്രതിമാസ AI റീക്യാപ്പ് സ്റ്റോറി)"
+                  disabled={!connected || chosen.is_group}
+                  onClick={() => {
+                    setSelectedRecapMonth(null);
+                    setShowMonthlyRecap(true);
+                  }}
+                >
+                  <Film size={20} className="monthly-recap-action-icon" />
+                </ButtonIcon>
+                <ButtonIcon
                   label="Live Location & ETA 🚗 (ലൊക്കേഷൻ & ETA പങ്കിടുക)"
                   disabled={!connected || chosen.is_group}
                   onClick={() => setShowLocationEta(true)}
@@ -2291,6 +2311,18 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                               setShowSleepModal(true);
                               setIsSleepMinimized(false);
                             }}
+                            onOpenMonthlyRecap={(monthKey) => {
+                              setSelectedRecapMonth(monthKey);
+                              setShowMonthlyRecap(true);
+                            }}
+                            onOpenVoiceDuet={() => {
+                              setDuetPartnerAudioUrl(null);
+                              setShowVoiceDuet(true);
+                            }}
+                            onDuetVoiceNote={(att) => {
+                              setDuetPartnerAudioUrl(`/api/files/${att.id}`);
+                              setShowVoiceDuet(true);
+                            }}
                           />
                           <MessageThread message={{ ...m, reply_count: Math.max(m.reply_count || 0, messages.filter(row => row.reply_to_id === m.id && !row.deleted_at && !hasExpired(row)).length) }} revision={messages} onReply={sending || recording || chosen.contact_blocked ? undefined : setReplyTo} />
                         </div>
@@ -2683,6 +2715,23 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                       <Ticket size={21} className="romantic-toolbar-icon" />
                     </ButtonIcon>
                     <ButtonIcon
+                      label="AI Love Poetry & Letter Polisher ✍️💌 (പ്രണയലേഖന സഹായി)"
+                      disabled={sending || recording || chosen.is_group}
+                      onClick={() => setShowLovePoet(true)}
+                    >
+                      <Feather size={21} className="love-poet-toolbar-icon" />
+                    </ButtonIcon>
+                    <ButtonIcon
+                      label="Voice Note Duet Studio 🎙️🎶 (ഡ്യുയറ്റ് പാട്ട്)"
+                      disabled={sending || recording || chosen.is_group}
+                      onClick={() => {
+                        setDuetPartnerAudioUrl(null);
+                        setShowVoiceDuet(true);
+                      }}
+                    >
+                      <Music size={21} className="voice-duet-toolbar-icon" />
+                    </ButtonIcon>
+                    <ButtonIcon
                       label="Live Location & ETA 🚗 (ലൊക്കേഷൻ & ETA പങ്കിടുക)"
                       disabled={sending || recording || chosen.is_group}
                       onClick={() => setShowLocationEta(true)}
@@ -3064,6 +3113,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onClose={() => setShowStory(false)}
           onSendToChat={sendStoryToChat}
           onError={onError}
+          onOpenRecap={() => {
+            setSelectedRecapMonth(null);
+            setShowMonthlyRecap(true);
+          }}
         />
       )}
       {showTimeCapsule && chosen && !chosen.is_group && (
@@ -3096,6 +3149,46 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
             setIsSleepMinimized(true);
           }}
           onSendToChat={(text) => sendMessage(null, { text })}
+          onError={onError}
+        />
+      )}
+      {showMonthlyRecap && chosen && !chosen.is_group && (
+        <MonthlyRecapStoryModal
+          conversationId={selected}
+          user={user}
+          peer={chosen.peer}
+          initialMonth={selectedRecapMonth}
+          onClose={() => {
+            setShowMonthlyRecap(false);
+            setSelectedRecapMonth(null);
+          }}
+          onSendToChat={(text) => sendMessage(null, { text })}
+          onError={onError}
+        />
+      )}
+      {showLovePoet && chosen && !chosen.is_group && (
+        <AILovePoetModal
+          user={user}
+          peer={chosen.peer}
+          initialDraft={draft}
+          onClose={() => setShowLovePoet(false)}
+          onApplyToComposer={(text) => setDraft(text)}
+          onSendDirect={(text) => sendMessage(null, { text })}
+          onError={onError}
+        />
+      )}
+      {showVoiceDuet && chosen && !chosen.is_group && (
+        <VoiceDuetStudio
+          user={user}
+          peer={chosen.peer}
+          partnerAudioUrl={duetPartnerAudioUrl}
+          onClose={() => {
+            setShowVoiceDuet(false);
+            setDuetPartnerAudioUrl(null);
+          }}
+          onSendDuet={async (file, caption) => {
+            await sendMessage(null, { file, caption });
+          }}
           onError={onError}
         />
       )}
@@ -3217,7 +3310,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         peer={callPeer}
         socket={socket}
         onOpenGames={() => setShowCoupleGames(true)}
-        onSaveCallSnippet={(blob, url) => {
+        onSaveCallSnippet={(_blob, _url) => {
           if (selected) {
             api(`/conversations/${selected}/messages`, {
               method: 'POST',
