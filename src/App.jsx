@@ -1004,6 +1004,12 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       if (version === generation.current) setLoading(false);
     }
   }, [recording, sending, loadMessages, onError, socket]);
+
+  useEffect(() => {
+    if (tab === 'together' && !selected && conversations.length > 0) {
+      void selectConversation(conversations[0].id);
+    }
+  }, [tab, selected, conversations, selectConversation]);
   const addContact = async (handle) => {
     setContactBusy(true);
     setContactError('');
@@ -1366,26 +1372,49 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       (chatFilter === 'All' || (chatFilter === 'Unread' ? c.unread > 0 : c.is_group)),
     ),
     callPeer = conversations.find((c) => c.id === call.call?.conversation_id)?.peer;
-  const unavailable = !chosen ? 'Choose a conversation to begin' : chosen.contact_blocked ? 'Unavailable while this contact is blocked' : chosen.is_group ? 'Available in one-to-one friendships' : !connected ? 'Reconnect to start this activity' : sending || recording ? 'Finish your message first' : '';
+  const currentFriend = chosen || (conversations.length > 0 ? conversations[0] : null);
+  const unavailable = !currentFriend
+    ? 'Choose a conversation to begin'
+    : currentFriend.contact_blocked
+    ? 'Unavailable while this contact is blocked'
+    : currentFriend.is_group
+    ? 'Available in one-to-one friendships'
+    : !connected
+    ? 'Reconnect to start this activity'
+    : sending || recording
+    ? 'Finish your message first'
+    : '';
   const activity = (id, title, description, icon, category, tone, onClick, live = true) => ({
-    id, title, description, icon, category, tone, onClick,
-    disabled: live ? Boolean(unavailable) : !chosen,
-    reason: live ? unavailable : 'Choose a conversation to begin',
+    id, title, description, icon, category, tone,
+    disabled: currentFriend ? (live ? Boolean(unavailable) : false) : (conversations.length === 0),
+    reason: unavailable || (conversations.length === 0 ? 'Choose a conversation to begin' : ''),
+    onClick: async () => {
+      let activeCid = selectedRef.current || selected;
+      if (!activeCid && conversations.length > 0) {
+        activeCid = conversations[0].id;
+        await selectConversation(activeCid);
+      }
+      if (!activeCid) {
+        setShowContact(true);
+        return;
+      }
+      onClick(activeCid);
+    },
   });
   const friendshipActions = [
     activity('prompt', 'Daily check-in', 'One question. A little closer.', Sparkles, 'Show up', 'coral', () => { setShowDailyPrompt(true); setDailyPromptInvite(null); }),
-    activity('music', 'Listen together', 'Your songs, in the same moment.', Headphones, 'Hang out', 'plum', () => { setShowMusicModal(true); setIsMusicMinimized(false); setMusicInvite(null); const track = musicEngine.currentTrack; socket?.emit('music:invite', { conversation_id: selected, track: { id: track.id, titleMl: track.titleMl, titleEn: track.titleEn } }); }),
-    activity('games', 'Game night', 'Trivia, laughs, and friendly rivalry.', Gamepad2, 'Hang out', 'mint', () => { setShowCoupleGames(true); setCoupleGamesInvite(null); socket?.emit('couple_game:invite', { conversation_id: selected }); }),
-    activity('watch', 'Watch party', 'Press play and watch side by side.', Film, 'Hang out', 'coral', () => { setShowWatchPartyModal(true); setIsWatchPartyMinimized(false); setWatchPartyInvite(null); const video = watchPartyVideo || CURATED_VIDEOS[0]; socket?.emit('video:invite', { conversation_id: selected, video: { id: video.id, youtubeId: video.youtubeId, titleMl: video.titleMl, titleEn: video.titleEn, thumbnail: video.thumbnail } }); }),
-    activity('doodle', 'Doodle together', 'Make a wonderfully messy masterpiece.', Palette, 'Hang out', 'gold', () => { setShowDoodle(true); setDoodleInvite(null); socket?.emit('doodle:invite', { conversation_id: selected }); }),
+    activity('music', 'Listen together', 'Your songs, in the same moment.', Headphones, 'Hang out', 'plum', (activeCid) => { setShowMusicModal(true); setIsMusicMinimized(false); setMusicInvite(null); const track = musicEngine.currentTrack; socket?.emit('music:invite', { conversation_id: activeCid || selected, track: { id: track.id, titleMl: track.titleMl, titleEn: track.titleEn } }); }),
+    activity('games', 'Game night', 'Trivia, laughs, and friendly rivalry.', Gamepad2, 'Hang out', 'mint', (activeCid) => { setShowCoupleGames(true); setCoupleGamesInvite(null); socket?.emit('couple_game:invite', { conversation_id: activeCid || selected }); }),
+    activity('watch', 'Watch party', 'Press play and watch side by side.', Film, 'Hang out', 'coral', (activeCid) => { setShowWatchPartyModal(true); setIsWatchPartyMinimized(false); setWatchPartyInvite(null); const video = watchPartyVideo || CURATED_VIDEOS[0]; socket?.emit('video:invite', { conversation_id: activeCid || selected, video: { id: video.id, youtubeId: video.youtubeId, titleMl: video.titleMl, titleEn: video.titleEn, thumbnail: video.thumbnail } }); }),
+    activity('doodle', 'Doodle together', 'Make a wonderfully messy masterpiece.', Palette, 'Hang out', 'gold', (activeCid) => { setShowDoodle(true); setDoodleInvite(null); socket?.emit('doodle:invite', { conversation_id: activeCid || selected }); }),
     activity('duet', 'Voice duet', 'Two voices. One shared soundtrack.', Music, 'Hang out', 'plum', () => { setDuetPartnerAudioUrl(null); setShowVoiceDuet(true); }),
     activity('vault', 'Memory scrapbook', 'Keep the moments worth coming back to.', Camera, 'Make memories', 'gold', () => setShowMediaVault(true), false),
     activity('story', 'Our story', 'Milestones in your friendship journey.', HeartHandshake, 'Make memories', 'coral', () => { setShowStory(true); setStoryInvite(null); }),
     activity('capsule', 'Time capsule', 'A little surprise for your future selves.', Gift, 'Make memories', 'plum', () => { setShowTimeCapsule(true); setSelectedCapsuleId(null); setTimeCapsuleInvite(null); }),
     activity('recap', 'Month in review', 'Turn your shared moments into a story.', Film, 'Make memories', 'mint', () => { setSelectedRecapMonth(null); setShowMonthlyRecap(true); }),
-    activity('hug', 'Send a hug', 'A small touch to say “I’m here.”', Hand, 'Show up', 'coral', () => { setShowVirtualTouch(true); setVirtualTouchInvite(null); socket?.emit('touch:invite', { conversation_id: selected, touch_mode: 'gentle' }); }),
-    activity('heartbeat', 'Live heartbeat', 'Feel a little closer, wherever you are.', Heart, 'Show up', 'coral', () => { setShowHeartbeat(true); setHeartbeatInvite(null); socket?.emit('heartbeat:invite', { conversation_id: selected }); }),
-    activity('surprises', 'Little surprises', 'Thoughtful notes and kindness coupons.', Ticket, 'Show up', 'gold', () => { setShowRomanticSurprises(true); setRomanticInvite(null); socket?.emit('romantic:invite', { conversation_id: selected }); }),
+    activity('hug', 'Send a hug', 'A small touch to say “I’m here.”', Hand, 'Show up', 'coral', (activeCid) => { setShowVirtualTouch(true); setVirtualTouchInvite(null); socket?.emit('touch:invite', { conversation_id: activeCid || selected, touch_mode: 'gentle' }); }),
+    activity('heartbeat', 'Live heartbeat', 'Feel a little closer, wherever you are.', Heart, 'Show up', 'coral', (activeCid) => { setShowHeartbeat(true); setHeartbeatInvite(null); socket?.emit('heartbeat:invite', { conversation_id: activeCid || selected }); }),
+    activity('surprises', 'Little surprises', 'Thoughtful notes and kindness coupons.', Ticket, 'Show up', 'gold', (activeCid) => { setShowRomanticSurprises(true); setRomanticInvite(null); socket?.emit('romantic:invite', { conversation_id: activeCid || selected }); }),
     activity('location', 'On my way', 'Share your live location and arrival time.', Navigation, 'Show up', 'mint', () => setShowLocationEta(true)),
     activity('battery', 'Battery care', 'A friendly reminder to stay charged.', Battery, 'Show up', 'mint', () => setShowBatteryModal(true)),
     activity('sleep', 'Wind down together', 'A shared, peaceful space for the night.', BedDouble, 'Hang out', 'plum', () => { setShowSleepModal(true); setIsSleepMinimized(false); setSleepInvite(null); }),
@@ -1397,8 +1426,11 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     activity('search', 'Search this chat', 'Find that thing you said that one time.', Search, 'Chat essentials', 'mint', () => setLibraryKind('messages'), false),
     activity('files', 'Shared files', 'All your photos and documents in one place.', Paperclip, 'Chat essentials', 'plum', () => setLibraryKind('photos'), false),
     activity('disappearing', 'Disappearing messages', 'Choose how long new messages stay.', Clock, 'Chat essentials', 'mint', () => setShowDisappearing(true), false),
-    activity('export', 'Export chat', 'Download a copy of your conversation.', Download, 'Chat essentials', 'plum', () => setExportChat({ id: selected, title: chosen.peer.name }), false),
-    ...(chosen?.is_group ? [activity('group', 'Group settings', 'Manage your people and group details.', Users, 'Chat essentials', 'mint', () => setShowGroupSettings(true), false)] : [activity('safety', 'Block or report user', 'Manage this contact and your boundaries.', ShieldCheck, 'Chat essentials', 'mint', () => setShowSafety(true), false)]),
+    activity('export', 'Export chat', 'Download a copy of your conversation.', Download, 'Chat essentials', 'plum', (activeCid) => {
+      const targetConv = chosen || conversations.find(c => c.id === (activeCid || selected));
+      setExportChat({ id: activeCid || selected, title: targetConv?.is_group ? targetConv?.name || targetConv?.peer?.name : targetConv?.peer?.name || 'Chat' });
+    }, false),
+    ...(currentFriend?.is_group ? [activity('group', 'Group settings', 'Manage your people and group details.', Users, 'Chat essentials', 'mint', () => setShowGroupSettings(true), false)] : [activity('safety', 'Block or report user', 'Manage this contact and your boundaries.', ShieldCheck, 'Chat essentials', 'mint', () => setShowSafety(true), false)]),
     { id: 'appearance', title: 'Make it yours', description: 'Themes, reading size, and your profile.', icon: SettingsIcon, category: 'Chat essentials', tone: 'plum', onClick: () => setShowSettings(true) },
     { id: 'disguise', title: 'Disguise mode', description: 'Switch to your discreet calculator view.', icon: EyeOff, category: 'Chat essentials', tone: 'mint', onClick: () => setIsStealthDisguised(true) },
   ];
@@ -1445,7 +1477,18 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           >
             <Phone size={22} /><span>Calls</span>
           </ButtonIcon>
-          <ButtonIcon label="Together" className={`rail-btn ${tab === 'together' ? 'active' : ''}`} onClick={() => setTab('together')}><HeartHandshake size={23} /><span>Together</span></ButtonIcon>
+          <ButtonIcon
+            label="Together"
+            className={`rail-btn ${tab === 'together' ? 'active' : ''}`}
+            onClick={() => {
+              setTab('together');
+              if (!selected && conversations.length > 0) {
+                void selectConversation(conversations[0].id);
+              }
+            }}
+          >
+            <HeartHandshake size={23} /><span>Together</span>
+          </ButtonIcon>
           <ButtonIcon label="Search all messages" className="rail-btn" onClick={() => setShowGlobalSearch(true)}><Search size={22} /><span>Search</span></ButtonIcon>
         </div>
         <div className="rail-bottom">
@@ -1519,8 +1562,8 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
               <button
                 type="button"
                 key={c.id}
-                className={`conversation ${c.id === selected ? 'selected' : ''}`}
-                onClick={() => { if (tab === 'together') setTab('chats'); void selectConversation(c.id); }}
+                className={`conversation ${c.id === (selected || currentFriend?.id) ? 'selected' : ''}`}
+                onClick={() => { void selectConversation(c.id); }}
               >
                 <Avatar person={c.peer} />
                 <div className="conversation-text">
@@ -1599,7 +1642,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       </aside>
       <main className="chat-panel">
         {tab === 'together' ? (
-          <div className="together-page"><header className="together-page-header"><span><HeartHandshake size={21} /> Together</span><button type="button" className="text-btn" onClick={() => setTab('chats')}><ArrowLeft size={16} /> Back to chats</button></header><FeatureDirectory actions={friendshipActions} person={chosen?.peer} onConnect={() => setShowContact(true)} /></div>
+          <div className="together-page"><header className="together-page-header"><span><HeartHandshake size={21} /> Together</span><button type="button" className="text-btn" onClick={() => setTab('chats')}><ArrowLeft size={16} /> Back to chats</button></header><FeatureDirectory actions={friendshipActions} person={currentFriend?.peer} onConnect={() => setShowContact(true)} /></div>
         ) : chosen ? (
           <>
             <header className="chat-header">
@@ -2667,14 +2710,14 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
             <div className="welcome-postcard"><span className="postcard-stamp">ALWAYS IN YOUR CORNER</span><HeartHandshake size={72} strokeWidth={1.25} /><span className="postcard-signature">a little closer, every day.</span><span className="postcard-star">✳</span></div>
             <h2>{tab === 'calls' ? <>A familiar voice.<br /><em>A better day.</em></> : <>Big laughs. Little moments.<br /><em>Your kind of people.</em></>}</h2>
             <p>{tab === 'calls' ? 'Choose a friend from your conversations to see your call history or start a voice or video call.' : 'For the 2 a.m. talks, the “you had to be there” stories, and the friends who always get you. Make yourself at home.'}</p>
-            <div className="welcome-actions"><button className="primary compact" onClick={() => setShowContact(true)}><Plus size={18} /> Find your people</button><button type="button" className="secondary" onClick={() => setTab('together')}><Sparkles size={17} /> Explore Together</button></div>
-            <div className="welcome-feature-row"><button type="button" onClick={() => setShowContact(true)}><MessageCircle size={22} /><strong>Keep the conversation going</strong><span>Real talks, voice notes, and inside jokes.</span><ArrowRight size={17} /></button><button type="button" onClick={() => setTab('together')}><Headphones size={22} /><strong>Make time for each other</strong><span>Music, games, and little shared rituals.</span><ArrowRight size={17} /></button><button type="button" onClick={() => setShowTogether(true)}><Camera size={22} /><strong>Save the good stuff</strong><span>A home for the memories you make.</span><ArrowRight size={17} /></button></div>
+            <div className="welcome-actions"><button className="primary compact" onClick={() => setShowContact(true)}><Plus size={18} /> Find your people</button><button type="button" className="secondary" onClick={() => { setTab('together'); if (!selected && conversations.length > 0) void selectConversation(conversations[0].id); }}><Sparkles size={17} /> Explore Together</button></div>
+            <div className="welcome-feature-row"><button type="button" onClick={() => setShowContact(true)}><MessageCircle size={22} /><strong>Keep the conversation going</strong><span>Real talks, voice notes, and inside jokes.</span><ArrowRight size={17} /></button><button type="button" onClick={() => { setTab('together'); if (!selected && conversations.length > 0) void selectConversation(conversations[0].id); }}><Headphones size={22} /><strong>Make time for each other</strong><span>Music, games, and little shared rituals.</span><ArrowRight size={17} /></button><button type="button" onClick={() => setShowTogether(true)}><Camera size={22} /><strong>Save the good stuff</strong><span>A home for the memories you make.</span><ArrowRight size={17} /></button></div>
             <div className="welcome-footnote"><Globe2 size={15} /> Malayalam, Manglish, English, Kiswahili. Friendship feels like home in every language.</div>
           </div>
         )}
       </main>
-      <FriendshipDock actions={friendshipActions} person={chosen?.peer} onExplore={() => setShowTogether(true)} onConnect={() => setShowContact(true)} />
-      {showTogether && <TogetherExplorer actions={friendshipActions} person={chosen?.peer} onConnect={() => { setShowTogether(false); setShowContact(true); }} onClose={() => setShowTogether(false)} />}
+      <FriendshipDock actions={friendshipActions} person={currentFriend?.peer} onExplore={() => setShowTogether(true)} onConnect={() => setShowContact(true)} />
+      {showTogether && <TogetherExplorer actions={friendshipActions} person={currentFriend?.peer} onConnect={() => { setShowTogether(false); setShowContact(true); }} onClose={() => setShowTogether(false)} />}
       {showDisappearing && chosen && <DisappearingSettings conversation={chosen} onClose={() => setShowDisappearing(false)} onChanged={loadConversations} onError={onError} />}
       {showSafety && chosen && <UserSafety person={chosen.peer} blocked={chosen.blocked_by_me} onClose={() => setShowSafety(false)} onChanged={loadConversations} />}
       {exportChat && <ChatExport conversationId={exportChat.id} title={exportChat.title} onClose={() => setExportChat(null)} />}
@@ -2772,55 +2815,55 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onError={onError}
         />
       )}
-      {showDoodle && chosen && (
+      {showDoodle && currentFriend && (
         <LiveDoodleModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           socket={socket}
           onClose={() => setShowDoodle(false)}
           onSendToChat={sendDoodleToChat}
           onError={onError}
         />
       )}
-      {showHeartbeat && chosen && (
+      {showHeartbeat && currentFriend && (
         <LiveHeartbeatModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           socket={socket}
           onClose={() => setShowHeartbeat(false)}
           onSendToChat={sendHeartbeatToChat}
           onError={onError}
         />
       )}
-      {showVirtualTouch && chosen && (
+      {showVirtualTouch && currentFriend && (
         <VirtualTouchModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           socket={socket}
           onClose={() => setShowVirtualTouch(false)}
           onSendToChat={sendVirtualTouchToChat}
           onError={onError}
         />
       )}
-      {showDailyPrompt && chosen && !chosen.is_group && (
+      {showDailyPrompt && currentFriend && !currentFriend.is_group && (
         <DailyPromptModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           socket={socket}
           onClose={() => setShowDailyPrompt(false)}
           onSendToChat={sendDailyPromptToChat}
           onError={onError}
         />
       )}
-      {showStory && chosen && !chosen.is_group && (
+      {showStory && currentFriend && !currentFriend.is_group && (
         <RelationshipStoryModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           socket={socket}
           onClose={() => setShowStory(false)}
           onSendToChat={sendStoryToChat}
@@ -2831,11 +2874,11 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           }}
         />
       )}
-      {showTimeCapsule && chosen && !chosen.is_group && (
+      {showTimeCapsule && currentFriend && !currentFriend.is_group && (
         <TimeCapsuleModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           socket={socket}
           initialCapsuleId={selectedCapsuleId}
           onClose={() => {
@@ -2846,11 +2889,11 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onError={onError}
         />
       )}
-      {showSleepModal && chosen && !chosen.is_group && (
+      {showSleepModal && currentFriend && !currentFriend.is_group && (
         <SleepTogetherModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           socket={socket}
           onClose={() => {
             setShowSleepModal(false);
@@ -2864,11 +2907,11 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onError={onError}
         />
       )}
-      {showMonthlyRecap && chosen && !chosen.is_group && (
+      {showMonthlyRecap && currentFriend && !currentFriend.is_group && (
         <MonthlyRecapStoryModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           initialMonth={selectedRecapMonth}
           onClose={() => {
             setShowMonthlyRecap(false);
@@ -2878,10 +2921,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onError={onError}
         />
       )}
-      {showLovePoet && chosen && !chosen.is_group && (
+      {showLovePoet && currentFriend && !currentFriend.is_group && (
         <AILovePoetModal
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           initialDraft={draft}
           onClose={() => setShowLovePoet(false)}
           onApplyToComposer={(text) => setDraft(text)}
@@ -2889,10 +2932,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onError={onError}
         />
       )}
-      {showVoiceDuet && chosen && !chosen.is_group && (
+      {showVoiceDuet && currentFriend && !currentFriend.is_group && (
         <VoiceDuetStudio
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           partnerAudioUrl={duetPartnerAudioUrl}
           onClose={() => {
             setShowVoiceDuet(false);
@@ -2904,9 +2947,9 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onError={onError}
         />
       )}
-      {showMediaVault && chosen && (
+      {showMediaVault && currentFriend && (
         <MediaVaultModal
-          conversation={chosen}
+          conversation={chosen || currentFriend}
           user={user}
           onClose={() => setShowMediaVault(false)}
           onOpenMessage={async (message) => {
@@ -2953,11 +2996,11 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onError={onError}
         />
       )}
-      {showMusicModal && chosen && (
+      {showMusicModal && currentFriend && (
         <ListenTogetherModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           socket={socket}
           onClose={() => {
             setShowMusicModal(false);
@@ -2972,11 +3015,11 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           isCallMode={Boolean(call?.call)}
         />
       )}
-      {showWatchPartyModal && chosen && (
+      {showWatchPartyModal && currentFriend && (
         <WatchPartyModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           socket={socket}
           initialVideo={watchPartyVideo}
           onClose={() => {
@@ -3112,16 +3155,16 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           ),
         } : undefined}
       />
-      {showCoupleGames && chosen && (
+      {showCoupleGames && currentFriend && (
         <CoupleGamesModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           socket={socket}
           onClose={() => setShowCoupleGames(false)}
           onSendToChat={(text) => {
             if (text && text.trim()) {
-              api(`/conversations/${selected}/messages`, {
+              api(`/conversations/${selected || currentFriend.id}/messages`, {
                 method: 'POST',
                 body: {
                   client_id: crypto.randomUUID(),
@@ -3130,7 +3173,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 },
               }).then(() => {
                 stickToBottom.current = true;
-                loadMessages(selected);
+                loadMessages(selected || currentFriend.id);
                 loadConversations();
               }).catch((e) => onError(e.message));
             }
@@ -3138,16 +3181,16 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           isCallMode={Boolean(call?.call)}
         />
       )}
-      {showLocationEta && chosen && (
+      {showLocationEta && currentFriend && (
         <LocationEtaModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           socket={socket}
           onClose={() => setShowLocationEta(false)}
           onSendToChat={(text) => {
             if (text && text.trim()) {
-              api(`/conversations/${selected}/messages`, {
+              api(`/conversations/${selected || currentFriend.id}/messages`, {
                 method: 'POST',
                 body: {
                   client_id: crypto.randomUUID(),
@@ -3156,24 +3199,24 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 },
               }).then(() => {
                 stickToBottom.current = true;
-                loadMessages(selected);
+                loadMessages(selected || currentFriend.id);
                 loadConversations();
               }).catch((e) => onError(e.message));
             }
           }}
         />
       )}
-      {showBatteryModal && chosen && (
+      {showBatteryModal && currentFriend && (
         <PartnerBatteryModal
           isOpen={showBatteryModal}
           onClose={() => setShowBatteryModal(false)}
           partnerBattery={partnerBattery}
           userBattery={userBattery}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           onSendNudge={(preset) => {
             setDraft(preset.message);
             socket?.emit('battery:nudge', {
-              conversation_id: selected,
+              conversation_id: selected || currentFriend.id,
               nudge: preset.id,
               message: preset.message,
             });
@@ -3187,7 +3230,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           }}
         />
       )}
-      {showInvisibleInk && chosen && (
+      {showInvisibleInk && currentFriend && (
         <InvisibleInkModal
           onClose={() => setShowInvisibleInk(false)}
           initialText={draft}
@@ -3214,14 +3257,14 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                   view_once: false,
                   ...(replyTo ? { reply_to_id: replyTo.id } : {}),
                 };
-                const delivery = outbox.enqueue(selected, input, null, () => {
+                const delivery = outbox.enqueue(selected || currentFriend.id, input, null, () => {
                   setDraft('');
                   setReplyTo(null);
                   setFile(null);
                   stickToBottom.current = true;
                 });
                 await delivery;
-                if (selectedRef.current === selected) await loadMessages(selected);
+                if (selectedRef.current === (selected || currentFriend.id)) await loadMessages(selected || currentFriend.id);
                 await loadConversations();
               } catch (e) {
                 onError(e.message);
@@ -3232,11 +3275,11 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           }}
         />
       )}
-      {showRomanticSurprises && chosen && (
+      {showRomanticSurprises && currentFriend && (
         <RomanticSurprisesModal
-          conversationId={selected}
+          conversationId={selected || currentFriend.id}
           user={user}
-          peer={chosen.peer}
+          peer={currentFriend.peer}
           socket={socket}
           onClose={() => setShowRomanticSurprises(false)}
           onSendToChat={(text) => {

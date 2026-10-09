@@ -26,7 +26,7 @@ export function FeatureDirectory({ actions, person, onConnect, compact = false, 
       <div className="feature-results-heading"><strong>{category === 'All' ? 'Your friendship toolkit' : category}</strong><span>{visible.length} {visible.length === 1 ? 'feature' : 'features'}</span></div>
       <div className="friendship-feature-grid">{visible.map(action => {
         const Icon = action.icon;
-        return <button key={action.id} type="button" className={`friendship-feature-card tone-${action.tone || 'plum'}`} disabled={action.disabled} onClick={() => { onChoose?.(); action.onClick(); }}>
+        return <button key={action.id} type="button" className={`friendship-feature-card tone-${action.tone || 'plum'}`} aria-disabled={action.disabled} onClick={() => { onChoose?.(); action.onClick(); }}>
           <span className="feature-card-icon"><Icon size={23} strokeWidth={1.7} /></span>
           <span className="feature-card-copy"><small>{action.category}</small><strong>{action.title}</strong><span>{action.description}</span>{action.disabled && <span className="feature-unavailable">{t(action.reason || 'Choose a conversation to begin')}</span>}</span>
           <ArrowRight size={16} className="feature-card-arrow" />
@@ -48,7 +48,7 @@ export function FriendshipDock({ actions, person, onExplore, onConnect }) {
     <div className="dock-heading"><HeartHandshake size={20} /><strong>Our little world</strong><span>✳</span></div>
     <div className="friendship-note"><span className="note-label">THE RIDE-OR-DIE CLUB</span><div className="friendship-symbol" aria-hidden="true">you <HeartHandshake size={44} strokeWidth={1.3} /> me</div><h2>Same team.<br /><em>Every day.</em></h2><p>{person ? t('A little space for you and {name}. For the big days, and the beautifully ordinary ones.', { name: person.name }) : t('For the people who feel like home. Distance has nothing on a friendship like this.')}</p></div>
     <div className="dock-section-title"><strong>Make a moment</strong><Sparkles size={16} /></div>
-    <div className="dock-activities">{picks.map(action => { const Icon = action.icon; return <button key={action.id} type="button" disabled={action.disabled} onClick={action.onClick}><span className={`dock-icon tone-${action.tone}`}><Icon size={20} /></span><span><strong>{action.title}</strong><small>{action.description}</small></span><ArrowRight size={15} /></button>; })}</div>
+    <div className="dock-activities">{picks.map(action => { const Icon = action.icon; return <button key={action.id} type="button" aria-disabled={action.disabled} onClick={action.onClick}><span className={`dock-icon tone-${action.tone}`}><Icon size={20} /></span><span><strong>{action.title}</strong><small>{action.description}</small></span><ArrowRight size={15} /></button>; })}</div>
     <button type="button" className="explore-link" onClick={onExplore}>Explore all features <ArrowRight size={16} /></button>
     <div className="friendship-footer"><HeartHandshake size={19} /><p>Show up. Laugh loud.<br /><strong>Stay in each other’s corner.</strong></p></div>
     {!person && <button type="button" className="secondary" onClick={onConnect}>Find your people</button>}

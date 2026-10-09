@@ -226,8 +226,8 @@ input:focus, textarea:focus, select:focus { border-color: var(--forest); box-sha
 .feature-card-copy > strong { font-size: 14px; color: var(--text-heading); }
 .feature-card-copy > span { color: var(--muted); font-size: 11px; line-height: 1.7; }
 .feature-card-arrow { color: var(--forest); margin-top: 17px; flex-shrink: 0; }
-.friendship-feature-card:disabled { opacity: 1; cursor: not-allowed; }
-.friendship-feature-card:disabled .feature-card-icon, .friendship-feature-card:disabled .feature-card-arrow { opacity: .5; }
+.friendship-feature-card:disabled, .friendship-feature-card[aria-disabled="true"] { opacity: 1; cursor: pointer; }
+.friendship-feature-card:disabled .feature-card-icon, .friendship-feature-card:disabled .feature-card-arrow, .friendship-feature-card[aria-disabled="true"] .feature-card-icon, .friendship-feature-card[aria-disabled="true"] .feature-card-arrow { opacity: .7; }
 .feature-card-copy > .feature-unavailable { font-size: 10px; color: var(--coral-ink); margin-top: 3px; }
 .feature-empty { padding: 40px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; color: var(--muted); }
 .feature-empty h3 { color: var(--text-heading); }
