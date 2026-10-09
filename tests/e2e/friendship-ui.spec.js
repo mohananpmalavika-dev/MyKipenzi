@@ -1,0 +1,74 @@
+import { test, expect } from '@playwright/test';
+import { setupPrivacy } from './privacy-fixture.js';
+const artifacts = 'artifacts/friendship-e2e';
+
+test('friendship toolkit supports search, categories, and opening saved messages', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.setViewportSize({ width: 1512, height: 982 });
+  await setupPrivacy(page);
+  await expect(page.getByLabel('Message', { exact: true })).toBeVisible();
+  await page.screenshot({ path: `${artifacts}/desktop-chat.png` });
+  await page.locator('.together-button').click();
+  const dialog = page.getByRole('dialog', { name: 'Together · Your friendship toolkit' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Make memories', exact: true }).click();
+  await expect(dialog.locator('.friendship-feature-card')).toHaveCount(4);
+  await dialog.getByRole('button', { name: 'All', exact: true }).click();
+  await dialog.getByLabel('Search friendship features').fill('starred');
+  await expect(dialog.locator('.friendship-feature-card')).toHaveCount(1);
+  await dialog.getByRole('button', { name: /Starred messages/ }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await page.locator('.together-button').click();
+  await page.getByLabel('Search friendship features').fill('no-such-feature');
+  await expect(page.getByRole('heading', { name: 'No features found' })).toBeVisible();
+  await page.getByRole('button', { name: 'Show all features' }).click();
+  await expect(page.locator('.friendship-feature-card')).toHaveCount(28);
+  await page.screenshot({ path: `${artifacts}/desktop-toolkit.png` });
+  expect(errors).toEqual([]);
+});
+
+test('mobile chat, Together navigation, and dark theme fit the viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await setupPrivacy(page);
+  await expect(page.getByLabel('Message', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Send message', exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: `${artifacts}/mobile-chat.png` });
+  await page.locator('.together-button').click();
+  await expect(page.getByLabel('Search friendship features')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: `${artifacts}/mobile-toolkit.png` });
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await page.getByRole('button', { name: 'Back to chats', exact: true }).click();
+  await page.getByRole('button', { name: 'Unread', exact: true }).click();
+  await expect(page.getByText('No unread conversations yet.')).toBeVisible();
+  await page.getByRole('button', { name: 'All', exact: true }).click();
+  await expect(page.locator('.conversation')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Together', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'More ways to be there.' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Choose a conversation to begin/ }).first()).toBeDisabled();
+  await page.getByRole('button', { name: /Switch to dark theme/ }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.screenshot({ path: `${artifacts}/mobile-together-dark.png` });
+});
+
+test('signed-out experience and empty workspace remain useful at desktop size', async ({ page }) => {
+  await page.setViewportSize({ width: 1512, height: 982 });
+  await page.route('**/api/**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify(new URL(route.request().url()).pathname.endsWith('/session') ? { user: null, csrf: 'test' } : { registration: true }) }));
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();
+  await page.screenshot({ path: `${artifacts}/desktop-auth.png` });
+  await page.getByRole('button', { name: 'Create an account' }).click();
+  await expect(page.getByLabel('Unique handle')).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: `${artifacts}/mobile-register.png`, fullPage: true });
+  await page.unroute('**/api/**');
+  await page.setViewportSize({ width: 1512, height: 982 });
+  await setupPrivacy(page);
+  await page.locator('.rail-items').getByRole('button', { name: 'Together', exact: true }).click();
+  await page.screenshot({ path: `${artifacts}/desktop-together.png` });
+});

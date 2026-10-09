@@ -44,7 +44,7 @@ export function AppearanceOptions({ controls }) {
     {(uploadError || appearanceError) && <p className="form-error" role="alert">{uploadError || appearanceError}</p>}
     <button type="button" className="text-btn" onClick={() => {
       controls.setTheme('system'); controls.setFontSize('comfortable');
-      setCustomColors({ accent: '#17483e', background: '#f8f9f5', bubble: '#e5ecdc' });
+      setCustomColors({ accent: '#65445f', background: '#faf7f2', bubble: '#eee3ed' });
       setBubbleStyle('classic'); updateBackgroundImage(''); setUploadError('');
     }}>Reset appearance</button>
   </div>;

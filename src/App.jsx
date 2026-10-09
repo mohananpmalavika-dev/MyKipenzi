@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { FeatureDirectory, FriendshipDock, TogetherExplorer } from './FriendshipSpace.jsx';
 import { io } from 'socket.io-client';
 import { MessageThread } from './MessageThread.jsx';
 import { useDraftManager } from './useDraftManager.js';
@@ -51,6 +52,8 @@ import {
   BatteryCharging,
   Wand2,
   Ticket,
+  Users,
+  LayoutGrid,
 } from 'lucide-react';
 import {
   PartnerBatteryBadge,
@@ -185,17 +188,17 @@ function Auth({ capabilities, onSession, onError }) {
         </div>
         <div className="story-content">
           <span className="eyebrow">
-            <span className="tiny-dot" /> OUR PRIVATE SANCTUARY · JUST THE TWO OF US
+            <span className="tiny-dot" /> THE RIDE-OR-DIE CLUB
           </span>
           <h1>
-            Through thick & thin,
+            Life’s better with
             <br />
-            you’re my person.
+            your people.
             <br />
-            <em>Always.</em>
+            <em>Always in your corner.</em>
           </h1>
           <p>
-            Every late-night rant, every dumb inside joke, every tear and unfiltered truth that belongs only between us. There’s room for our entire world right here.
+            A home for late-night talks, ridiculous inside jokes, and the friends who make ordinary days feel extraordinary.
           </p>
           <div className="language-art" aria-hidden="true">
             <div className="art-orbit" />
@@ -213,18 +216,18 @@ function Auth({ capabilities, onSession, onError }) {
           </div>
           <div className="story-features">
             <span>
-              <MessageCircle size={17} /> Unfiltered midnight talks & secrets
+              <MessageCircle size={17} /> Chats that feel like you
             </span>
             <span>
-              <Video size={17} /> Hearing your voice fixes everything
+              <Video size={17} /> Calls, music & shared moments
             </span>
             <span>
-              <Globe2 size={17} /> Our bond across every language
+              <Globe2 size={17} /> Friendship across languages
             </span>
           </div>
         </div>
         <div className="story-footer">
-          A secret sanctuary built for two die-hard souls.<span>kipenzi</span>
+          Made for the friends who feel like home.<span>kipenzi</span>
         </div>
       </section>
       <section className="auth-panel">
@@ -232,12 +235,12 @@ function Auth({ capabilities, onSession, onError }) {
           <div className="welcome-icon">
             <MessageCircle size={25} />
           </div>
-          <span className="eyebrow dark">SAFE & SACRED BETWEEN US</span>
-          <h2>{register ? 'Let’s set up our private corner.' : 'Welcome back, my favorite human.'}</h2>
+          <span className="eyebrow dark">YOUR PEOPLE. YOUR PLACE.</span>
+          <h2>{register ? 'Find your kind of people.' : 'Welcome back.'}</h2>
           <p>
             {register
-              ? 'A few quick details, then straight to your ride-or-die.'
-              : 'Got gossip? Missed me? A breakdown to share? Spill it all right here.'}
+              ? 'Create your account and make room for more little moments.'
+              : 'Your favorite conversations are waiting. Come on in.'}
           </p>
           <form onSubmit={submit}>
             {register && (
@@ -302,9 +305,9 @@ function Auth({ capabilities, onSession, onError }) {
                 <label className="check-label">
                   <input type="checkbox" name="ai_consent" />
                   <span>
-                    Enable AI translation and soulmate voice reading
+                    Enable AI translation and voice reading
                     <small>
-                      Speak freely in Malayalam, Swahili, or English. Gemini & Edge-TTS will translate and speak in natural voices.
+                      Allow your messages to be processed by AI providers for translation and voice features. You can change this in Settings.
                     </small>
                   </span>
                 </label>
@@ -319,16 +322,16 @@ function Auth({ capabilities, onSession, onError }) {
               {busy ? (
                 <LoaderCircle size={19} className="spin" />
               ) : register ? (
-                'Open our sanctuary'
+                'Create account'
               ) : (
-                'Step inside'
+                'Sign in'
               )}
               {!busy && <ArrowRight size={18} />}
             </button>
           </form>
           {capabilities.registration && (
             <p className="auth-switch">
-              {register ? 'Already have our sanctuary?' : 'Setting this up for the first time?'}{' '}
+              {register ? 'Already have an account?' : 'Setting this up for the first time?'}{' '}
               <button
                 type="button"
                 onClick={() => {
@@ -336,15 +339,15 @@ function Auth({ capabilities, onSession, onError }) {
                   setError('');
                 }}
               >
-                {register ? 'Step inside' : 'Create our sanctuary'}
+                {register ? 'Sign in' : 'Create an account'}
               </button>
             </p>
           )}
           <div className="auth-note">
             <ShieldCheck size={18} />
             <span>
-              Strictly confidential between the two of us.
-              <small>Zero eavesdropping. Just pure love, real trust, and unfiltered honesty.</small>
+              Your space, your choices.
+              <small>Manage your privacy, AI preferences, and notifications in Settings.</small>
             </span>
           </div>
           <InstallApp />
@@ -354,7 +357,7 @@ function Auth({ capabilities, onSession, onError }) {
   );
 }
 function Chat({ session, capabilities, onSession, onError, themeControls }) {
-  const { theme, setTheme, isDark, toggleTheme, fontSize, setFontSize, cycleFontSize, currentFontConfig } = themeControls;
+  const { theme, setTheme, isDark, toggleTheme, fontSize, setFontSize } = themeControls;
   const { user, csrf } = session;
   const push = usePushNotifications(user.id, onError);
   const outbox = useMessageOutbox(user.id);
@@ -372,6 +375,8 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     [loading, setLoading] = useState(false),
     [sending, setSending] = useState(false),
     [search, setSearch] = useState(''),
+    [chatFilter, setChatFilter] = useState('All'),
+    [showTogether, setShowTogether] = useState(false),
     [showDisappearing, setShowDisappearing] = useState(false),
     [showScheduled, setShowScheduled] = useState(false),
     [showSafety, setShowSafety] = useState(false),
@@ -1347,9 +1352,47 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
   };
   const chosen = conversations.find((c) => c.id === selected),
     filtered = conversations.filter((c) =>
-      `${c.peer.name} ${c.peer.handle}`.toLowerCase().includes(search.toLowerCase()),
+      `${c.peer.name} ${c.peer.handle}`.toLowerCase().includes(search.toLowerCase()) &&
+      (chatFilter === 'All' || (chatFilter === 'Unread' ? c.unread > 0 : c.is_group)),
     ),
     callPeer = conversations.find((c) => c.id === call.call?.conversation_id)?.peer;
+  const unavailable = !chosen ? 'Choose a conversation to begin' : chosen.contact_blocked ? 'Unavailable while this contact is blocked' : chosen.is_group ? 'Available in one-to-one friendships' : !connected ? 'Reconnect to start this activity' : sending || recording ? 'Finish your message first' : '';
+  const activity = (id, title, description, icon, category, tone, onClick, live = true) => ({
+    id, title, description, icon, category, tone, onClick,
+    disabled: live ? Boolean(unavailable) : !chosen,
+    reason: live ? unavailable : 'Choose a conversation to begin',
+  });
+  const friendshipActions = [
+    activity('prompt', 'Daily check-in', 'One question. A little closer.', Sparkles, 'Show up', 'coral', () => { setShowDailyPrompt(true); setDailyPromptInvite(null); }),
+    activity('music', 'Listen together', 'Your songs, in the same moment.', Headphones, 'Hang out', 'plum', () => { setShowMusicModal(true); setIsMusicMinimized(false); setMusicInvite(null); const track = musicEngine.currentTrack; socket?.emit('music:invite', { conversation_id: selected, track: { id: track.id, titleMl: track.titleMl, titleEn: track.titleEn } }); }),
+    activity('games', 'Game night', 'Trivia, laughs, and friendly rivalry.', Gamepad2, 'Hang out', 'mint', () => { setShowCoupleGames(true); setCoupleGamesInvite(null); socket?.emit('couple_game:invite', { conversation_id: selected }); }),
+    activity('watch', 'Watch party', 'Press play and watch side by side.', Film, 'Hang out', 'coral', () => { setShowWatchPartyModal(true); setIsWatchPartyMinimized(false); setWatchPartyInvite(null); const video = watchPartyVideo || CURATED_VIDEOS[0]; socket?.emit('video:invite', { conversation_id: selected, video: { id: video.id, youtubeId: video.youtubeId, titleMl: video.titleMl, titleEn: video.titleEn, thumbnail: video.thumbnail } }); }),
+    activity('doodle', 'Doodle together', 'Make a wonderfully messy masterpiece.', Palette, 'Hang out', 'gold', () => { setShowDoodle(true); setDoodleInvite(null); socket?.emit('doodle:invite', { conversation_id: selected }); }),
+    activity('duet', 'Voice duet', 'Two voices. One shared soundtrack.', Music, 'Hang out', 'plum', () => { setDuetPartnerAudioUrl(null); setShowVoiceDuet(true); }),
+    activity('vault', 'Memory scrapbook', 'Keep the moments worth coming back to.', Camera, 'Make memories', 'gold', () => setShowMediaVault(true), false),
+    activity('story', 'Our story', 'Milestones in your friendship journey.', HeartHandshake, 'Make memories', 'coral', () => { setShowStory(true); setStoryInvite(null); }),
+    activity('capsule', 'Time capsule', 'A little surprise for your future selves.', Gift, 'Make memories', 'plum', () => { setShowTimeCapsule(true); setSelectedCapsuleId(null); setTimeCapsuleInvite(null); }),
+    activity('recap', 'Month in review', 'Turn your shared moments into a story.', Film, 'Make memories', 'mint', () => { setSelectedRecapMonth(null); setShowMonthlyRecap(true); }),
+    activity('hug', 'Send a hug', 'A small touch to say “I’m here.”', Hand, 'Show up', 'coral', () => { setShowVirtualTouch(true); setVirtualTouchInvite(null); socket?.emit('touch:invite', { conversation_id: selected, touch_mode: 'gentle' }); }),
+    activity('heartbeat', 'Live heartbeat', 'Feel a little closer, wherever you are.', Heart, 'Show up', 'coral', () => { setShowHeartbeat(true); setHeartbeatInvite(null); socket?.emit('heartbeat:invite', { conversation_id: selected }); }),
+    activity('surprises', 'Little surprises', 'Thoughtful notes and kindness coupons.', Ticket, 'Show up', 'gold', () => { setShowRomanticSurprises(true); setRomanticInvite(null); socket?.emit('romantic:invite', { conversation_id: selected }); }),
+    activity('location', 'On my way', 'Share your live location and arrival time.', Navigation, 'Show up', 'mint', () => setShowLocationEta(true)),
+    activity('battery', 'Battery care', 'A friendly reminder to stay charged.', Battery, 'Show up', 'mint', () => setShowBatteryModal(true)),
+    activity('sleep', 'Wind down together', 'A shared, peaceful space for the night.', BedDouble, 'Hang out', 'plum', () => { setShowSleepModal(true); setIsSleepMinimized(false); setSleepInvite(null); }),
+    activity('poetry', 'A note from the heart', 'Find the words for what you want to say.', Feather, 'Show up', 'gold', () => setShowLovePoet(true)),
+    activity('ink', 'Invisible ink', 'Hide a message behind a little magic.', Wand2, 'Chat essentials', 'plum', () => setShowInvisibleInk(true)),
+    activity('scheduled', 'Scheduled messages', 'Send a thought at just the right time.', Clock, 'Chat essentials', 'gold', () => setShowScheduled(true), false),
+    activity('starred', 'Starred messages', 'Your favorite words, saved for later.', Star, 'Chat essentials', 'gold', () => setLibraryKind('starred'), false),
+    activity('pinned', 'Pinned messages', 'Keep the important things close.', Pin, 'Chat essentials', 'coral', () => setLibraryKind('pinned'), false),
+    activity('search', 'Search this chat', 'Find that thing you said that one time.', Search, 'Chat essentials', 'mint', () => setLibraryKind('messages'), false),
+    activity('files', 'Shared files', 'All your photos and documents in one place.', Paperclip, 'Chat essentials', 'plum', () => setLibraryKind('photos'), false),
+    activity('disappearing', 'Disappearing messages', 'Choose how long new messages stay.', Clock, 'Chat essentials', 'mint', () => setShowDisappearing(true), false),
+    activity('export', 'Export chat', 'Download a copy of your conversation.', Download, 'Chat essentials', 'plum', () => setExportChat({ id: selected, title: chosen.peer.name }), false),
+    ...(chosen?.is_group ? [activity('group', 'Group settings', 'Manage your people and group details.', Users, 'Chat essentials', 'mint', () => setShowGroupSettings(true), false)] : [activity('safety', 'Block or report user', 'Manage this contact and your boundaries.', ShieldCheck, 'Chat essentials', 'mint', () => setShowSafety(true), false)]),
+    { id: 'appearance', title: 'Make it yours', description: 'Themes, reading size, and your profile.', icon: SettingsIcon, category: 'Chat essentials', tone: 'plum', onClick: () => setShowSettings(true) },
+    { id: 'disguise', title: 'Disguise mode', description: 'Switch to your discreet calculator view.', icon: EyeOff, category: 'Chat essentials', tone: 'mint', onClick: () => setIsStealthDisguised(true) },
+  ];
+
   return (
     <CaptureGuard conversationId={selected} user={user} active={!!chosen && !chosen.is_group && !chosen.contact_blocked && !isStealthDisguised}>
     <>
@@ -1366,7 +1409,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       <div
         className={`app-shell ${selected ? 'chat-open' : ''} ${vibrateScreen ? 'screen-vibrate' : ''} ${heartbeatScreen ? 'screen-heartbeat' : ''}`}
       >
-        <aside className="nav-rail">
+        <aside className="nav-rail" aria-label="Main navigation">
         <div className="brand-mark">
           k<span>•</span>
         </div>
@@ -1376,7 +1419,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
             className={`rail-btn ${tab === 'chats' ? 'active' : ''}`}
             onClick={() => setTab('chats')}
           >
-            <MessageCircle size={23} />
+            <MessageCircle size={23} /><span>Chats</span>
           </ButtonIcon>
           <ButtonIcon
             label="Call history"
@@ -1389,11 +1432,13 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                   .catch((e) => onError(e.message));
             }}
           >
-            <Phone size={22} />
+            <Phone size={22} /><span>Calls</span>
           </ButtonIcon>
+          <ButtonIcon label="Together" className={`rail-btn ${tab === 'together' ? 'active' : ''}`} onClick={() => setTab('together')}><HeartHandshake size={23} /><span>Together</span></ButtonIcon>
+          <ButtonIcon label="Search all messages" className="rail-btn" onClick={() => setShowGlobalSearch(true)}><Search size={22} /><span>Search</span></ButtonIcon>
         </div>
         <div className="rail-bottom">
-          <ButtonIcon label="Export chat" onClick={() => setExportChat({ id: selected, title: chosen.is_group ? chosen.name || chosen.peer.name : chosen.peer.name })}><Download size={20} /></ButtonIcon>
+          <ButtonIcon label="Export chat" disabled={!chosen} onClick={() => setExportChat({ id: selected, title: chosen.is_group ? chosen.name || chosen.peer.name : chosen.peer.name })}><Download size={20} /></ButtonIcon>
                 <InstallApp compact />
           <ButtonIcon
             label={isDark ? 'Switch to light theme (ലൈറ്റ്)' : 'Switch to dark theme (ഡാർക്ക്)'}
@@ -1414,9 +1459,9 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       <aside className="conversation-panel">
         <div className="panel-heading">
           <div>
-            <span className="eyebrow dark">MY FAVORITE HUMAN</span>
+            <span className="eyebrow dark">YOUR INNER CIRCLE</span>
             <h1>
-              {tab === 'chats' ? 'Our Sanctuary' : 'Our Moments'}
+              {tab === 'calls' ? 'Calls' : 'Your people'}
               <span>{conversations.length.toString().padStart(2, '0')}</span>
             </h1>
           </div>
@@ -1441,17 +1486,18 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         <label className="search-box">
           <Search size={17} />
           <input
-            placeholder="Search our memories or your person..."
+            placeholder="Find a friend…"
             aria-label="Search our memories or your person"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           <span>⌕</span>
         </label>
+        <div className="chat-filters" aria-label="Conversation filters">{['All', 'Unread', 'Groups'].map(filter => <button type="button" key={filter} aria-pressed={chatFilter === filter} onClick={() => setChatFilter(filter)}>{filter}{filter === 'Unread' && conversations.some(c => c.unread > 0) && <span>{conversations.filter(c => c.unread > 0).length}</span>}</button>)}</div>
         <div className="list-label">
-          OUR SAFE HAVEN
+          CONVERSATIONS
           <span className={connected ? 'connection-indicator online' : 'connection-indicator'}>
-            {!online ? 'Offline · messages saved on this device' : outbox.entries.some(entry => entry.status === 'queued') ? 'Waiting to sync…' : connected ? 'Close & connected' : 'Reconnecting...'}
+            {!online ? 'Offline · messages saved on this device' : outbox.entries.some(entry => entry.status === 'queued') ? 'Waiting to sync…' : connected ? 'Connected' : 'Reconnecting...'}
           </span>
         </div>
         <div className="conversation-list">
@@ -1463,7 +1509,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 type="button"
                 key={c.id}
                 className={`conversation ${c.id === selected ? 'selected' : ''}`}
-                onClick={() => void selectConversation(c.id)}
+                onClick={() => { if (tab === 'together') setTab('chats'); void selectConversation(c.id); }}
               >
                 <Avatar person={c.peer} />
                 <div className="conversation-text">
@@ -1509,7 +1555,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
               <p>
                 {search
                   ? 'No memories or chats here by that name.'
-                  : 'Where’s your partner in crime? Start our private sanctuary with a hello.'}
+                  : chatFilter !== 'All' ? `No ${chatFilter.toLowerCase()} conversations yet.` : 'Your people are one hello away.'}
               </p>
               {!search && (
                 <button className="text-btn" onClick={() => setShowContact(true)}>
@@ -1524,7 +1570,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
             <Globe2 size={20} />
           </div>
           <div>
-            <strong>Unbreakable bond, zero barriers.</strong>
+            <strong>Friendship speaks every language.</strong>
             <p>Reading in {languages[user.language]} · feels like home</p>
           </div>
           <ButtonIcon label="Change receive language" onClick={() => setShowSettings(true)}>
@@ -1541,7 +1587,9 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         </div>
       </aside>
       <main className="chat-panel">
-        {chosen ? (
+        {tab === 'together' ? (
+          <div className="together-page"><header className="together-page-header"><span><HeartHandshake size={21} /> Together</span><button type="button" className="text-btn" onClick={() => setTab('chats')}><ArrowLeft size={16} /> Back to chats</button></header><FeatureDirectory actions={friendshipActions} person={chosen?.peer} onConnect={() => setShowContact(true)} /></div>
+        ) : chosen ? (
           <>
             <header className="chat-header">
               <ButtonIcon
@@ -1574,225 +1622,14 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                   {chosen.peer.online === false && chosen.peer.last_seen && (
                     <span style={{ color: '#94a3b8' }}>last seen {formatLastSeen(chosen.peer.last_seen)} · </span>
                   )}
-                  {chosen.is_group ? `${chosen.members.length} members · ${languages[user.language]}` : 'My person · Ride or die forever 🤍'}
+                  {chosen.is_group ? `${chosen.members.length} members · ${languages[user.language]}` : 'In your corner, always'}
                 </p>
               </div>
               <div className="header-actions">
-                {!chosen.is_group && (
-                  <ButtonIcon
-                    label="Partner Battery & Charging Care 🔋⚡ (ബാറ്ററി & ചാർജിംഗ് കെയർ)"
-                    onClick={() => setShowBatteryModal(true)}
-                  >
-                    {partnerBattery?.is_charging ? (
-                      <BatteryCharging size={20} style={{ color: '#10b981' }} />
-                    ) : (
-                      <Battery size={20} />
-                    )}
-                  </ButtonIcon>
-                )}
-                {chosen.is_group && (
-                  <ButtonIcon label="Group Settings" onClick={() => setShowGroupSettings(true)}>
-                    <Users size={20} />
-                  </ButtonIcon>
-                )}
-                <ButtonIcon label="Disappearing messages" onClick={() => setShowDisappearing(true)}><Clock size={20} /></ButtonIcon>
-                <ButtonIcon label="Starred messages" onClick={() => setLibraryKind("starred")}><Star size={20} /></ButtonIcon>
-                <ButtonIcon label="Pinned messages" onClick={() => setLibraryKind("pinned")}><Pin size={20} /></ButtonIcon>
-                {!chosen.is_group && <ButtonIcon label="Block or report user" onClick={() => setShowSafety(true)}><ShieldCheck size={20} /></ButtonIcon>}
-                <ButtonIcon label="Search this chat" onClick={() => setLibraryKind("messages")}><Search size={20} /></ButtonIcon>
-                <ButtonIcon label="Shared photos and documents" onClick={() => setLibraryKind("photos")}><Paperclip size={20} /></ButtonIcon>
-                <ButtonIcon
-                  label="Shared Media Vault & Scrapbook 📸 (പോളറോയ്ഡ് പ്രണയ ആൽബം)"
-                  onClick={() => setShowMediaVault(true)}
-                >
-                  <Camera size={20} />
-                </ButtonIcon>
-                <InstallApp compact />
-                <ButtonIcon
-                  label="Start voice call"
-                  disabled={!connected || !!call.call || chosen.contact_blocked || chosen.is_group}
-                  onClick={() => void call.start(selected, 'audio')}
-                >
-                  <Phone size={20} />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Start video call"
-                  disabled={!connected || !!call.call || chosen.contact_blocked || chosen.is_group}
-                  onClick={() => void call.start(selected, 'video')}
-                >
-                  <Video size={21} />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Live Doodle Together 🎨 (തത്സമയം ഒന്നിച്ച് ചിത്രം വരയ്ക്കാം)"
-                  disabled={!connected || chosen.contact_blocked || chosen.is_group}
-                  onClick={() => {
-                    setShowDoodle(true);
-                    setDoodleInvite(null);
-                    socket?.emit('doodle:invite', { conversation_id: selected });
-                  }}
-                >
-                  <Palette size={20} />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Send Live Heartbeat 💓 (ലൈവ് ഹൃദയസ്പന്ദനം)"
-                  disabled={!connected || chosen.contact_blocked || chosen.is_group}
-                  onClick={() => {
-                    setShowHeartbeat(true);
-                    setHeartbeatInvite(null);
-                    socket?.emit('heartbeat:invite', { conversation_id: selected });
-                  }}
-                >
-                  <Heart size={20} className="heartbeat-action-pulse" />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Virtual Touch / Haptic Hug 🫂 (സ്പർശന സാമീപ്യം)"
-                  disabled={!connected || chosen.contact_blocked || chosen.is_group}
-                  onClick={() => {
-                    setShowVirtualTouch(true);
-                    setVirtualTouchInvite(null);
-                    socket?.emit('touch:invite', { conversation_id: selected, touch_mode: 'gentle' });
-                  }}
-                >
-                  <HeartHandshake size={20} className="virtual-touch-action-pulse" />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Listen to Music Together 🎧 (വാച്ച് & ലിസൺ ടുഗെതർ)"
-                  disabled={!connected || chosen.contact_blocked}
-                  onClick={() => {
-                    setShowMusicModal(true);
-                    setIsMusicMinimized(false);
-                    setMusicInvite(null);
-                    socket?.emit('music:invite', {
-                      conversation_id: selected,
-                      track: {
-                        id: musicEngine.currentTrack.id,
-                        titleMl: musicEngine.currentTrack.titleMl,
-                        titleEn: musicEngine.currentTrack.titleEn,
-                      },
-                    });
-                  }}
-                >
-                  <Headphones size={20} className="music-action-icon" />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Watch Party & Video Sync 🎬 (വാച്ച് പാർട്ടി · ഒന്നിച്ച് വീഡിയോ കാണാം)"
-                  disabled={!connected || chosen.contact_blocked}
-                  onClick={() => {
-                    setShowWatchPartyModal(true);
-                    setIsWatchPartyMinimized(false);
-                    setWatchPartyInvite(null);
-                    socket?.emit('video:invite', {
-                      conversation_id: selected,
-                      video: {
-                        id: watchPartyVideo?.id || CURATED_VIDEOS[0].id,
-                        youtubeId: watchPartyVideo?.youtubeId || CURATED_VIDEOS[0].youtubeId,
-                        titleMl: watchPartyVideo?.titleMl || CURATED_VIDEOS[0].titleMl,
-                        titleEn: watchPartyVideo?.titleEn || CURATED_VIDEOS[0].titleEn,
-                        thumbnail: watchPartyVideo?.thumbnail || CURATED_VIDEOS[0].thumbnail,
-                      },
-                    });
-                  }}
-                >
-                  <Film size={20} className="watch-party-action-icon" />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Our Story & Milestones 💕 (നമ്മുടെ കഥ & നാഴികക്കല്ലുകൾ)"
-                  disabled={!connected || chosen.is_group}
-                  onClick={() => {
-                    setShowStory(true);
-                    setStoryInvite(null);
-                  }}
-                >
-                  <Sparkles size={20} className="our-story-action-icon" />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Digital Time Capsule ⏳ (ഭാവിയിലേക്കുള്ള പ്രണയലേഖനങ്ങൾ)"
-                  disabled={!connected || chosen.is_group}
-                  onClick={() => {
-                    setShowTimeCapsule(true);
-                    setSelectedCapsuleId(null);
-                    setTimeCapsuleInvite(null);
-                  }}
-                >
-                  <Gift size={20} className="time-capsule-action-icon" />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Couple Games & Trivia 🎮 (നമ്മുടെ കളിമുറി & ട്രിവിയ)"
-                  disabled={!connected || chosen.is_group}
-                  onClick={() => {
-                    setShowCoupleGames(true);
-                    setCoupleGamesInvite(null);
-                    socket?.emit('couple_game:invite', { conversation_id: selected });
-                  }}
-                >
-                  <Gamepad2 size={20} className="couple-games-action-icon" />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Romantic Surprises & Love Coupons 🎟️✨ (റൊമാന്റിക് സർപ്രൈസുകൾ & കൂപ്പണുകൾ)"
-                  disabled={!connected || chosen.is_group}
-                  onClick={() => {
-                    setShowRomanticSurprises(true);
-                    setRomanticInvite(null);
-                    socket?.emit('romantic:invite', { conversation_id: selected });
-                  }}
-                >
-                  <Ticket size={20} className="romantic-action-icon" />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Our Month in Review 📸🎞️ (പ്രതിമാസ AI റീക്യാപ്പ് സ്റ്റോറി)"
-                  disabled={!connected || chosen.is_group}
-                  onClick={() => {
-                    setSelectedRecapMonth(null);
-                    setShowMonthlyRecap(true);
-                  }}
-                >
-                  <Film size={20} className="monthly-recap-action-icon" />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Live Location & ETA 🚗 (ലൊക്കേഷൻ & ETA പങ്കിടുക)"
-                  disabled={!connected || chosen.is_group}
-                  onClick={() => setShowLocationEta(true)}
-                >
-                  <Navigation size={20} className="location-action-icon" />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Sleep Together 🌌 (ഒരുമിച്ച് ഉറങ്ങാം · സിങ്ക്ഡ് നൈറ്റ് റൂം)"
-                  disabled={!connected || chosen.is_group}
-                  onClick={() => {
-                    setShowSleepModal(true);
-                    setIsSleepMinimized(false);
-                    setSleepInvite(null);
-                  }}
-                >
-                  <BedDouble size={20} className="sleep-together-action-icon" />
-                </ButtonIcon>
-                <ButtonIcon
-                  label="Stealth / Disguise Mode 👻 (കാൽക്കുലേറ്റർ ഡിസ്ഗൈസ്)"
-                  onClick={() => setIsStealthDisguised(true)}
-                >
-                  <EyeOff size={20} className="stealth-action-icon" />
-                </ButtonIcon>
-                <span className="header-divider" />
-                <button
-                  type="button"
-                  className="header-reading-btn"
-                  onClick={cycleFontSize}
-                  title={`Reading font size: ${currentFontConfig.label} (${currentFontConfig.size}) · Tap to change`}
-                  aria-label={`Reading font size: ${currentFontConfig.label} (${currentFontConfig.size})`}
-                >
-                  <Type size={14} />
-                  <span>{currentFontConfig.size}</span>
-                </button>
-                <ButtonIcon
-                  label={isDark ? 'Switch to light theme (ലൈറ്റ്)' : 'Switch to dark theme (ഡാർക്ക്)'}
-                  className="theme-toggle-icon-btn"
-                  onClick={toggleTheme}
-                >
-                  {isDark ? <Sun size={20} /> : <Moon size={20} />}
-                </ButtonIcon>
-                <ButtonIcon label="Chat settings" onClick={() => setShowSettings(true)}>
-                  <SettingsIcon size={20} />
-                </ButtonIcon>
+                <ButtonIcon label="Start voice call" disabled={!connected || !!call.call || chosen.contact_blocked || chosen.is_group} onClick={() => void call.start(selected, 'audio')}><Phone size={20} /></ButtonIcon>
+                <ButtonIcon label="Start video call" disabled={!connected || !!call.call || chosen.contact_blocked || chosen.is_group} onClick={() => void call.start(selected, 'video')}><Video size={20} /></ButtonIcon>
+                <button type="button" className="together-button" onClick={() => setShowTogether(true)}><LayoutGrid size={18} /><span>Together</span></button>
+                <ButtonIcon label="Chat settings" onClick={() => setShowSettings(true)}><SettingsIcon size={20} /></ButtonIcon>
               </div>
             </header>
             {!chosen.is_group && (
@@ -2649,95 +2486,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     >
                       <Smile size={21} />
                     </ButtonIcon>
-                    <ButtonIcon
-                      label="Live Doodle Together 🎨 (തത്സമയം ഒന്നിച്ച് വരയ്ക്കാം)"
-                      disabled={sending || recording || chosen.is_group}
-                      onClick={() => {
-                        setShowDoodle(true);
-                        setDoodleInvite(null);
-                        socket?.emit('doodle:invite', { conversation_id: selected });
-                      }}
-                    >
-                      <Palette size={21} />
-                    </ButtonIcon>
-                    <ButtonIcon
-                      label="Send Live Heartbeat 💓 (ലൈവ് ഹൃദയസ്പന്ദനം)"
-                      disabled={sending || recording || chosen.is_group}
-                      onClick={() => {
-                        setShowHeartbeat(true);
-                        setHeartbeatInvite(null);
-                        socket?.emit('heartbeat:invite', { conversation_id: selected });
-                      }}
-                    >
-                      <Heart size={21} className="heartbeat-action-pulse" />
-                    </ButtonIcon>
-                    <ButtonIcon
-                      label="Virtual Touch / Haptic Hug 🫂 (സ്പർശന സാമീപ്യം)"
-                      disabled={sending || recording || chosen.is_group}
-                      onClick={() => {
-                        setShowVirtualTouch(true);
-                        setVirtualTouchInvite(null);
-                        socket?.emit('touch:invite', { conversation_id: selected, touch_mode: 'gentle' });
-                      }}
-                    >
-                      <HeartHandshake size={21} className="virtual-touch-action-pulse" />
-                    </ButtonIcon>
-                    <ButtonIcon
-                      label="Daily 'Us' Prompt ✨ (ഇന്നത്തെ ചോദ്യം)"
-                      disabled={sending || recording || chosen.is_group}
-                      onClick={() => {
-                        setShowDailyPrompt(true);
-                        setDailyPromptInvite(null);
-                      }}
-                    >
-                      <Sparkles size={21} className="daily-prompt-toolbar-icon" />
-                    </ButtonIcon>
-                    <ButtonIcon
-                      label="Couple Games & Trivia 🎮 (നമ്മുടെ കളിമുറി)"
-                      disabled={sending || recording || chosen.is_group}
-                      onClick={() => {
-                        setShowCoupleGames(true);
-                        setCoupleGamesInvite(null);
-                        socket?.emit('couple_game:invite', { conversation_id: selected });
-                      }}
-                    >
-                      <Gamepad2 size={21} />
-                    </ButtonIcon>
-                    <ButtonIcon
-                      label="Romantic Surprises & Coupons 🎟️✨ (റൊമാന്റിക് സർപ്രൈസുകൾ)"
-                      disabled={sending || recording || chosen.is_group}
-                      onClick={() => {
-                        setShowRomanticSurprises(true);
-                        setRomanticInvite(null);
-                        socket?.emit('romantic:invite', { conversation_id: selected });
-                      }}
-                    >
-                      <Ticket size={21} className="romantic-toolbar-icon" />
-                    </ButtonIcon>
-                    <ButtonIcon
-                      label="AI Love Poetry & Letter Polisher ✍️💌 (പ്രണയലേഖന സഹായി)"
-                      disabled={sending || recording || chosen.is_group}
-                      onClick={() => setShowLovePoet(true)}
-                    >
-                      <Feather size={21} className="love-poet-toolbar-icon" />
-                    </ButtonIcon>
-                    <ButtonIcon
-                      label="Voice Note Duet Studio 🎙️🎶 (ഡ്യുയറ്റ് പാട്ട്)"
-                      disabled={sending || recording || chosen.is_group}
-                      onClick={() => {
-                        setDuetPartnerAudioUrl(null);
-                        setShowVoiceDuet(true);
-                      }}
-                    >
-                      <Music size={21} className="voice-duet-toolbar-icon" />
-                    </ButtonIcon>
-                    <ButtonIcon
-                      label="Live Location & ETA 🚗 (ലൊക്കേഷൻ & ETA പങ്കിടുക)"
-                      disabled={sending || recording || chosen.is_group}
-                      onClick={() => setShowLocationEta(true)}
-                    >
-                      <Navigation size={21} />
-                    </ButtonIcon>
+                    <ButtonIcon label="Explore friendship features" disabled={sending || recording} onClick={() => setShowTogether(true)}><Plus size={21} /></ButtonIcon>
                     <ButtonIcon
                       label="Attach file"
                       disabled={sending || recording}
@@ -2771,7 +2520,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     ) : (
                       <textarea
                         aria-label="Message"
-                        placeholder={file?.view_once ? 'View-once media has no caption' : 'Spill the tea... or just say you miss me 💬'}
+                        placeholder={file?.view_once ? 'View-once media has no caption' : 'A thought, a meme, a little hello…'}
                         rows={1}
                         value={draft}
                         disabled={sending || Boolean(file?.view_once)}
@@ -2856,23 +2605,6 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                       {recording ? <StopCircle size={22} /> : <Mic size={21} />}
                     </ButtonIcon>
                     <ButtonIcon label="Scheduled messages" disabled={sending || recording} onClick={() => setShowScheduled(true)}><Clock size={21} /></ButtonIcon>
-                    <ButtonIcon
-                      label="Digital Time Capsule ⏳ (ഭാവിയിലേക്കുള്ള പ്രണയലേഖനങ്ങൾ)"
-                      disabled={sending || recording || !chosen || chosen.is_group}
-                      onClick={() => {
-                        setShowTimeCapsule(true);
-                        setSelectedCapsuleId(null);
-                      }}
-                    >
-                      <Gift size={21} />
-                    </ButtonIcon>
-                    <ButtonIcon
-                      label="Invisible Ink 🪄🌫️ (മാജിക് ഫോഗ് / രഹസ്യ മഷി)"
-                      disabled={sending || recording || !chosen || chosen.is_group}
-                      onClick={() => setShowInvisibleInk(true)}
-                    >
-                      <Wand2 size={21} className="invisible-ink-toolbar-icon" />
-                    </ButtonIcon>
                     <button
                       type="submit"
                       className="send-btn"
@@ -2913,7 +2645,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                         <span>🪄 രഹസ്യ മഷി</span>
                       </label>
                     )}
-                    <span>Press Enter to send some love · Shift + Enter for a new line</span>
+                    <span>Enter to send · Shift + Enter for a new line</span>
                   </div>
                   </fieldset>
                 </footer>
@@ -2921,48 +2653,19 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
             )}
           </>
         ) : (
-          <div className="chat-welcome">
-            <span className="eyebrow dark">OUR SACRED CORNER</span>
-            <div className="welcome-art">
-              <span className="welcome-ring" />
-              <MessageCircle size={72} strokeWidth={1.15} />
-              <span className="welcome-tag first">I missed your face! 🥺</span>
-              <span className="welcome-tag second">Spill the tea right now! ☕</span>
-              <span className="welcome-tag third">Through thick & thin, always. 🤍</span>
-            </div>
-            <h2>
-              Two souls,
-              <br />
-              one unbreakable bond.
-              <br />
-              <em>Never apart.</em>
-            </h2>
-            <p>
-              Whether it’s a random midnight meme, a breakdown that needs comfort, or a silly victory to celebrate — this space is ours.
-            </p>
-            <button className="primary compact" onClick={() => setShowContact(true)}>
-              <Plus size={18} /> Reach out to my person
-            </button>
-            <div className="welcome-details">
-              <span>
-                <Video size={16} /> Hear the voice that makes everything okay
-              </span>
-              <span>
-                <Globe2 size={16} /> Raw feelings, zero filter
-              </span>
-              <span>
-                <Paperclip size={16} /> Little moments that belong only to us
-              </span>
-            </div>
-            {(!capabilities.translation || !capabilities.avatar) && (
-              <p className="setup-note">
-                Translation, natural voices, and talking photos will be available once setup is
-                complete.
-              </p>
-            )}
+          <div className="chat-welcome friendship-welcome">
+            <div className="welcome-topline"><span className="eyebrow dark">GOOD TO HAVE YOU HERE, {user.name.split(' ')[0].toUpperCase()}</span><span className="friendship-pill"><HeartHandshake size={14} /> The ride-or-die club</span></div>
+            <div className="welcome-postcard"><span className="postcard-stamp">ALWAYS IN YOUR CORNER</span><HeartHandshake size={72} strokeWidth={1.25} /><span className="postcard-signature">a little closer, every day.</span><span className="postcard-star">✳</span></div>
+            <h2>{tab === 'calls' ? <>A familiar voice.<br /><em>A better day.</em></> : <>Big laughs. Little moments.<br /><em>Your kind of people.</em></>}</h2>
+            <p>{tab === 'calls' ? 'Choose a friend from your conversations to see your call history or start a voice or video call.' : 'For the 2 a.m. talks, the “you had to be there” stories, and the friends who always get you. Make yourself at home.'}</p>
+            <div className="welcome-actions"><button className="primary compact" onClick={() => setShowContact(true)}><Plus size={18} /> Find your people</button><button type="button" className="secondary" onClick={() => setTab('together')}><Sparkles size={17} /> Explore Together</button></div>
+            <div className="welcome-feature-row"><button type="button" onClick={() => setShowContact(true)}><MessageCircle size={22} /><strong>Keep the conversation going</strong><span>Real talks, voice notes, and inside jokes.</span><ArrowRight size={17} /></button><button type="button" onClick={() => setTab('together')}><Headphones size={22} /><strong>Make time for each other</strong><span>Music, games, and little shared rituals.</span><ArrowRight size={17} /></button><button type="button" onClick={() => setShowTogether(true)}><Camera size={22} /><strong>Save the good stuff</strong><span>A home for the memories you make.</span><ArrowRight size={17} /></button></div>
+            <div className="welcome-footnote"><Globe2 size={15} /> Malayalam, Manglish, English, Kiswahili. Friendship feels like home in every language.</div>
           </div>
         )}
       </main>
+      <FriendshipDock actions={friendshipActions} person={chosen?.peer} onExplore={() => setShowTogether(true)} onConnect={() => setShowContact(true)} />
+      {showTogether && <TogetherExplorer actions={friendshipActions} person={chosen?.peer} onConnect={() => { setShowTogether(false); setShowContact(true); }} onClose={() => setShowTogether(false)} />}
       {showDisappearing && chosen && <DisappearingSettings conversation={chosen} onClose={() => setShowDisappearing(false)} onChanged={loadConversations} onError={onError} />}
       {showSafety && chosen && <UserSafety person={chosen.peer} blocked={chosen.blocked_by_me} onClose={() => setShowSafety(false)} onChanged={loadConversations} />}
       {exportChat && <ChatExport conversationId={exportChat.id} title={exportChat.title} onClose={() => setExportChat(null)} />}

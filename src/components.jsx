@@ -210,7 +210,7 @@ export function Settings({
     </div>
   );
   return (
-    <Modal title="Sanctuary Settings" onClose={onClose}>
+    <Modal title="Your space & settings" onClose={onClose}>
       <form onSubmit={save} className="settings-form">
         {messageAlerts}
         <AppLockSettings />

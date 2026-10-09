@@ -8,7 +8,7 @@ export const FONT_SIZES = [
   { id: 'xlarge', label: 'Extra Large', labelMl: 'വളരെ വലുത്', size: '21px', lineHeight: '1.95', metaSize: '12px' },
 ];
 
-const CUSTOM_DEFAULTS = { accent: '#17483e', background: '#f8f9f5', bubble: '#e5ecdc' };
+const CUSTOM_DEFAULTS = { accent: '#65445f', background: '#faf7f2', bubble: '#eee3ed' };
 const CUSTOM_TOKENS = ['--forest', '--green', '--bg-rail', '--bg-chat-panel', '--bg-bubble-mine', '--border-bubble-mine', '--text-bubble-mine'];
 function readPreference(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch { return fallback; }
@@ -104,7 +104,7 @@ export function useThemeAndFontSize() {
     // Update meta theme-color for mobile browser address bar / notch
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
-      metaTheme.setAttribute('content', isDark ? '#0e1613' : '#163c35');
+      metaTheme.setAttribute('content', isDark ? '#211b27' : '#65445f');
     }
   }, [theme, isDark, customColors]);
 

@@ -15,6 +15,7 @@ import './call-styles.css';
 import './battery-styles.css';
 import './invisible-ink.css';
 import './ai-memory-innovations.css';
+import './friendship-theme.css';
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <InstallProvider><App /></InstallProvider>
