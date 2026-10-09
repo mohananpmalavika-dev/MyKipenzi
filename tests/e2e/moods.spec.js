@@ -38,7 +38,7 @@ async function setup(page, options = {}) {
     else if (pathname.endsWith('/messages')) data = { messages: [], has_more: false };
     else if (pathname.endsWith('/calls/current')) data = null;
     else if (pathname.endsWith('/calls')) data = [];
-    await route.fulfill({ json: data });
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify(data) });
   });
   await page.goto(`/?chat=${cid}&account=${me}`);
   return {
@@ -66,6 +66,7 @@ test('one tap shares each mood, persists on reload, and avoids repeat sends', as
   }
   expect(state.writes()).toBe(4);
   await page.reload();
+  await page.getByRole('button', { name: /M My Person New/ }).click();
   await expect(page.getByRole('button', { name: 'Share mood: Need a Hug', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(widget).toContainText('Visible for 24 hours');
 });
@@ -75,7 +76,7 @@ test('failed check-in shows a retryable error without changing the mood', async 
   const button = page.getByRole('button', { name: 'Share mood: Happy', exact: true });
   await expect(button).toBeEnabled();
   await button.click();
-  await expect(page.getByRole('alert')).toContainText('Please retry your check-in.');
+  await expect(page.getByRole('region', { name: 'Mood check-in' }).getByRole('alert')).toContainText('Please retry your check-in.');
   await expect(button).toHaveAttribute('aria-pressed', 'false');
   await expect(button).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Retry', exact: true })).toBeEnabled();
@@ -83,17 +84,17 @@ test('failed check-in shows a retryable error without changing the mood', async 
 
 test('mobile and dark mode show both moods without horizontal overflow', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => localStorage.setItem('kipenzi_theme', 'dark'));
   await setup(page, { statuses: [
     { user_id: me, mood: 'happy', revision: 1, updated_at: new Date().toISOString(), expires_at: new Date(Date.now() + 86400000).toISOString() },
     { user_id: partner, mood: 'missing_you', revision: 2, updated_at: new Date().toISOString(), expires_at: new Date(Date.now() + 86400000).toISOString() },
   ] });
-  await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
   const widget = page.getByRole('region', { name: 'Mood check-in' });
   await expect(widget).toContainText('My Person');
   await expect(widget).toContainText('Missing You');
   await expect(page.getByRole('button', { name: 'Share mood: Happy', exact: true })).toHaveAttribute('aria-pressed', 'true');
   expect(await widget.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
-  await page.screenshot({ path: 'test-results/mood-mobile-dark.png', fullPage: true });
+  await page.screenshot({ path: 'artifacts/mood-mobile-dark.png', fullPage: true });
 });
 
 test('expired mood clears while the widget remains open', async ({ page }) => {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from './api.js';
 import { messagePreview } from '../shared/notifications.js';
 import { currentMood, moodNotification } from '../shared/moods.js';
+import { captureNotification } from '../shared/captureAlerts.js';
 
 export function useMessageAlerts(userId, language = 'en') {
   const [preview, setPreview] = useState(null);
@@ -123,6 +124,22 @@ export function useMessageAlerts(userId, language = 'en') {
       }
     } catch { seen.current.delete(id); }
   }, [userId, language, playSound]);
+  const receiveCapture = useCallback(async ({ id, sender_id }) => {
+    const key = 'capture:' + id;
+    if (sender_id === userId || seen.current.has(key)) return;
+    seen.current.add(key);
+    if (seen.current.size > 200) seen.current.delete(seen.current.values().next().value);
+    try {
+      const alert = await api(`/capture-alerts/${id}`);
+      if (!active.current || alert.sender_id === userId) return;
+      const notification = captureNotification(alert, language);
+      if (!notification) return;
+      setPreview({ id: key, conversation_id: alert.conversation_id, name: notification.title, body: notification.body, kind: 'capture' });
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setPreview(null), 12000);
+      playSound();
+    } catch { seen.current.delete(key); }
+  }, [userId, language, playSound]);
   const update = useCallback(async (messageId) => {
     if (!seen.current.has(messageId)) return;
     try {
@@ -130,5 +147,5 @@ export function useMessageAlerts(userId, language = 'en') {
       if (active.current) setPreview(current => current?.id === message.id ? { ...current, body: messagePreview(message) } : current);
     } catch { /* Keep the existing preview if translation refresh fails. */ }
   }, []);
-  return { preview, dismiss, receive, receiveMood, update, soundEnabled, setSoundEnabled, playSound };
+  return { preview, dismiss, receive, receiveMood, receiveCapture, update, soundEnabled, setSoundEnabled, playSound };
 }

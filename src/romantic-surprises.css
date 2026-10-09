@@ -1,0 +1,742 @@
+/* Romantic Surprises, Love Coupons, Bucket List & Date Night Wheel Styling */
+
+.romantic-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 7, 20, 0.75);
+  backdrop-filter: blur(10px);
+  padding: 16px;
+  animation: romanticFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes romanticFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.romantic-modal-container {
+  width: 100%;
+  max-width: 820px;
+  max-height: 90vh;
+  background: linear-gradient(170deg, #1f132b 0%, #170d22 50%, #11091a 100%);
+  border: 1px solid rgba(244, 114, 182, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(236, 72, 153, 0.15);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #fce7f3;
+  position: relative;
+}
+
+/* Confetti overlay */
+.romantic-confetti-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99;
+}
+
+/* Header */
+.romantic-modal-header {
+  padding: 20px 24px 16px;
+  background: linear-gradient(90deg, rgba(236, 72, 153, 0.12) 0%, rgba(168, 85, 247, 0.12) 100%);
+  border-bottom: 1px solid rgba(244, 114, 182, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.romantic-header-title-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.romantic-header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
+  color: #fff;
+}
+
+.romantic-header-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #fff 0%, #fbcfe8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.romantic-header-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: #f472b6;
+  opacity: 0.9;
+}
+
+/* Tab Navigation */
+.romantic-tabs-nav {
+  display: flex;
+  gap: 8px;
+  padding: 12px 24px;
+  background: rgba(20, 10, 30, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  overflow-x: auto;
+}
+
+.romantic-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #f9a8d4;
+  border: 1px solid rgba(244, 114, 182, 0.15);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.romantic-tab-btn:hover {
+  background: rgba(236, 72, 153, 0.12);
+  color: #fff;
+  border-color: rgba(236, 72, 153, 0.35);
+}
+
+.romantic-tab-btn.active {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.3) 0%, rgba(168, 85, 247, 0.3) 100%);
+  color: #fff;
+  border-color: #ec4899;
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.25);
+}
+
+/* Modal Content Area */
+.romantic-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Sub-nav / filter chips */
+.romantic-subnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.romantic-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.romantic-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.05);
+  color: #f472b6;
+  border: 1px solid rgba(244, 114, 182, 0.18);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.romantic-chip:hover {
+  background: rgba(244, 114, 182, 0.15);
+  color: #fff;
+}
+
+.romantic-chip.active {
+  background: #ec4899;
+  color: #fff;
+  border-color: #ec4899;
+  box-shadow: 0 2px 10px rgba(236, 72, 153, 0.35);
+}
+
+.romantic-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.35);
+  transition: all 0.2s ease;
+}
+
+.romantic-primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+  background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+}
+
+/* ==============================================================
+   LOVE COUPONS / SCRATCH CARDS
+   ============================================================== */
+.love-coupons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 18px;
+}
+
+.love-coupon-card {
+  position: relative;
+  background: linear-gradient(145deg, #281738 0%, #1e112c 100%);
+  border: 2px dashed rgba(244, 114, 182, 0.4);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.love-coupon-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(236, 72, 153, 0.2);
+  border-color: rgba(244, 114, 182, 0.7);
+}
+
+.love-coupon-card.redeemed {
+  border-style: solid;
+  border-color: rgba(52, 211, 153, 0.35);
+  background: linear-gradient(145deg, #182823 0%, #131d1a 100%);
+}
+
+.love-coupon-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.love-coupon-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(236, 72, 153, 0.15);
+  border: 1px solid rgba(244, 114, 182, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+}
+
+.love-coupon-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.love-coupon-badge.ready {
+  background: rgba(236, 72, 153, 0.2);
+  color: #f472b6;
+  border: 1px solid rgba(236, 72, 153, 0.4);
+}
+
+.love-coupon-badge.claimed {
+  background: rgba(52, 211, 153, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+}
+
+.love-coupon-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.35;
+}
+
+.love-coupon-desc {
+  margin: 0 0 14px;
+  font-size: 0.83rem;
+  color: #fbcfe8;
+  opacity: 0.85;
+  line-height: 1.45;
+  flex: 1;
+}
+
+.love-coupon-footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(244, 114, 182, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #f472b6;
+}
+
+/* Scratch Area Overlay */
+.scratch-card-wrapper {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  margin: 8px 0 14px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+  user-select: none;
+  touch-action: none;
+}
+
+.scratch-revealed-content {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%);
+  border: 1px solid rgba(244, 114, 182, 0.4);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12px;
+}
+
+.scratch-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 140px;
+  cursor: crosshair;
+  border-radius: 14px;
+  z-index: 10;
+}
+
+.scratch-helper-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.75rem;
+  color: #f472b6;
+}
+
+.scratch-quick-reveal-btn {
+  background: none;
+  border: none;
+  color: #ec4899;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.scratch-quick-reveal-btn:hover {
+  color: #f472b6;
+}
+
+/* Presets Carousel / Drawer */
+.presets-tray {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(244, 114, 182, 0.15);
+  border-radius: 16px;
+}
+
+.presets-tray-title {
+  margin: 0 0 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fbcfe8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.presets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.preset-chip-card {
+  padding: 10px 14px;
+  background: rgba(236, 72, 153, 0.08);
+  border: 1px solid rgba(244, 114, 182, 0.25);
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.preset-chip-card:hover {
+  background: rgba(236, 72, 153, 0.22);
+  border-color: #ec4899;
+  transform: translateY(-1px);
+}
+
+.preset-chip-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.25;
+}
+
+/* Form for custom coupon */
+.custom-form-modal {
+  background: rgba(24, 13, 36, 0.95);
+  border: 1px solid rgba(244, 114, 182, 0.3);
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.custom-form-row {
+  margin-bottom: 14px;
+}
+
+.custom-form-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #f472b6;
+  margin-bottom: 6px;
+}
+
+.custom-form-input,
+.custom-form-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  background: rgba(10, 5, 18, 0.6);
+  border: 1px solid rgba(244, 114, 182, 0.25);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.custom-form-input:focus,
+.custom-form-textarea:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.25);
+}
+
+/* ==============================================================
+   SHARED BUCKET LIST
+   ============================================================== */
+.bucket-progress-card {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
+  border: 1px solid rgba(244, 114, 182, 0.25);
+  border-radius: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.bucket-progress-stats {
+  flex: 1;
+}
+
+.bucket-progress-headline {
+  margin: 0 0 6px;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.bucket-progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bucket-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ec4899 0%, #a855f7 100%);
+  border-radius: 10px;
+  transition: width 0.4s ease;
+}
+
+.bucket-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 16px;
+}
+
+.bucket-item-card {
+  background: linear-gradient(145deg, #241334 0%, #1a0d26 100%);
+  border: 1px solid rgba(244, 114, 182, 0.2);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.bucket-item-card:hover {
+  border-color: rgba(244, 114, 182, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.bucket-item-card.completed {
+  border-color: rgba(52, 211, 153, 0.4);
+  background: linear-gradient(145deg, #172721 0%, #101c18 100%);
+}
+
+.bucket-item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.bucket-item-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.35;
+}
+
+.bucket-item-notes {
+  margin: 4px 0 12px;
+  font-size: 0.82rem;
+  color: #fbcfe8;
+  opacity: 0.85;
+  line-height: 1.4;
+}
+
+.bucket-polaroid-photo {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  margin-bottom: 12px;
+}
+
+.bucket-polaroid-photo img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.bucket-complete-dialog {
+  background: rgba(18, 9, 28, 0.98);
+  border: 1px solid rgba(244, 114, 182, 0.3);
+  border-radius: 16px;
+  padding: 18px;
+  margin-top: 10px;
+}
+
+/* ==============================================================
+   DATE NIGHT IDEA WHEEL
+   ============================================================== */
+.date-wheel-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 10px 0 20px;
+}
+
+.date-wheel-headline {
+  margin: 0 0 6px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff 0%, #f472b6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.date-wheel-subtitle {
+  margin: 0 0 20px;
+  font-size: 0.88rem;
+  color: #f9a8d4;
+  opacity: 0.9;
+}
+
+.date-wheel-wrapper {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  margin: 10px auto 26px;
+}
+
+.date-wheel-pointer {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top: 24px solid #f43f5e;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+  z-index: 20;
+}
+
+.date-wheel-canvas {
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  box-shadow: 0 0 40px rgba(236, 72, 153, 0.35), 0 10px 30px rgba(0, 0, 0, 0.6);
+  border: 6px solid #fff;
+}
+
+.date-wheel-center-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+  border: 4px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  z-index: 15;
+  color: #fff;
+}
+
+.spin-wheel-btn {
+  padding: 14px 38px;
+  border-radius: 30px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ec4899 0%, #9333ea 100%);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 25px rgba(236, 72, 153, 0.45);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spin-wheel-btn:hover:not(:disabled) {
+  transform: scale(1.04);
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.65);
+}
+
+.spin-wheel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Winner Card */
+.date-winner-modal {
+  margin-top: 24px;
+  background: linear-gradient(145deg, #2b143d 0%, #1f0d2d 100%);
+  border: 2px solid #ec4899;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 10px 40px rgba(236, 72, 153, 0.35);
+  animation: romanticFadeIn 0.3s ease;
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.date-winner-emoji {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.date-winner-title {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.date-winner-desc {
+  margin: 0 0 18px;
+  font-size: 0.9rem;
+  color: #fbcfe8;
+  line-height: 1.5;
+}
+
+.date-winner-tags {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.date-winner-tag {
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #f472b6;
+}
+
+.date-winner-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Empty state */
+.romantic-empty-box {
+  text-align: center;
+  padding: 48px 24px;
+  color: #f472b6;
+  opacity: 0.8;
+}
+
+.romantic-empty-emoji {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}

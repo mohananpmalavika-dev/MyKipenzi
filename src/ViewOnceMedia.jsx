@@ -3,8 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X, LoaderCircle } from 'lucide-react';
 import { openViewOnce } from './api.js';
+import { useViewOnceCapture } from './CapturePrivacy.jsx';
 
-function OnceViewer({ media, onClose, returnFocus }) {
+function OnceViewer({ media, messageId, onClose, returnFocus }) {
+  useViewOnceCapture(messageId);
   const dialog = useRef(null);
   useEffect(() => {
     const previous = returnFocus.current;
@@ -12,10 +14,13 @@ function OnceViewer({ media, onClose, returnFocus }) {
     document.body.style.overflow = 'hidden';
     dialog.current.showModal();
     const leave = () => { if (document.hidden) onClose(); };
+    const blur = () => onClose();
+    window.addEventListener('blur', blur);
     document.addEventListener('visibilitychange', leave);
     return () => {
       document.body.style.overflow = overflow;
       document.removeEventListener('visibilitychange', leave);
+      window.removeEventListener('blur', blur);
       requestAnimationFrame(() => {
         if (previous?.disabled) previous.parentElement?.focus();
         else previous?.focus();
@@ -81,6 +86,7 @@ export function ViewOnceMedia({ message, mine, onError }) {
       <strong>{opened ? 'Opened' : busy ? 'Opening…' : label + ' · View once'}</strong>
     </button>
     {!opened && <small>{mine ? 'Your partner can open this once.' : 'Open once. Closing or leaving the viewer removes the media.'}</small>}
-    {media && <OnceViewer media={media} onClose={close} returnFocus={trigger} />}
+    {!opened && <small>Capture alerts are limited on web; screenshots cannot be reliably detected.</small>}
+    {media && <OnceViewer media={media} messageId={message.id} onClose={close} returnFocus={trigger} />}
   </div>;
 }

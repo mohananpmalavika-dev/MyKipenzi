@@ -40,7 +40,29 @@ import {
   Film,
   Camera,
   Gift,
+  Gamepad2,
+  Navigation,
+  EyeOff,
+  Ghost,
+  BedDouble,
+  Battery,
+  BatteryCharging,
+  Wand2,
+  Ticket,
 } from 'lucide-react';
+import {
+  PartnerBatteryBadge,
+  PartnerBatteryAlertBanner,
+  PartnerBatteryModal,
+} from './PartnerBatteryCare.jsx';
+import {
+  initBatteryMonitoring,
+  BATTERY_NUDGE_PRESETS,
+} from './batteryService.js';
+import { CoupleGamesModal } from './CoupleGamesModal.jsx';
+import { RomanticSurprisesModal } from './RomanticSurprisesModal.jsx';
+import { LocationEtaModal } from './LocationEtaModal.jsx';
+import { StealthDisguise } from './StealthDisguise.jsx';
 import { DisappearingSettings } from './DisappearingSettings.jsx';
 import { ScheduledMessages } from './ScheduledMessages.jsx';
 import { useMessageOutbox } from './useMessageOutbox.js';
@@ -56,6 +78,7 @@ import { LiveHeartbeatModal } from './LiveHeartbeat.jsx';
 import { VirtualTouchModal } from './VirtualTouchModal.jsx';
 import { DailyPromptModal } from './DailyPromptModal.jsx';
 import { MoodWidget } from './MoodWidget.jsx';
+import { CaptureGuard, CapturePrivacyNotice } from './CapturePrivacy.jsx';
 import { RelationshipStoryModal } from './RelationshipStoryModal.jsx';
 import { TimeCapsuleModal } from './TimeCapsuleModal.jsx';
 import {
@@ -70,6 +93,17 @@ import {
 } from './WatchParty.jsx';
 import { CURATED_TRACKS, musicEngine } from './musicEngine.js';
 import { CURATED_VIDEOS } from './videoEngine.js';
+import {
+  SleepTogetherModal,
+  SleepTogetherMiniPlayer,
+} from './SleepTogetherModal.jsx';
+import { InvisibleInkModal } from './InvisibleInkModal.jsx';
+import {
+  formatInvisibleInkMessage,
+  isMessageInvisibleInk,
+  getInvisibleInkPreviewText,
+} from './invisibleInk.js';
+import { sleepAudioEngine } from './sleepAudio.js';
 import { playHeartbeatSound, triggerHeartbeatHaptics } from './heartbeatAudio.js';
 import { playTouchSound, triggerTouchHaptics } from './touchAudio.js';
 import { useCall } from './useCall.js';
@@ -321,7 +355,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
   const outbox = useMessageOutbox(user.id);
   const [online, setOnline] = useState(navigator.onLine);
   const [messageExpiry, setMessageExpiry] = useState(0);
-  const { preview, dismiss, receive, receiveMood, update: updateAlert, soundEnabled, setSoundEnabled, playSound } = useMessageAlerts(user.id, user.language);
+  const { preview, dismiss, receive, receiveMood, receiveCapture, update: updateAlert, soundEnabled, setSoundEnabled, playSound } = useMessageAlerts(user.id, user.language);
   const [socket, setSocket] = useState(null),
     [connected, setConnected] = useState(false),
     [conversations, setConversations] = useState([]),
@@ -389,7 +423,26 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     [customStickers, setCustomStickers] = useState(() => loadStickerLibrary(localStorage, user.id)),
     [voiceNoteForFilter, setVoiceNoteForFilter] = useState(null),
     [preselectedVoiceFilter, setPreselectedVoiceFilter] = useState('normal'),
-    [showVoiceFilterPicker, setShowVoiceFilterPicker] = useState(false);
+    [showVoiceFilterPicker, setShowVoiceFilterPicker] = useState(false),
+    [showCoupleGames, setShowCoupleGames] = useState(false),
+    [coupleGamesInvite, setCoupleGamesInvite] = useState(null),
+    [showLocationEta, setShowLocationEta] = useState(false),
+    [isStealthDisguised, setIsStealthDisguised] = useState(false),
+    [locationEtaAlert, setLocationEtaAlert] = useState(null),
+    [showSleepModal, setShowSleepModal] = useState(false),
+    [isSleepMinimized, setIsSleepMinimized] = useState(false),
+    [sleepInvite, setSleepInvite] = useState(null),
+    [_sleepPlayTick, setSleepPlayTick] = useState(0),
+    [showBatteryModal, setShowBatteryModal] = useState(false),
+    [batteryAlertDismissed, setBatteryAlertDismissed] = useState(false),
+    [partnerBattery, setPartnerBattery] = useState({ battery_level: 85, is_charging: false }),
+    [userBattery, setUserBattery] = useState({ battery_level: null, is_charging: false }),
+    [showInvisibleInk, setShowInvisibleInk] = useState(false),
+    [invisibleInkActive, setInvisibleInkActive] = useState(false),
+    [showRomanticSurprises, setShowRomanticSurprises] = useState(false),
+    [romanticInvite, setRomanticInvite] = useState(null);
+  const userBatteryRef = useRef(userBattery);
+  userBatteryRef.current = userBattery;
   const selectedRef = useRef(null),
     bottom = useRef(null),
     initialUnreadScroll = useRef(false),
@@ -634,6 +687,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     connection.on('message:changed', changed);
     connection.on('message:arrived', receive);
     connection.on('mood:changed', receiveMood);
+    connection.on('privacy:capture', receiveCapture);
     connection.on('conversation:changed', changed);
     connection.on('receipt:changed', changed);
     connection.on('typing', handleTyping);
@@ -705,13 +759,91 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         triggerHeartbeatHaptics([60, 60, 90]);
       }
     });
+    connection.on('couple_game:invite', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setCoupleGamesInvite(payload);
+        triggerHeartbeatHaptics([50, 70, 90]);
+      }
+    });
+    connection.on('location:share', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setLocationEtaAlert(payload);
+        triggerHeartbeatHaptics([40, 60, 80]);
+      }
+    });
+    connection.on('sleep:invite', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setSleepInvite(payload);
+        triggerHeartbeatHaptics([40, 60, 80]);
+      }
+    });
+    connection.on('romantic:invite', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        setRomanticInvite(payload);
+        triggerHeartbeatHaptics([50, 70, 90]);
+      }
+    });
+    connection.on('battery:sync', (payload) => {
+      if (selectedRef.current === payload.conversation_id && payload.user_id !== user.id) {
+        setPartnerBattery({
+          battery_level: Number(payload.battery_level),
+          is_charging: Boolean(payload.is_charging),
+        });
+        setBatteryAlertDismissed(false);
+      }
+    });
+    connection.on('battery:request', (payload) => {
+      if (userBatteryRef.current?.battery_level !== null && selectedRef.current === payload.conversation_id) {
+        connection.emit('battery:sync', {
+          conversation_id: payload.conversation_id,
+          battery_level: userBatteryRef.current.battery_level,
+          is_charging: userBatteryRef.current.is_charging,
+        });
+      }
+    });
+    connection.on('battery:nudge', (payload) => {
+      if (selectedRef.current === payload.conversation_id) {
+        triggerHeartbeatHaptics([60, 60, 80]);
+        playHeartbeatSound(0.3);
+      }
+    });
     connection.connect();
     void loadConversations().catch((e) => onError(e.message));
     return () => {
       connection.disconnect();
       clearTimeout(typingTimer.current);
     };
-  }, [csrf, loadConversations, loadMessages, onError, receive, receiveMood, updateAlert, dismiss]);
+  }, [csrf, loadConversations, loadMessages, onError, receive, receiveMood, receiveCapture, updateAlert, dismiss, user.id]);
+  useEffect(() => {
+    let cleanup = () => {};
+    void initBatteryMonitoring((b) => {
+      setUserBattery({ battery_level: b.level, is_charging: b.charging });
+      if (socket && selectedRef.current) {
+        socket.emit('battery:sync', {
+          conversation_id: selectedRef.current,
+          battery_level: b.level,
+          is_charging: b.charging,
+        });
+      }
+    }).then((c) => {
+      if (typeof c === 'function') cleanup = c;
+    });
+    return () => cleanup();
+  }, [socket]);
+  useEffect(() => {
+    let lastEsc = 0;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        const now = Date.now();
+        if (now - lastEsc < 600) {
+          setIsStealthDisguised((prev) => !prev);
+        }
+        lastEsc = now;
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
   useEffect(() => {
     if (selectedRef.current) {
       setMessages([]);
@@ -805,6 +937,17 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     setReplyTo(null);
     setPicker(false);
     setTyping(false);
+    setBatteryAlertDismissed(false);
+    if (socket) {
+      socket.emit('battery:request', { conversation_id: cid });
+      if (userBatteryRef.current?.battery_level !== null) {
+        socket.emit('battery:sync', {
+          conversation_id: cid,
+          battery_level: userBatteryRef.current.battery_level,
+          is_charging: userBatteryRef.current.is_charging,
+        });
+      }
+    }
     const conversation = conversationsRef.current.find(c => c.id === cid);
     const readSeq = Number(conversation?.read_seq || 0);
     lastRead.current = readSeq;
@@ -897,8 +1040,17 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     if (detected) triggerReaction(detected);
     setSending(true);
     try {
+      let messageText = outgoing?.caption ?? draft;
+      const shouldUseInvisibleInk = (invisibleInkActive || outgoing?.invisible_ink) && !sticker;
+      if (shouldUseInvisibleInk && messageText) {
+        messageText = formatInvisibleInkMessage(messageText, {
+          isPhoto: Boolean(outgoing?.file),
+          theme: outgoing?.theme,
+          concealDelay: outgoing?.concealDelay,
+        });
+      }
       const input = {
-        text: outgoing?.caption ?? draft,
+        text: messageText,
         source_language: source,
         expires_in_seconds: messageExpiry,
         view_once: Boolean(outgoing?.view_once),
@@ -913,6 +1065,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         setFile(null);
         setPicker(false);
         setMessageExpiry(0);
+        setInvisibleInkActive(false);
         stickToBottom.current = true;
         outgoing?.onQueued?.();
         void clearDraft().catch((error) => { if (navigator.onLine) onError(error.message); });
@@ -1188,6 +1341,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
     ),
     callPeer = conversations.find((c) => c.id === call.call?.conversation_id)?.peer;
   return (
+    <CaptureGuard conversationId={selected} user={user} active={!!chosen && !chosen.is_group && !chosen.contact_blocked && !isStealthDisguised}>
     <>
       <ReactionOverlay reaction={reaction} onDone={() => setReaction(null)} />
       {preview && (
@@ -1321,7 +1475,8 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     {c.draft && c.draft.text ? (
                       <span style={{ color: '#ef4444', fontStyle: 'italic' }}>📝 Draft: {c.draft.text.slice(0, 50)}{c.draft.text.length > 50 ? '...' : ''}</span>
                     ) : (
-                      (c.last_message?.view_once ? (c.last_message.view_once_opened_at ? '① Opened' : '① View-once media') : '') || c.last_message?.text ||
+                      (c.last_message?.view_once ? (c.last_message.view_once_opened_at ? '① Opened' : '① View-once media') : '') ||
+                      (isMessageInvisibleInk(c.last_message?.text) ? getInvisibleInkPreviewText(c.last_message?.text) : c.last_message?.text) ||
                       (c.last_message?.sticker
                         ? `${stickers[c.last_message.sticker]} Sticker`
                         : c.last_message?.attachment
@@ -1393,7 +1548,17 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
               </ButtonIcon>
               <Avatar person={chosen.peer} />
               <div className="chat-title">
-                <h2>{chosen.peer.name}</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <h2>{chosen.peer.name}</h2>
+                  {!chosen.is_group && (
+                    <PartnerBatteryBadge
+                      battery={partnerBattery}
+                      peerName={chosen.peer.name}
+                      isGroup={chosen.is_group}
+                      onClick={() => setShowBatteryModal(true)}
+                    />
+                  )}
+                </div>
                 <p>
                   {chosen.peer.online === true && <span style={{ color: '#4ade80' }}>online · </span>}
                   {chosen.peer.online === false && chosen.peer.last_seen && (
@@ -1403,6 +1568,18 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 </p>
               </div>
               <div className="header-actions">
+                {!chosen.is_group && (
+                  <ButtonIcon
+                    label="Partner Battery & Charging Care 🔋⚡ (ബാറ്ററി & ചാർജിംഗ് കെയർ)"
+                    onClick={() => setShowBatteryModal(true)}
+                  >
+                    {partnerBattery?.is_charging ? (
+                      <BatteryCharging size={20} style={{ color: '#10b981' }} />
+                    ) : (
+                      <Battery size={20} />
+                    )}
+                  </ButtonIcon>
+                )}
                 {chosen.is_group && (
                   <ButtonIcon label="Group Settings" onClick={() => setShowGroupSettings(true)}>
                     <Users size={20} />
@@ -1529,6 +1706,52 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 >
                   <Gift size={20} className="time-capsule-action-icon" />
                 </ButtonIcon>
+                <ButtonIcon
+                  label="Couple Games & Trivia 🎮 (നമ്മുടെ കളിമുറി & ട്രിവിയ)"
+                  disabled={!connected || chosen.is_group}
+                  onClick={() => {
+                    setShowCoupleGames(true);
+                    setCoupleGamesInvite(null);
+                    socket?.emit('couple_game:invite', { conversation_id: selected });
+                  }}
+                >
+                  <Gamepad2 size={20} className="couple-games-action-icon" />
+                </ButtonIcon>
+                <ButtonIcon
+                  label="Romantic Surprises & Love Coupons 🎟️✨ (റൊമാന്റിക് സർപ്രൈസുകൾ & കൂപ്പണുകൾ)"
+                  disabled={!connected || chosen.is_group}
+                  onClick={() => {
+                    setShowRomanticSurprises(true);
+                    setRomanticInvite(null);
+                    socket?.emit('romantic:invite', { conversation_id: selected });
+                  }}
+                >
+                  <Ticket size={20} className="romantic-action-icon" />
+                </ButtonIcon>
+                <ButtonIcon
+                  label="Live Location & ETA 🚗 (ലൊക്കേഷൻ & ETA പങ്കിടുക)"
+                  disabled={!connected || chosen.is_group}
+                  onClick={() => setShowLocationEta(true)}
+                >
+                  <Navigation size={20} className="location-action-icon" />
+                </ButtonIcon>
+                <ButtonIcon
+                  label="Sleep Together 🌌 (ഒരുമിച്ച് ഉറങ്ങാം · സിങ്ക്ഡ് നൈറ്റ് റൂം)"
+                  disabled={!connected || chosen.is_group}
+                  onClick={() => {
+                    setShowSleepModal(true);
+                    setIsSleepMinimized(false);
+                    setSleepInvite(null);
+                  }}
+                >
+                  <BedDouble size={20} className="sleep-together-action-icon" />
+                </ButtonIcon>
+                <ButtonIcon
+                  label="Stealth / Disguise Mode 👻 (കാൽക്കുലേറ്റർ ഡിസ്ഗൈസ്)"
+                  onClick={() => setIsStealthDisguised(true)}
+                >
+                  <EyeOff size={20} className="stealth-action-icon" />
+                </ButtonIcon>
                 <span className="header-divider" />
                 <button
                   type="button"
@@ -1552,6 +1775,31 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 </ButtonIcon>
               </div>
             </header>
+            {!chosen.is_group && (
+              <PartnerBatteryAlertBanner
+                battery={partnerBattery}
+                peerName={chosen.peer.name}
+                dismissed={batteryAlertDismissed}
+                onDismiss={() => setBatteryAlertDismissed(true)}
+                onOpenModal={() => setShowBatteryModal(true)}
+                onNudge={(preset) => {
+                  setDraft(preset.message);
+                  socket?.emit('battery:nudge', {
+                    conversation_id: selected,
+                    nudge: preset.id,
+                    message: preset.message,
+                  });
+                }}
+                onSendHug={(preset) => {
+                  setDraft(preset.message);
+                  socket?.emit('battery:nudge', {
+                    conversation_id: selected,
+                    nudge: preset.id,
+                    message: preset.message,
+                  });
+                }}
+              />
+            )}
             {!online && <div className="expiry-banner offline-banner" role="status">Offline · Read your saved chats. New messages will send when you reconnect.</div>}
             {chosen.disappearing_seconds > 0 && <div className="expiry-banner" role="status">New messages disappear after {expiryOptions[chosen.disappearing_seconds]}. <button type="button" className="text-btn" onClick={() => setShowDisappearing(true)}>Change</button></div>}
             <div className="translation-banner">
@@ -1787,6 +2035,130 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                 </div>
               </div>
             )}
+            {sleepInvite && (
+              <div
+                className="story-invite-banner"
+                role="alert"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)',
+                  borderColor: '#38bdf8',
+                  boxShadow: '0 4px 20px rgba(56, 189, 248, 0.25)',
+                }}
+              >
+                <div className="story-invite-left">
+                  <span className="story-pulse-icon">🌌</span>
+                  <span>
+                    <strong>{sleepInvite.sender_name || 'Your partner'}</strong> invited you to the Night Room! 🌌🛌 (ഒരുമിച്ച് ഉറങ്ങാം · മൃദുവായ മഴ & കടലലകൾ)
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="story-invite-join-btn"
+                    style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%)' }}
+                    onClick={() => {
+                      setShowSleepModal(true);
+                      setIsSleepMinimized(false);
+                      setSleepInvite(null);
+                    }}
+                  >
+                    Join Night Room 🌌
+                  </button>
+                  <ButtonIcon label="Dismiss" onClick={() => setSleepInvite(null)}>
+                    <X size={15} />
+                  </ButtonIcon>
+                </div>
+              </div>
+            )}
+            {coupleGamesInvite && (
+              <div
+                className="story-invite-banner"
+                role="alert"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.18) 0%, rgba(168, 85, 247, 0.18) 100%)',
+                  borderColor: '#ec4899',
+                }}
+              >
+                <div className="story-invite-left">
+                  <span className="story-pulse-icon">🎮</span>
+                  <span>
+                    <strong>{coupleGamesInvite.sender_name || 'Your partner'}</strong> invited you to play Couple Games in Our Playroom! 💖 (കളിക്കാൻ ക്ഷണിച്ചു!)
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="story-invite-join-btn"
+                    style={{ background: '#ec4899' }}
+                    onClick={() => {
+                      setShowCoupleGames(true);
+                      setCoupleGamesInvite(null);
+                    }}
+                  >
+                    Play Now 🎮
+                  </button>
+                  <ButtonIcon label="Dismiss" onClick={() => setCoupleGamesInvite(null)}>
+                    <X size={15} />
+                  </ButtonIcon>
+                </div>
+              </div>
+            )}
+            {romanticInvite && (
+              <div
+                className="story-invite-banner"
+                role="alert"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.22) 0%, rgba(168, 85, 247, 0.22) 100%)',
+                  borderColor: '#ec4899',
+                }}
+              >
+                <div className="story-invite-left">
+                  <span className="story-pulse-icon">🎟️</span>
+                  <span>
+                    <strong>{romanticInvite.sender_name || 'Your partner'}</strong> invited you to Romantic Surprises & Love Coupons! 💖 (റൊമാന്റിക് സർപ്രൈസുകളിലേക്ക് ക്ഷണിച്ചു!)
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="story-invite-join-btn"
+                    style={{ background: '#ec4899' }}
+                    onClick={() => {
+                      setShowRomanticSurprises(true);
+                      setRomanticInvite(null);
+                    }}
+                  >
+                    Open Surprises 🎟️
+                  </button>
+                  <ButtonIcon label="Dismiss" onClick={() => setRomanticInvite(null)}>
+                    <X size={15} />
+                  </ButtonIcon>
+                </div>
+              </div>
+            )}
+            {locationEtaAlert && (
+              <div
+                className="story-invite-banner"
+                role="alert"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(16, 185, 129, 0.18) 100%)',
+                  borderColor: '#3b82f6',
+                }}
+              >
+                <div className="story-invite-left">
+                  <span className="story-pulse-icon">🚗</span>
+                  <span>
+                    <strong>{locationEtaAlert.sender_name || 'Your partner'}</strong>: &ldquo;{locationEtaAlert.etaText}&rdquo;{locationEtaAlert.placeName ? ` (${locationEtaAlert.placeName})` : ''} 📍
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <ButtonIcon label="Dismiss" onClick={() => setLocationEtaAlert(null)}>
+                    <X size={15} />
+                  </ButtonIcon>
+                </div>
+              </div>
+            )}
+            {!chosen.is_group && !chosen.contact_blocked && tab !== 'calls' && <CapturePrivacyNotice />}
             {!chosen.is_group && !chosen.contact_blocked && tab !== 'calls' && (
               <MoodWidget key={selected} conversationId={selected} user={user} peer={chosen.peer} socket={socket} online={online} />
             )}
@@ -1915,6 +2287,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                               setSelectedCapsuleId(capsuleId);
                               setShowTimeCapsule(true);
                             }}
+                            onOpenSleep={() => {
+                              setShowSleepModal(true);
+                              setIsSleepMinimized(false);
+                            }}
                           />
                           <MessageThread message={{ ...m, reply_count: Math.max(m.reply_count || 0, messages.filter(row => row.reply_to_id === m.id && !row.deleted_at && !hasExpired(row)).length) }} revision={messages} onReply={sending || recording || chosen.contact_blocked ? undefined : setReplyTo} />
                         </div>
@@ -2015,6 +2391,36 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     partnerWatching={true}
                   />
                 )}
+                {isSleepMinimized && !showSleepModal && (
+                  <SleepTogetherMiniPlayer
+                    soundscapeId={sleepAudioEngine.currentSoundscape}
+                    isPlaying={sleepAudioEngine.isPlaying}
+                    remainingSeconds={sleepAudioEngine.timerSecondsRemaining}
+                    onTogglePlay={() => {
+                      if (sleepAudioEngine.isPlaying) {
+                        sleepAudioEngine.stop();
+                      } else {
+                        sleepAudioEngine.play();
+                      }
+                      setSleepPlayTick((t) => t + 1);
+                    }}
+                    onExpand={() => {
+                      setShowSleepModal(true);
+                      setIsSleepMinimized(false);
+                    }}
+                    onClose={() => {
+                      sleepAudioEngine.stop();
+                      setIsSleepMinimized(false);
+                      setShowSleepModal(false);
+                      setSleepPlayTick((t) => t + 1);
+                      socket?.emit('sleep:status', {
+                        conversation_id: selected,
+                        active: false,
+                      });
+                    }}
+                    partnerOnline={true}
+                  />
+                )}
                 <footer className="composer-area">
                   {chosen.contact_blocked && <p className="blocked-notice" role="status">Messaging is unavailable while a user is blocked.{chosen.blocked_by_me && <button type="button" className="text-btn" onClick={() => setShowSafety(true)}>Unblock user</button>}</p>}
                   <fieldset className="composer-controls" disabled={chosen.contact_blocked}>
@@ -2052,6 +2458,23 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                         {file.error && <button type="button" disabled={sending} onClick={() => void sendMessage()}>Retry {file.attachment ? 'send' : 'upload'}</button>}
                       </span>
                       {!chosen.is_group && supportsViewOnce(file.file) && <label className="view-once-toggle"><input type="checkbox" aria-label="View once" checked={Boolean(file.view_once)} disabled={sending || (!file.view_once && Boolean(draft.trim()))} onChange={event => setFile(old => ({ ...old, view_once: event.target.checked }))} /><span>① View once<small>{draft.trim() ? 'Remove the caption to use view once.' : 'Your partner can open this photo or video once.'}</small></span></label>}
+                      {!chosen.is_group && !file.view_once && (
+                        <label className="view-once-toggle invisible-ink-file-toggle">
+                          <input
+                            type="checkbox"
+                            aria-label="Invisible Ink"
+                            checked={Boolean(file.invisible_ink)}
+                            disabled={sending}
+                            onChange={(event) =>
+                              setFile((old) => ({ ...old, invisible_ink: event.target.checked }))
+                            }
+                          />
+                          <span>
+                            🪄 രഹസ്യ മഷി (Magic Fog)
+                            <small>സന്ദേശം പുക മൂടി പോകും (Scratch to reveal)</small>
+                          </span>
+                        </label>
+                      )}
                       <ButtonIcon
                         label="Remove attachment"
                         disabled={sending}
@@ -2238,6 +2661,35 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                       <Sparkles size={21} className="daily-prompt-toolbar-icon" />
                     </ButtonIcon>
                     <ButtonIcon
+                      label="Couple Games & Trivia 🎮 (നമ്മുടെ കളിമുറി)"
+                      disabled={sending || recording || chosen.is_group}
+                      onClick={() => {
+                        setShowCoupleGames(true);
+                        setCoupleGamesInvite(null);
+                        socket?.emit('couple_game:invite', { conversation_id: selected });
+                      }}
+                    >
+                      <Gamepad2 size={21} />
+                    </ButtonIcon>
+                    <ButtonIcon
+                      label="Romantic Surprises & Coupons 🎟️✨ (റൊമാന്റിക് സർപ്രൈസുകൾ)"
+                      disabled={sending || recording || chosen.is_group}
+                      onClick={() => {
+                        setShowRomanticSurprises(true);
+                        setRomanticInvite(null);
+                        socket?.emit('romantic:invite', { conversation_id: selected });
+                      }}
+                    >
+                      <Ticket size={21} className="romantic-toolbar-icon" />
+                    </ButtonIcon>
+                    <ButtonIcon
+                      label="Live Location & ETA 🚗 (ലൊക്കേഷൻ & ETA പങ്കിടുക)"
+                      disabled={sending || recording || chosen.is_group}
+                      onClick={() => setShowLocationEta(true)}
+                    >
+                      <Navigation size={21} />
+                    </ButtonIcon>
+                    <ButtonIcon
                       label="Attach file"
                       disabled={sending || recording}
                       onClick={() => fileInput.current.click()}
@@ -2365,6 +2817,13 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                     >
                       <Gift size={21} />
                     </ButtonIcon>
+                    <ButtonIcon
+                      label="Invisible Ink 🪄🌫️ (മാജിക് ഫോഗ് / രഹസ്യ മഷി)"
+                      disabled={sending || recording || !chosen || chosen.is_group}
+                      onClick={() => setShowInvisibleInk(true)}
+                    >
+                      <Wand2 size={21} className="invisible-ink-toolbar-icon" />
+                    </ButtonIcon>
                     <button
                       type="submit"
                       className="send-btn"
@@ -2391,6 +2850,20 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                         ))}
                       </select>
                     </label>
+                    {!chosen?.is_group && (
+                      <label
+                        className="invisible-ink-quick-toggle"
+                        title="ഈ സന്ദേശം രഹസ്യ മഷിയാക്കി അയക്കുക (Cover with magical fog)"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={invisibleInkActive}
+                          disabled={sending || recording}
+                          onChange={(e) => setInvisibleInkActive(e.target.checked)}
+                        />
+                        <span>🪄 രഹസ്യ മഷി</span>
+                      </label>
+                    )}
                     <span>Press Enter to send some love · Shift + Enter for a new line</span>
                   </div>
                   </fieldset>
@@ -2608,6 +3081,24 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           onError={onError}
         />
       )}
+      {showSleepModal && chosen && !chosen.is_group && (
+        <SleepTogetherModal
+          conversationId={selected}
+          user={user}
+          peer={chosen.peer}
+          socket={socket}
+          onClose={() => {
+            setShowSleepModal(false);
+            setIsSleepMinimized(false);
+          }}
+          onMinimize={() => {
+            setShowSleepModal(false);
+            setIsSleepMinimized(true);
+          }}
+          onSendToChat={(text) => sendMessage(null, { text })}
+          onError={onError}
+        />
+      )}
       {showMediaVault && chosen && (
         <MediaVaultModal
           conversation={chosen}
@@ -2725,6 +3216,23 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         user={user}
         peer={callPeer}
         socket={socket}
+        onOpenGames={() => setShowCoupleGames(true)}
+        onSaveCallSnippet={(blob, url) => {
+          if (selected) {
+            api(`/conversations/${selected}/messages`, {
+              method: 'POST',
+              body: {
+                client_id: crypto.randomUUID(),
+                text: '📸 Call Memory Highlight (15s) saved with love 💖✨',
+                source_language: user.language || 'ml',
+              },
+            }).then(() => {
+              stickToBottom.current = true;
+              loadMessages(selected);
+              loadConversations();
+            }).catch((e) => onError(e.message));
+          }
+        }}
         musicController={chosen ? {
           active: isCallMusicActive,
           toggle: () => {
@@ -2799,9 +3307,164 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
           ),
         } : undefined}
       />
+      {showCoupleGames && chosen && (
+        <CoupleGamesModal
+          conversationId={selected}
+          user={user}
+          peer={chosen.peer}
+          socket={socket}
+          onClose={() => setShowCoupleGames(false)}
+          onSendToChat={(text) => {
+            if (text && text.trim()) {
+              api(`/conversations/${selected}/messages`, {
+                method: 'POST',
+                body: {
+                  client_id: crypto.randomUUID(),
+                  text: text.trim(),
+                  source_language: user.language || 'ml',
+                },
+              }).then(() => {
+                stickToBottom.current = true;
+                loadMessages(selected);
+                loadConversations();
+              }).catch((e) => onError(e.message));
+            }
+          }}
+          isCallMode={Boolean(call?.call)}
+        />
+      )}
+      {showLocationEta && chosen && (
+        <LocationEtaModal
+          conversationId={selected}
+          user={user}
+          peer={chosen.peer}
+          socket={socket}
+          onClose={() => setShowLocationEta(false)}
+          onSendToChat={(text) => {
+            if (text && text.trim()) {
+              api(`/conversations/${selected}/messages`, {
+                method: 'POST',
+                body: {
+                  client_id: crypto.randomUUID(),
+                  text: text.trim(),
+                  source_language: user.language || 'ml',
+                },
+              }).then(() => {
+                stickToBottom.current = true;
+                loadMessages(selected);
+                loadConversations();
+              }).catch((e) => onError(e.message));
+            }
+          }}
+        />
+      )}
+      {showBatteryModal && chosen && (
+        <PartnerBatteryModal
+          isOpen={showBatteryModal}
+          onClose={() => setShowBatteryModal(false)}
+          partnerBattery={partnerBattery}
+          userBattery={userBattery}
+          peer={chosen.peer}
+          onSendNudge={(preset) => {
+            setDraft(preset.message);
+            socket?.emit('battery:nudge', {
+              conversation_id: selected,
+              nudge: preset.id,
+              message: preset.message,
+            });
+          }}
+          onSimulateBattery={(level, charging) => {
+            setPartnerBattery({
+              battery_level: level,
+              is_charging: charging,
+            });
+            setBatteryAlertDismissed(false);
+          }}
+        />
+      )}
+      {showInvisibleInk && chosen && (
+        <InvisibleInkModal
+          onClose={() => setShowInvisibleInk(false)}
+          initialText={draft}
+          initialFile={file}
+          onError={onError}
+          onSend={async ({ text: secretMessageText, file: secretFile, theme: secretTheme, concealDelay: secretDelay }) => {
+            setShowInvisibleInk(false);
+            if (secretFile) {
+              await sendMessage(null, {
+                file: secretFile,
+                caption: secretMessageText,
+                invisible_ink: true,
+                theme: secretTheme,
+                concealDelay: secretDelay,
+              });
+            } else {
+              setDraft(secretMessageText);
+              try {
+                setSending(true);
+                const input = {
+                  text: secretMessageText,
+                  source_language: source,
+                  expires_in_seconds: messageExpiry,
+                  view_once: false,
+                  ...(replyTo ? { reply_to_id: replyTo.id } : {}),
+                };
+                const delivery = outbox.enqueue(selected, input, null, () => {
+                  setDraft('');
+                  setReplyTo(null);
+                  setFile(null);
+                  stickToBottom.current = true;
+                });
+                await delivery;
+                if (selectedRef.current === selected) await loadMessages(selected);
+                await loadConversations();
+              } catch (e) {
+                onError(e.message);
+              } finally {
+                setSending(false);
+              }
+            }
+          }}
+        />
+      )}
+      {showRomanticSurprises && chosen && (
+        <RomanticSurprisesModal
+          conversationId={selected}
+          user={user}
+          peer={chosen.peer}
+          socket={socket}
+          onClose={() => setShowRomanticSurprises(false)}
+          onSendToChat={(text) => {
+            if (text && text.trim()) {
+              api(`/conversations/${selected}/messages`, {
+                method: 'POST',
+                body: {
+                  client_id: crypto.randomUUID(),
+                  text: text.trim(),
+                  source_language: user.language || 'ml',
+                },
+              }).then(() => {
+                stickToBottom.current = true;
+                loadMessages(selected);
+                loadConversations();
+              }).catch((e) => onError(e.message));
+            }
+          }}
+          onError={onError}
+        />
+      )}
+      <StealthDisguise
+        isActive={isStealthDisguised}
+        onDeactivate={() => setIsStealthDisguised(false)}
+        user={user}
+      />
       </div>
     </>
+    </CaptureGuard>
   );
+}
+function AppNotice({ text, onDismiss }) {
+  return <div className="toast" role="alert"><span>{text}</span><ButtonIcon label="Dismiss notification" onClick={onDismiss}><X size={17} /></ButtonIcon></div>;
 }
 export default function App() {
   const themeControls = useThemeAndFontSize();
@@ -2854,24 +3517,14 @@ export default function App() {
           )}
         </div>
       ) : session.user ? (
-        <AppLock key={session.user.id} user={session.user}><Chat
-          session={session}
-          capabilities={capabilities}
-          onSession={onSession}
-          onError={onError}
-          themeControls={themeControls}
-        /></AppLock>
+        <AppLock key={session.user.id} user={session.user}><>
+          <Chat session={session} capabilities={capabilities} onSession={onSession} onError={onError} themeControls={themeControls} />
+          {toast && <AppNotice text={toast} onDismiss={() => setToast(null)} />}
+        </></AppLock>
       ) : (
         <Auth capabilities={capabilities} onSession={onSession} onError={onError} />
       )}{' '}
-      {toast && (
-        <div className="toast" role="alert">
-          <span>{toast}</span>
-          <ButtonIcon label="Dismiss notification" onClick={() => setToast(null)}>
-            <X size={17} />
-          </ButtonIcon>
-        </div>
-      )}
+      {!session?.user && toast && <AppNotice text={toast} onDismiss={() => setToast(null)} />}
     </>
   );
 }

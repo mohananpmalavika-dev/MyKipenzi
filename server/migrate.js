@@ -91,6 +91,14 @@ try {
       await c.query(await readFile(new URL('./mood-schema.sql', import.meta.url), 'utf8'));
       await c.query('INSERT INTO schema_migrations(version) VALUES(21)');
     }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=22')).rowCount) {
+      await c.query(await readFile(new URL('./capture-alerts-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(22)');
+    }
+    if (!(await c.query('SELECT version FROM schema_migrations WHERE version=23')).rowCount) {
+      await c.query(await readFile(new URL('./romantic-surprises-schema.sql', import.meta.url), 'utf8'));
+      await c.query('INSERT INTO schema_migrations(version) VALUES(23)');
+    }
   });
   console.log('Database migrations complete.');
 } finally {

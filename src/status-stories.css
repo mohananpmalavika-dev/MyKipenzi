@@ -1,0 +1,471 @@
+/* Status/Stories Styles */
+
+/* Status Ring (Home Screen) */
+.status-ring {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.status-ring:hover {
+  transform: scale(1.05);
+}
+
+.status-ring.has-status {
+  padding: 3px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, var(--primary), var(--accent), var(--primary));
+}
+
+.status-ring.add-status {
+  opacity: 0.8;
+}
+
+.status-add-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-primary);
+}
+
+/* Status Viewer (Fullscreen) */
+.status-viewer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: black;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 1rem;
+  background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+}
+
+.status-progress-bars {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 1rem;
+}
+
+.status-progress-bar {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.status-progress-fill {
+  height: 100%;
+  background: white;
+  transition: width 0.05s linear;
+}
+
+.status-author {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: white;
+}
+
+.status-author-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.status-author-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.status-time {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* Status Content */
+.status-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.status-text {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.status-text p {
+  font-size: 1.8rem;
+  line-height: 1.4;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  margin: 0;
+}
+
+.status-photo img,
+.status-video video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.status-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem;
+  background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+  color: white;
+}
+
+.status-caption p {
+  margin: 0;
+  font-size: 1.2rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Status Navigation */
+.status-navigation {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1rem;
+  pointer-events: none;
+}
+
+.status-nav-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+  transition: background 0.2s;
+}
+
+.status-nav-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* Status Footer */
+.status-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+}
+
+.status-views-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.status-views-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Create Status Modal */
+.create-status-modal {
+  padding: 1.5rem;
+  max-width: 500px;
+}
+
+.status-type-selector {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.type-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.type-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--primary);
+}
+
+.type-btn.active {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.status-text-preview {
+  min-height: 300px;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-text-preview textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  text-align: center;
+  resize: none;
+  min-height: 200px;
+  outline: none;
+}
+
+.status-text-preview textarea::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.background-selector {
+  margin-bottom: 1.5rem;
+}
+
+.background-selector label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.background-colors {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  gap: 0.75rem;
+}
+
+.color-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.color-btn:hover {
+  transform: scale(1.1);
+}
+
+.color-btn.active {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 2px var(--bg-primary);
+}
+
+.status-media-preview {
+  position: relative;
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.status-media-preview img,
+.status-media-preview video {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+}
+
+.remove-media-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.remove-media-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.status-error {
+  padding: 0.75rem;
+  background: var(--error-light);
+  color: var(--error);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.status-hint {
+  display: block;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 1rem;
+}
+
+/* Offline Indicator */
+.offline-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9998;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.offline-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--warning);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.offline-icon {
+  font-size: 1.2rem;
+}
+
+.pending-count {
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .status-text p {
+    font-size: 1.5rem;
+  }
+
+  .status-caption p {
+    font-size: 1rem;
+    padding: 1rem;
+  }
+
+  .status-nav-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .status-text-preview {
+    min-height: 250px;
+  }
+
+  .status-text-preview textarea {
+    font-size: 1.2rem;
+  }
+
+  .background-colors {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .offline-banner {
+    background: #f59e0b;
+  }
+}
+
+/* Accessibility */
+.status-ring:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+}
+
+.status-nav-btn:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Animation for status expiration warning */
+@keyframes expiringSoon {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.status-expiring-soon {
+  animation: expiringSoon 1s ease-in-out infinite;
+}

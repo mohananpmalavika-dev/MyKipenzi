@@ -43,6 +43,8 @@ import {
   Zap,
   Lock,
   Unlock,
+  Camera,
+  Gamepad2,
 } from 'lucide-react';
 import { playTouchSound, triggerTouchHaptics, HAPTIC_PATTERNS } from './touchAudio.js';
 import { parseStoryShare, STORY_CATEGORIES } from '../shared/relationshipStory.js';
@@ -67,6 +69,11 @@ import { detectVoiceFilterFromFilename } from './voiceFilters.js';
 import { CallReactionOverlay } from './CallReactionOverlay.jsx';
 import { ARFilterStudio } from './ARFilterStudio.jsx';
 import { ARVideoProcessor, getFilterById } from './arVideoFilters.js';
+import { SleepTogetherCard } from './SleepTogetherModal.jsx';
+export { SleepTogetherCard } from './SleepTogetherModal.jsx';
+import { InvisibleInkCard } from './InvisibleInkCard.jsx';
+import { isMessageInvisibleInk } from './invisibleInk.js';
+export { InvisibleInkCard } from './InvisibleInkCard.jsx';
 export function ButtonIcon({ label, children, ...props }) {
   return (
     <button className="icon-btn" type="button" title={label} aria-label={label} {...props}>
@@ -968,7 +975,7 @@ export function TimeCapsuleChatCard({ text, onOpenTimeCapsule }) {
   );
 }
 
-export function Message({ message, mine, peerRead, user, capabilities, onError, onReply, onForward, onChanged, highlighted, group, contactBlocked, onOpenDailyPrompt, onOpenMusic, onOpenWatchParty, onOpenStory, onOpenTouch, onOpenTimeCapsule }) {
+export function Message({ message, mine, peerRead, user, capabilities, onError, onReply, onForward, onChanged, highlighted, group, contactBlocked, onOpenDailyPrompt, onOpenMusic, onOpenWatchParty, onOpenStory, onOpenTouch, onOpenTimeCapsule, onOpenSleep }) {
   const [showHistory, setShowHistory] = useState(false);
   const { canDelete, expiration } = useMessageClock(message);
   const [editing, setEditing] = useState(false);
@@ -1044,6 +1051,8 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
     (message.attachment.mime?.startsWith('audio/') ||
       (/^voice-note-/.test(message.attachment.name || '') &&
         message.attachment.mime === 'video/webm'));
+
+  const isInvisibleInk = !message.deleted_at && isMessageInvisibleInk(message.text);
 
   const defaultVoiceLang =
     user.language || 'en';
@@ -1210,7 +1219,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
             {stickers[message.sticker]}
           </div>
         )}
-        {message.view_once && !message.deleted_at ? <ViewOnceMedia message={message} mine={mine} onError={onError} /> : message.attachment && <Attachment attachment={message.attachment} onError={onError} />}
+        {!isInvisibleInk && (message.view_once && !message.deleted_at ? <ViewOnceMedia message={message} mine={mine} onError={onError} /> : message.attachment && <Attachment attachment={message.attachment} onError={onError} />)}
         {editing ? (
           <form className="message-edit" onSubmit={event => { event.preventDefault(); void mutate('PATCH'); }}>
             <textarea aria-label="Edit message" value={editText} onChange={event => setEditText(event.target.value)} maxLength={5000} disabled={actionBusy} autoFocus />
@@ -1235,6 +1244,10 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
           <StoryMilestoneCard text={message.text} onOpenStory={onOpenStory} />
         ) : !message.deleted_at && (message.text?.startsWith('[TIME_CAPSULE:') || message.text?.startsWith('💌 [Digital Time Capsule') || message.text?.startsWith('⏳ [Digital Time Capsule')) ? (
           <TimeCapsuleChatCard text={message.text} onOpenTimeCapsule={onOpenTimeCapsule} />
+        ) : !message.deleted_at && message.text?.startsWith('🌌 [Sleep Together') ? (
+          <SleepTogetherCard text={message.text} onOpenSleep={onOpenSleep} />
+        ) : isInvisibleInk ? (
+          <InvisibleInkCard message={message} mine={mine} onError={onError} />
         ) : (
           <p dir="auto">{message.deleted_at ? 'Message deleted' : translated ? message.translation.text : message.text}</p>
         )}
@@ -1704,7 +1717,7 @@ function MediaVideo({ stream, muted, className }) {
   }, [stream]);
   return <video className={className} ref={ref} autoPlay playsInline muted={muted} />;
 }
-export function CallOverlay({ controller, user, peer, musicController, socket }) {
+export function CallOverlay({ controller, user, peer, musicController, socket, onOpenGames, onSaveCallSnippet }) {
   const {
     call,
     local,
@@ -1724,6 +1737,123 @@ export function CallOverlay({ controller, user, peer, musicController, socket })
   const stageRef = useRef(null);
   const processorRef = useRef(null);
   const originalStreamRef = useRef(null);
+
+  // Snippet states: 'idle' | 'requesting' | 'incoming_request' | 'recording' | 'completed'
+  const [snippetState, setSnippetState] = useState('idle');
+  const [snippetCountdown, setSnippetCountdown] = useState(15);
+  const [snippetRequester, setSnippetRequester] = useState('');
+  const [snippetUrl, setSnippetUrl] = useState(null);
+  const mediaRecorderRef = useRef(null);
+  const recordedChunksRef = useRef([]);
+  const snippetTimerRef = useRef(null);
+
+  // 15-second snippet recording
+  const startRecordingSnippet = useCallback(() => {
+    try {
+      recordedChunksRef.current = [];
+      const streamToRecord = remote || local || originalStreamRef.current;
+      if (!streamToRecord) return;
+
+      let recorder;
+      try {
+        recorder = new MediaRecorder(streamToRecord, { mimeType: 'video/webm;codecs=vp8,opus' });
+      } catch {
+        recorder = new MediaRecorder(streamToRecord);
+      }
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          recordedChunksRef.current.push(e.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        setSnippetUrl(url);
+        setSnippetState('completed');
+        onSaveCallSnippet?.(blob, url);
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start(1000);
+      setSnippetState('recording');
+      setSnippetCountdown(15);
+
+      let timeLeft = 15;
+      clearInterval(snippetTimerRef.current);
+      snippetTimerRef.current = setInterval(() => {
+        timeLeft -= 1;
+        setSnippetCountdown(timeLeft);
+        if (timeLeft <= 0) {
+          clearInterval(snippetTimerRef.current);
+          if (recorder.state === 'recording') {
+            recorder.stop();
+          }
+        }
+      }, 1000);
+    } catch {
+      setSnippetState('idle');
+    }
+  }, [remote, local, onSaveCallSnippet]);
+
+  // Dual-consent socket signals
+  useEffect(() => {
+    if (!socket || !call) return;
+
+    const handleSnippetSignal = (payload) => {
+      if (payload.call_id !== call.id) return;
+
+      if (payload.type === 'request') {
+        setSnippetRequester(payload.sender_name || peer?.name || 'Partner');
+        setSnippetState('incoming_request');
+      } else if (payload.type === 'consent') {
+        if (payload.consented) {
+          startRecordingSnippet();
+        } else {
+          setSnippetState('idle');
+        }
+      }
+    };
+
+    socket.on('call:snippet', handleSnippetSignal);
+    return () => {
+      socket.off('call:snippet', handleSnippetSignal);
+      clearInterval(snippetTimerRef.current);
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+    };
+  }, [socket, call, peer?.name, startRecordingSnippet]);
+
+  const handleRequestSnippet = () => {
+    if (!socket || !call) return;
+    setSnippetState('requesting');
+    socket.emit('call:snippet', {
+      call_id: call.id,
+      type: 'request',
+      requester_name: user.name,
+    });
+  };
+
+  const handleConsentSnippet = (consent) => {
+    if (!socket || !call) return;
+    if (consent) {
+      socket.emit('call:snippet', {
+        call_id: call.id,
+        type: 'consent',
+        consented: true,
+      });
+      startRecordingSnippet();
+    } else {
+      socket.emit('call:snippet', {
+        call_id: call.id,
+        type: 'consent',
+        consented: false,
+      });
+      setSnippetState('idle');
+    }
+  };
 
   // Initialize AR Video Processor
   useEffect(() => {
@@ -1908,6 +2038,75 @@ export function CallOverlay({ controller, user, peer, musicController, socket })
             containerRef={stageRef}
           />
         )}
+
+        {/* Snippet Recording Status Overlay */}
+        {snippetState === 'recording' && (
+          <div className="call-snippet-recording-pill animate-fade-in">
+            <span className="snippet-rec-dot" />
+            <span>Recording 15s Memory Snippet... {snippetCountdown}s 💖</span>
+          </div>
+        )}
+
+        {/* Snippet Waiting for Consent */}
+        {snippetState === 'requesting' && (
+          <div className="call-snippet-waiting-pill animate-fade-in">
+            <span>Asking {peer?.name || 'partner'} for permission... 📸</span>
+          </div>
+        )}
+
+        {/* Dual Consent Dialog */}
+        {snippetState === 'incoming_request' && (
+          <div className="call-snippet-consent-modal animate-fade-in">
+            <div className="consent-modal-card">
+              <Camera size={26} className="consent-cam-icon" />
+              <h4>{isMl ? 'മെമ്മറി സ്നിപ്പെറ്റ് അനുവാദം 📸' : 'Call Memory Snippet 📸'}</h4>
+              <p>
+                {isMl
+                  ? `${snippetRequester} ഈ കോളിലെ ക്യൂട്ട് ആയ 15 സെക്കൻഡ് നിമിഷം ഓർമ്മയായി സേവ് ചെയ്യാൻ അനുവാദം ചോദിക്കുന്നു. സമ്മതമാണോ?`
+                  : `${snippetRequester} wants to save a 15-second call memory highlight to your vault. Allow?`}
+              </p>
+              <div className="consent-actions-row">
+                <button
+                  type="button"
+                  className="consent-accept-btn"
+                  onClick={() => handleConsentSnippet(true)}
+                >
+                  {isMl ? 'സമ്മതം 💖 (Allow)' : 'Allow 💖'}
+                </button>
+                <button
+                  type="button"
+                  className="consent-decline-btn"
+                  onClick={() => handleConsentSnippet(false)}
+                >
+                  {isMl ? 'വേണ്ട (Decline)' : 'Decline'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Snippet Completed Pill */}
+        {snippetState === 'completed' && (
+          <div className="call-snippet-completed-pill animate-fade-in">
+            <span>✨ {isMl ? '15 സെക്കൻഡ് മെമ്മറി സേവ് ചെയ്തു! 💖' : '15s Call Memory Saved! 💖'}</span>
+            {snippetUrl && (
+              <a
+                href={snippetUrl}
+                download={`kipenzi-memory-${Date.now()}.webm`}
+                className="snippet-download-link"
+              >
+                Download ⬇️
+              </a>
+            )}
+            <button
+              type="button"
+              className="snippet-dismiss-btn"
+              onClick={() => setSnippetState('idle')}
+            >
+              ✕
+            </button>
+          </div>
+        )}
       </div>
       <div className="call-controls">
         {incoming ? (
@@ -1947,6 +2146,27 @@ export function CallOverlay({ controller, user, peer, musicController, socket })
                 title="AR ഫിൽട്ടറുകളും ബാക്ക്ഗ്രൗണ്ടുകളും (AR Filters & Backgrounds ✨)"
               >
                 <Sparkles />
+              </button>
+            )}
+            {call.kind === 'video' && phase === 'Connected' && (
+              <button
+                className={`call-control ${snippetState === 'recording' ? 'danger toggled' : ''}`}
+                onClick={handleRequestSnippet}
+                disabled={snippetState !== 'idle'}
+                title="15-Second Memory Snippet 📸 (15 സെക്കൻഡ് മെമ്മറി സ്നിപ്പെറ്റ്)"
+                aria-label="Save 15s Memory Snippet"
+              >
+                <Camera />
+              </button>
+            )}
+            {onOpenGames && phase === 'Connected' && (
+              <button
+                className="call-control"
+                onClick={onOpenGames}
+                title="Play Couple Games in Call 🎮 (കോളിൽ കപ്പിൾ ഗെയിംസ് കളിക്കാം)"
+                aria-label="Play Couple Games"
+              >
+                <Gamepad2 />
               </button>
             )}
             <button

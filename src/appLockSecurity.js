@@ -12,7 +12,7 @@ async function derive(pin,salt) {
   return crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt,iterations:PIN_ITERATIONS},key,256);
 }
 export async function matchesPin(pin,record) {
-  if (!/^\d{6}$/.test(pin) || record.iterations !== PIN_ITERATIONS) return false;
+  if (!/^\d{6}$/.test(pin) || !record || record.iterations !== PIN_ITERATIONS) return false;
   const actual = new Uint8Array(await derive(pin,decode(record.salt))), expected = decode(record.hash);
   let mismatch = actual.length ^ expected.length;
   for (let index=0;index<actual.length;index++) mismatch |= actual[index] ^ expected[index];
@@ -75,4 +75,15 @@ export async function unlockDevice(record) {
 export async function deviceAvailable() {
   if (!globalThis.isSecureContext || !globalThis.PublicKeyCredential || !navigator.credentials?.create || !navigator.credentials?.get) return false;
   try { return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); } catch { return false; }
+}
+
+export async function pinDestination(pin, record) {
+  if (!record?.pin) return null;
+  // Derive both hashes together so checking the decoy does not add a second delay.
+  const [real, decoy] = await Promise.all([
+    matchesPin(pin, record.pin),
+    matchesPin(pin, record.decoyPin || record.pin),
+  ]);
+  if (real) return 'private';
+  return record.decoyPin && decoy ? 'decoy' : null;
 }

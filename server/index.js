@@ -34,6 +34,7 @@ io.use(async (socket, next) => {
     next(new Error('Service unavailable'));
   }
 });
+const userBatteryCache = new Map();
 io.on('connection', (socket) => {
   const user = socket.data.user;
   socket.join(`user:${user.id}`);
@@ -117,6 +118,27 @@ io.on('connection', (socket) => {
       });
     } catch {
       /* Call reaction is best effort */
+    }
+  });
+  socket.on('call:snippet', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      await limit(`call-snippet:${user.id}`, 60, 60);
+      const callId = id.parse(payload.call_id);
+      const call = await one(
+        "SELECT id, caller_id, callee_id, conversation_id FROM calls WHERE id=$1 AND (caller_id=$2 OR callee_id=$2)",
+        [callId, user.id],
+      );
+      if (!call) return;
+      const peer = call.caller_id === user.id ? call.callee_id : call.caller_id;
+      io.to(`user:${peer}`).emit('call:snippet', {
+        ...payload,
+        call_id: callId,
+        sender_id: user.id,
+        sender_name: user.name,
+      });
+    } catch {
+      /* Call snippet is best effort */
     }
   });
   socket.on('doodle:sync', async (payload) => {
@@ -528,6 +550,349 @@ io.on('connection', (socket) => {
       }
     } catch {
       /* video status is best effort */
+    }
+  });
+  socket.on('couple_game:action', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('couple_game:action', {
+          ...payload,
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* couple game action is best effort */
+    }
+  });
+  socket.on('couple_game:invite', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('couple_game:invite', {
+          ...payload,
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* couple game invite is best effort */
+    }
+  });
+  socket.on('romantic:action', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('romantic:action', {
+          ...payload,
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* romantic action is best effort */
+    }
+  });
+  socket.on('romantic:invite', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('romantic:invite', {
+          ...payload,
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* romantic invite is best effort */
+    }
+  });
+  socket.on('location:share', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('location:share', {
+          ...payload,
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* location share is best effort */
+    }
+  });
+  socket.on('sleep:sync', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('sleep:sync', {
+          ...payload,
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* sleep sync is best effort */
+    }
+  });
+  socket.on('sleep:invite', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('sleep:invite', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          soundscape: payload.soundscape,
+          timer_minutes: payload.timer_minutes,
+        });
+      }
+    } catch {
+      /* sleep invite is best effort */
+    }
+  });
+  socket.on('sleep:status', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('sleep:status', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          active: Boolean(payload.active),
+          soundscape: payload.soundscape,
+          sleeping: Boolean(payload.sleeping),
+        });
+      }
+    } catch {
+      /* sleep status is best effort */
+    }
+  });
+  socket.on('sleep:breath', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('sleep:breath', {
+          ...payload,
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* sleep breath is best effort */
+    }
+  });
+  socket.on('sleep:timer', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('sleep:timer', {
+          ...payload,
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+        });
+      }
+    } catch {
+      /* sleep timer is best effort */
+    }
+  });
+  socket.on('sleep:whisper', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('sleep:whisper', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          text: payload.text,
+          whisper_type: payload.whisper_type || 'whisper',
+          timestamp: Date.now(),
+        });
+      }
+    } catch {
+      /* sleep whisper is best effort */
+    }
+  });
+  socket.on('battery:sync', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      userBatteryCache.set(user.id, {
+        battery_level: Number(payload.battery_level),
+        is_charging: Boolean(payload.is_charging),
+        updated_at: Date.now(),
+      });
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('battery:sync', {
+          conversation_id: cid,
+          user_id: user.id,
+          sender_name: user.name,
+          battery_level: Number(payload.battery_level),
+          is_charging: Boolean(payload.is_charging),
+          updated_at: Date.now(),
+        });
+      }
+    } catch {
+      /* battery sync is best effort */
+    }
+  });
+  socket.on('battery:request', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        const cached = userBatteryCache.get(m.user_id);
+        if (cached) {
+          socket.emit('battery:sync', {
+            conversation_id: cid,
+            user_id: m.user_id,
+            battery_level: cached.battery_level,
+            is_charging: cached.is_charging,
+            updated_at: cached.updated_at,
+          });
+        }
+        io.to(`user:${m.user_id}`).emit('battery:request', {
+          conversation_id: cid,
+          requester_id: user.id,
+        });
+      }
+    } catch {
+      /* battery request is best effort */
+    }
+  });
+  socket.on('battery:nudge', async (payload) => {
+    try {
+      if (!(await getSession(socket.request.headers.cookie))) return;
+      const cid = id.parse(payload.conversation_id);
+      await membership(user.id, cid);
+      const members = (
+        await db.query('SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2', [
+          cid,
+          user.id,
+        ])
+      ).rows;
+      for (const m of members) {
+        io.to(`user:${m.user_id}`).emit('battery:nudge', {
+          conversation_id: cid,
+          sender_id: user.id,
+          sender_name: user.name,
+          nudge: payload.nudge,
+          message: payload.message,
+        });
+      }
+    } catch {
+      /* battery nudge is best effort */
     }
   });
 });

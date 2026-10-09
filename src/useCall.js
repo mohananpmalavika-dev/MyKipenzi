@@ -299,8 +299,11 @@ export function useCall(socket, user, onError) {
     try {
       if (!navigator.mediaDevices?.getDisplayMedia)
         throw new Error('Screen sharing is unavailable in this browser.');
+      const call = current.current;
+      const connection = pc.current;
+      if (!call || !connection) return;
       const display = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-      if (!pc.current) {
+      if (pc.current !== connection || current.current?.id !== call.id) {
         display.getTracks().forEach((t) => t.stop());
         return;
       }
@@ -309,6 +312,9 @@ export function useCall(socket, user, onError) {
       display.getVideoTracks()[0].onended = () => void stopShare();
       setLocal(display);
       setSharing(true);
+      void api(`/conversations/${call.conversation_id}/capture-alerts`, {
+        method: 'POST', body: { client_id: crypto.randomUUID(), kind: 'screen_sharing' },
+      }).catch(() => onError('Screen sharing started, but the privacy alert could not be sent.'));
     } catch (e) {
       if (e.name !== 'NotAllowedError') onError(e.message);
     }

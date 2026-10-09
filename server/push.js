@@ -4,6 +4,7 @@ import { db } from './db.js';
 import { messageSelect } from './service.js';
 import { messagePreview } from '../shared/notifications.js';
 import { pushEndpoint } from '../shared/push.js';
+import { captureNotification } from '../shared/captureAlerts.js';
 import { moodNotification } from '../shared/moods.js';
 
 export const pushEnabled = Boolean(config.VAPID_PUBLIC_KEY && config.VAPID_PRIVATE_KEY);
@@ -175,4 +176,44 @@ export async function deliverMoodPush({ conversation_id, sender_id, user_id, rev
     }
   }
   if (retry) throw new Error('Mood notification delivery temporarily unavailable.');
+}
+
+export async function deliverCapturePush({ alert_id, user_id }, send = webpush.sendNotification.bind(webpush)) {
+  if (!pushEnabled) return;
+  const alert = (await db.query(
+    `SELECT ca.*, sender.name AS sender_name, recipient.language
+     FROM capture_alerts ca JOIN users sender ON sender.id=ca.sender_id
+     JOIN members actor ON actor.conversation_id=ca.conversation_id AND actor.user_id=ca.sender_id
+     JOIN members observer ON observer.conversation_id=ca.conversation_id AND observer.user_id=$2
+     JOIN users recipient ON recipient.id=observer.user_id
+     WHERE ca.id=$1 AND ca.sender_id<>$2 AND ca.created_at>now()-interval '5 minutes'
+     AND NOT EXISTS(SELECT 1 FROM user_blocks b WHERE
+       (b.blocker_id=ca.sender_id AND b.blocked_id=$2) OR (b.blocker_id=$2 AND b.blocked_id=ca.sender_id))`,
+    [alert_id, user_id],
+  )).rows[0];
+  if (!alert) return;
+  const notification = captureNotification(alert, alert.language);
+  if (!notification) return;
+  const subscriptions = (await db.query(
+    'SELECT p.* FROM push_subscriptions p JOIN sessions s ON s.token_hash=p.session_token_hash AND s.user_id=p.user_id WHERE p.user_id=$1 AND s.expires_at>now()', [user_id],
+  )).rows;
+  const payload = JSON.stringify({
+    ...notification, tag: `kipenzi-capture-${alert.id}`,
+    data: { conversation_id: alert.conversation_id, user_id, capture_alert_id: alert.id },
+  });
+  let retry = false;
+  for (const subscription of subscriptions) {
+    if (!pushEndpoint.safeParse(subscription.endpoint).success) continue;
+    try {
+      await send({ endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } }, payload, {
+        TTL: 300, urgency: 'normal', timeout: 10000,
+        vapidDetails: { subject: config.APP_ORIGIN, publicKey: config.VAPID_PUBLIC_KEY, privateKey: config.VAPID_PRIVATE_KEY },
+      });
+    } catch (error) {
+      if (error.statusCode === 404 || error.statusCode === 410)
+        await db.query('DELETE FROM push_subscriptions WHERE endpoint=$1 AND session_token_hash=$2', [subscription.endpoint, subscription.session_token_hash]);
+      else retry = true;
+    }
+  }
+  if (retry) throw new Error('Privacy notification delivery temporarily unavailable.');
 }

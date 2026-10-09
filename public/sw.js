@@ -1,4 +1,5 @@
 import { offlineStore } from './offline-store.js';
+import { readNotificationPrivacy } from './lockPrivacy.js';
 import { flushOutbox, refreshOfflineHistory, SYNC_TAG } from './offline-sync.js';
 
 const OFFLINE_CACHE = 'kipenzi-shell-v2';
@@ -57,9 +58,10 @@ self.addEventListener('push', event => {
       const response = await fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' });
       if (response.ok && (await response.json()).user?.id !== payload.data.user_id) return;
     } catch { /* Notifications can arrive during a temporary server outage. */ }
-    await self.registration.showNotification(String(payload.title || 'Kipenzi').slice(0, 80), {
-      body: String(payload.body || 'New message').slice(0, 400),
-      icon: '/icons/icon-192.png', badge: '/icons/icon-192.png',
+    const privatePreview = await readNotificationPrivacy(payload.data.user_id);
+    await self.registration.showNotification(privatePreview ? 'Update' : String(payload.title || 'Kipenzi').slice(0, 80), {
+      body: privatePreview ? 'You have a new update.' : String(payload.body || 'New message').slice(0, 400),
+      ...(privatePreview ? {} : { icon: '/icons/icon-192.png', badge: '/icons/icon-192.png' }),
       tag: String(payload.tag || 'kipenzi-message').slice(0, 100),
       data: payload.data, renotify: false,
     });

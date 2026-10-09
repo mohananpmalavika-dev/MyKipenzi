@@ -14,7 +14,7 @@ import {
 } from './providers.js';
 import { putObject, providerObject, readObject, removeObject } from './storage.js';
 import { enqueue, conversationEvent } from './service.js';
-import { deliverMessagePush, deliverSchedulePush, deliverCalendarReminderPush } from './push.js';
+import { deliverMessagePush, deliverSchedulePush, deliverCalendarReminderPush, deliverCapturePush, deliverMoodPush } from './push.js';
 import { processSchedules } from './scheduled.js';
 import { processEventReminders } from './calendar.js';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -184,6 +184,8 @@ const worker = new Worker(
     else if (job.name === 'media') await media(job.data);
     else if (job.name === 'delete_object') await removeObject(job.data.key);
     else if (job.name === 'delete_voice') await deleteVoice(job.data.voice_id);
+    else if (job.name === 'capture_push') await deliverCapturePush(job.data);
+    else if (job.name === 'mood_push') await deliverMoodPush(job.data);
     else if (job.name === 'push') await deliverMessagePush(job.data, job.attemptsMade);
     else if (job.name === 'schedule_push') await deliverSchedulePush(job.data);
     else if (job.name === 'calendar_reminder_push') await deliverCalendarReminderPush(job.data);

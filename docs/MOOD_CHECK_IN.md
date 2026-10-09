@@ -21,4 +21,4 @@ Authentication, conversation membership, CSRF, contact blocking, and rate limits
 
 - `node --test tests/moods.test.js`
 - `node --test tests/integration/moods.test.js` (requires local PostgreSQL and Redis)
-- `node node_modules/@playwright/test/cli.js test --config tests/mood-check.config.js`
+- `node scripts/verify-moods.mjs`

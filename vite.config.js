@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 
 function offlinePwa() {
-  const modules = ['offline-store.js', 'offline-sync.js'];
+  const modules = ['offline-store.js', 'offline-sync.js', 'lockPrivacy.js'];
   return {
     name: 'kipenzi-offline-pwa',
     configureServer(server) {

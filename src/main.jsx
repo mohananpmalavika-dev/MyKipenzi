@@ -12,6 +12,8 @@ import App from './App.jsx';
 import { InstallProvider } from './InstallApp.jsx';
 import './styles.css';
 import './call-styles.css';
+import './battery-styles.css';
+import './invisible-ink.css';
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <InstallProvider><App /></InstallProvider>

@@ -11,9 +11,12 @@ import { authenticate, getSession, issueSession, publicUser, requireOrigin } fro
 import { hashPassword, verifyPassword, HttpError, turnCredentials } from './security.js';
 import { limit, aiLimit, redis, logger } from './infra.js';
 import { inspectFile, putObject, removeObject, getObject, readObject, storageReady } from './storage.js';
-import { cloneVoice, voiceVerified } from './providers.js';
+import { cloneVoice, voiceVerified, providerFetch } from './providers.js';
+import { formatMonthKey, generateMonthlyPoeticChronicle } from '../shared/monthlyRecap.js';
+import { generateLoveText } from '../shared/aiLovePoet.js';
 import { pushEnabled } from './push.js';
 import { readMoods, shareMood } from './moods.js';
+import { reportCapture, captureHistory, captureAlert } from './capture-alerts.js';
 import { createSchedule, changeSchedule } from './scheduled.js';
 import { scheduleInput, scheduleEdit } from '../shared/scheduling.js';
 import { pushEndpoint, pushSubscription } from '../shared/push.js';
@@ -101,6 +104,7 @@ import {
   buildDefaultMemories,
   formatDateKey,
 } from '../shared/relationshipStory.js';
+import { BUCKET_LIST_PRESETS } from '../shared/romanticSurprises.js';
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 25 * 1024 * 1024, files: 1, fields: 4, fieldSize: 1000 },
@@ -812,6 +816,19 @@ export function createApp(io) {
     res.json(result.rows);
   });
 
+  app.post('/api/conversations/:id/capture-alerts', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await limit(`capture:${req.user.id}:${cid}`, 15, 60);
+    res.status(201).json(await reportCapture(req.user, cid, req.body));
+  });
+  app.get('/api/conversations/:id/capture-alerts', async (req, res) => {
+    res.json({ alerts: await captureHistory(req.user.id, id.parse(req.params.id)) });
+  });
+  app.get('/api/capture-alerts/:id', async (req, res) => {
+    res.json(await captureAlert(req.user.id, id.parse(req.params.id)));
+  });
+
   app.get('/api/conversations/:id/moods', async (req, res) => {
     res.set('Cache-Control', 'no-store');
     res.json({ statuses: await readMoods(req.user.id, id.parse(req.params.id)) });
@@ -1432,6 +1449,187 @@ export function createApp(io) {
     res.json({ ok: true });
   });
 
+  // "Our Month in Review" AI Recap Story Endpoints
+  app.get('/api/conversations/:id/monthly-recap', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+
+    const monthKey = req.query.month && /^\d{4}-\d{2}$/.test(req.query.month)
+      ? req.query.month
+      : formatMonthKey();
+
+    const [yearStr, monthStr] = monthKey.split('-');
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+    const startDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
+    const endDate = new Date(Date.UTC(year, month, 1, 0, 0, 0));
+
+    const peer = await one(
+      'SELECT u.id as user_id, u.name, u.handle FROM members m JOIN users u ON u.id=m.user_id WHERE m.conversation_id=$1 AND m.user_id<>$2',
+      [cid, req.user.id],
+    );
+
+    const msgCountRow = await one(
+      'SELECT count(*)::int as count FROM messages WHERE conversation_id=$1 AND created_at >= $2 AND created_at < $3',
+      [cid, startDate, endDate],
+    );
+    const messagesCount = msgCountRow?.count || 0;
+
+    const photosRows = (
+      await db.query(
+        `SELECT a.id, a.message_id, a.name, a.mime, a.size, m.created_at
+         FROM attachments a
+         JOIN messages m ON m.id = a.message_id
+         WHERE m.conversation_id = $1 AND (a.mime LIKE 'image/%' OR a.mime LIKE 'video/%')
+           AND m.created_at >= $2 AND m.created_at < $3
+         ORDER BY m.created_at DESC LIMIT 12`,
+        [cid, startDate, endDate],
+      )
+    ).rows;
+
+    const voiceRows = (
+      await db.query(
+        `SELECT a.id, a.message_id, a.name, a.mime, a.size, m.created_at
+         FROM attachments a
+         JOIN messages m ON m.id = a.message_id
+         WHERE m.conversation_id = $1 AND (a.mime LIKE 'audio/%' OR a.name LIKE 'voice-note-%')
+           AND m.created_at >= $2 AND m.created_at < $3
+         ORDER BY m.created_at DESC LIMIT 8`,
+        [cid, startDate, endDate],
+      )
+    ).rows;
+
+    const duetRow = await one(
+      `SELECT count(*)::int as count FROM attachments a
+       JOIN messages m ON m.id = a.message_id
+       WHERE m.conversation_id = $1 AND (a.name LIKE 'voice-duet-%' OR m.text LIKE '%[Voice Duet%')
+         AND m.created_at >= $2 AND m.created_at < $3`,
+      [cid, startDate, endDate],
+    );
+    const duetCount = duetRow?.count || 0;
+
+    const heartRow = await one(
+      `SELECT count(*)::int as count FROM messages
+       WHERE conversation_id = $1 AND (text LIKE '💓 [Heartbeat Pulse%' OR text LIKE '🫂 [Virtual Touch%' OR text LIKE '🫂 [Haptic Hug%')
+         AND created_at >= $2 AND created_at < $3`,
+      [cid, startDate, endDate],
+    );
+    const heartbeatsCount = heartRow?.count || 0;
+
+    const memoriesRows = (
+      await db.query(
+        `SELECT id, title, to_char(memory_date, 'YYYY-MM-DD') as memory_date, emoji, description
+         FROM relationship_memories
+         WHERE conversation_id = $1 AND to_char(memory_date, 'YYYY-MM') = $2
+         ORDER BY memory_date ASC`,
+        [cid, monthKey],
+      )
+    ).rows;
+
+    const milestonesRows = (
+      await db.query(
+        `SELECT id, title, to_char(target_date, 'YYYY-MM-DD') as target_date, emoji, note
+         FROM relationship_milestones
+         WHERE conversation_id = $1 AND to_char(target_date, 'YYYY-MM') = $2
+         ORDER BY target_date ASC`,
+        [cid, monthKey],
+      )
+    ).rows;
+
+    const stats = {
+      messagesCount,
+      photosCount: photosRows.length,
+      voiceNotesCount: voiceRows.length,
+      duetCount,
+      heartbeatsCount,
+      touchesCount: 0,
+      memoriesCount: memoriesRows.length,
+      milestonesCount: milestonesRows.length,
+    };
+
+    const chronicle = generateMonthlyPoeticChronicle(stats, peer ? peer.name : 'Sweetheart', monthKey);
+
+    res.json({
+      monthKey,
+      stats,
+      chronicle,
+      photos: photosRows,
+      voiceNotes: voiceRows,
+      memories: memoriesRows,
+      milestones: milestonesRows,
+      partner: peer ? { id: peer.user_id, name: peer.name, handle: peer.handle } : null,
+    });
+  });
+
+  // AI Love Poetry & Letter Polisher Endpoint
+  app.post('/api/ai/polish-love-letter', async (req, res) => {
+    const { prompt, tone = 'romantic_deep', language = 'ml', style = 'letter', partnerName } = req.body || {};
+
+    let resultText = '';
+    let generatedBy = 'poetic_engine';
+
+    if (config.GEMINI_API_KEY) {
+      try {
+        const langDesc = language === 'ml'
+          ? 'Malayalam written in Malayalam script'
+          : language === 'manglish'
+            ? 'Manglish (spoken Malayalam written in natural Latin chat alphabet, NOT English)'
+            : 'English';
+
+        const systemInstruction = `You are a deeply romantic, poetic love writing assistant for a couple messaging app called Kipenzi Connect.
+You help lovers express tender emotions, passionate adoration, heartfelt apologies, and poetic stanzas in ${langDesc}.
+Guidelines:
+- Tone: ${tone}.
+- Target Language: ${langDesc}.
+- Style: ${style} (short sweet line, rhyming poetic verse/kavitha, or deep heartfelt letter).
+- Tone must feel intimate, emotionally vulnerable, deeply touching, and culturally natural for Kerala couples.
+- Only output the finished poetic message or letter text. Never include meta commentary or introductory remarks.`;
+
+        const userPrompt = `Help me express my feelings to my partner ${partnerName || 'Sweetheart'}. My thoughts/raw words: "${prompt || 'I love you so much and want to express how much you mean to me'}".`;
+
+        const geminiRes = await providerFetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.GEMINI_MODEL)}:generateContent`,
+          {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-goog-api-key': config.GEMINI_API_KEY },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemInstruction }] },
+              contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+              generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+            }),
+          },
+        );
+        const data = await geminiRes.json();
+        const candidate = data.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('').trim();
+        if (candidate) {
+          resultText = candidate;
+          generatedBy = 'gemini';
+        }
+      } catch {
+        // Fallback gracefully to offline poetic generator
+      }
+    }
+
+    if (!resultText) {
+      resultText = generateLoveText({
+        tone,
+        language,
+        style,
+        prompt,
+        partnerName: partnerName || 'Sweetheart',
+        seedIndex: Math.floor(Math.random() * 10),
+      });
+    }
+
+    res.json({
+      text: resultText,
+      tone,
+      language,
+      style,
+      generatedBy,
+    });
+  });
+
   // Digital Time Capsule (Love Letters for Future) Endpoints
   app.get('/api/conversations/:id/time-capsules', async (req, res) => {
     const cid = id.parse(req.params.id);
@@ -1653,6 +1851,280 @@ export function createApp(io) {
       io.to(`user:${peer.user_id}`).emit('time_capsule:deleted', {
         conversation_id: cid,
         capsule_id: capId,
+      });
+    }
+
+    res.json({ ok: true });
+  });
+
+  // Romantic Surprises, Love Coupons, and Couple Bucket List Endpoints
+  app.get('/api/conversations/:id/romantic-surprises', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+
+    const couponsResult = await db.query(
+      `SELECT c.id, c.conversation_id, c.sender_id, c.recipient_id, c.title, c.emoji,
+              c.description, c.status, c.scratch_percentage, c.redeemed_at, c.created_at,
+              s.name as sender_name, r.name as recipient_name
+       FROM love_coupons c
+       JOIN users s ON s.id = c.sender_id
+       JOIN users r ON r.id = c.recipient_id
+       WHERE c.conversation_id = $1
+       ORDER BY c.created_at DESC`,
+      [cid]
+    );
+
+    let bucketResult = await db.query(
+      `SELECT b.id, b.conversation_id, b.creator_id, b.title, b.category, b.notes,
+              b.target_date, b.is_completed, b.completed_at, b.completed_by,
+              b.completion_photo, b.completion_note, b.created_at,
+              u.name as creator_name, cb.name as completed_by_name
+       FROM couple_bucket_list b
+       JOIN users u ON u.id = b.creator_id
+       LEFT JOIN users cb ON cb.id = b.completed_by
+       WHERE b.conversation_id = $1
+       ORDER BY b.is_completed ASC, b.created_at DESC`,
+      [cid]
+    );
+
+    // If bucket list is completely empty, seed initial romantic items
+    if (bucketResult.rows.length === 0) {
+      for (const preset of BUCKET_LIST_PRESETS.slice(0, 6)) {
+        const newId = randomUUID();
+        await db.query(
+          `INSERT INTO couple_bucket_list(id, conversation_id, creator_id, title, category, notes, target_date)
+           VALUES($1, $2, $3, $4, $5, $6, $7)`,
+          [newId, cid, req.user.id, preset.title, preset.category, preset.notes, 'Soon']
+        );
+      }
+      bucketResult = await db.query(
+        `SELECT b.id, b.conversation_id, b.creator_id, b.title, b.category, b.notes,
+                b.target_date, b.is_completed, b.completed_at, b.completed_by,
+                b.completion_photo, b.completion_note, b.created_at,
+                u.name as creator_name, cb.name as completed_by_name
+         FROM couple_bucket_list b
+         JOIN users u ON u.id = b.creator_id
+         LEFT JOIN users cb ON cb.id = b.completed_by
+         WHERE b.conversation_id = $1
+         ORDER BY b.is_completed ASC, b.created_at DESC`,
+        [cid]
+      );
+    }
+
+    res.json({
+      coupons: couponsResult.rows,
+      bucketList: bucketResult.rows,
+    });
+  });
+
+  app.post('/api/conversations/:id/romantic-surprises/coupons', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+
+    const title = z.string().min(1).max(200).parse(req.body?.title);
+    const emoji = z.string().max(20).default('🎟️').parse(req.body?.emoji || '🎟️');
+    const description = z.string().max(1000).default('').parse(req.body?.description || '');
+
+    let recipientId = req.body?.recipient_id;
+    if (!recipientId) {
+      const peer = await one(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [cid, req.user.id]
+      );
+      if (peer) recipientId = peer.user_id;
+    }
+    if (!recipientId) throw new HttpError(400, 'Recipient required');
+
+    const couponId = randomUUID();
+    const inserted = await one(
+      `INSERT INTO love_coupons(id, conversation_id, sender_id, recipient_id, title, emoji, description)
+       VALUES($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [couponId, cid, req.user.id, recipientId, title, emoji, description]
+    );
+
+    const fullCoupon = {
+      ...inserted,
+      sender_name: req.user.name,
+    };
+
+    if (io) {
+      io.to(`user:${recipientId}`).emit('romantic:action', {
+        type: 'coupon_created',
+        conversation_id: cid,
+        coupon: fullCoupon,
+        sender_id: req.user.id,
+        sender_name: req.user.name,
+      });
+    }
+
+    res.json({ ok: true, coupon: fullCoupon });
+  });
+
+  app.patch('/api/conversations/:id/romantic-surprises/coupons/:couponId', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const couponId = id.parse(req.params.couponId);
+    await membership(req.user.id, cid);
+
+    const status = z.enum(['active', 'scratched', 'redeemed']).optional().parse(req.body?.status);
+    const scratchPercentage = z.number().min(0).max(100).optional().parse(req.body?.scratch_percentage);
+
+    const existing = await one('SELECT * FROM love_coupons WHERE id=$1 AND conversation_id=$2', [couponId, cid]);
+    if (!existing) throw new HttpError(404, 'Coupon not found');
+
+    let newStatus = status || existing.status;
+    let redeemedAt = existing.redeemed_at;
+    if (newStatus === 'redeemed' && !redeemedAt) {
+      redeemedAt = new Date();
+    }
+
+    const updated = await one(
+      `UPDATE love_coupons
+       SET status=$1, scratch_percentage=coalesce($2, scratch_percentage), redeemed_at=$3
+       WHERE id=$4
+       RETURNING *`,
+      [newStatus, scratchPercentage ?? existing.scratch_percentage, redeemedAt, couponId]
+    );
+
+    const peer = await one(
+      'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+      [cid, req.user.id]
+    );
+
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('romantic:action', {
+        type: 'coupon_updated',
+        conversation_id: cid,
+        coupon: updated,
+        sender_id: req.user.id,
+        sender_name: req.user.name,
+      });
+    }
+
+    res.json({ ok: true, coupon: updated });
+  });
+
+  app.delete('/api/conversations/:id/romantic-surprises/coupons/:couponId', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const couponId = id.parse(req.params.couponId);
+    await membership(req.user.id, cid);
+
+    await db.query('DELETE FROM love_coupons WHERE id=$1 AND conversation_id=$2', [couponId, cid]);
+
+    const peer = await one(
+      'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+      [cid, req.user.id]
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('romantic:action', {
+        type: 'coupon_deleted',
+        conversation_id: cid,
+        coupon_id: couponId,
+      });
+    }
+
+    res.json({ ok: true });
+  });
+
+  app.post('/api/conversations/:id/romantic-surprises/bucket-list', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+
+    const title = z.string().min(1).max(300).parse(req.body?.title);
+    const category = z.string().max(50).default('dream').parse(req.body?.category || 'dream');
+    const notes = z.string().max(1000).default('').parse(req.body?.notes || '');
+    const targetDate = req.body?.target_date ? z.string().max(50).parse(req.body.target_date) : null;
+
+    const itemId = randomUUID();
+    const inserted = await one(
+      `INSERT INTO couple_bucket_list(id, conversation_id, creator_id, title, category, notes, target_date)
+       VALUES($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [itemId, cid, req.user.id, title, category, notes, targetDate]
+    );
+
+    const fullItem = {
+      ...inserted,
+      creator_name: req.user.name,
+    };
+
+    const peer = await one(
+      'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+      [cid, req.user.id]
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('romantic:action', {
+        type: 'bucket_added',
+        conversation_id: cid,
+        item: fullItem,
+        sender_id: req.user.id,
+        sender_name: req.user.name,
+      });
+    }
+
+    res.json({ ok: true, item: fullItem });
+  });
+
+  app.patch('/api/conversations/:id/romantic-surprises/bucket-list/:itemId', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const itemId = id.parse(req.params.itemId);
+    await membership(req.user.id, cid);
+
+    const isCompleted = z.boolean().parse(req.body?.is_completed);
+    const completionPhoto = req.body?.completion_photo ? z.string().parse(req.body.completion_photo) : null;
+    const completionNote = z.string().max(1000).default('').parse(req.body?.completion_note || '');
+
+    const completedAt = isCompleted ? new Date() : null;
+    const completedBy = isCompleted ? req.user.id : null;
+
+    const updated = await one(
+      `UPDATE couple_bucket_list
+       SET is_completed=$1, completed_at=$2, completed_by=$3,
+           completion_photo=coalesce($4, completion_photo),
+           completion_note=coalesce($5, completion_note)
+       WHERE id=$6 AND conversation_id=$7
+       RETURNING *`,
+      [isCompleted, completedAt, completedBy, completionPhoto, completionNote, itemId, cid]
+    );
+
+    const fullItem = {
+      ...updated,
+      completed_by_name: isCompleted ? req.user.name : null,
+    };
+
+    const peer = await one(
+      'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+      [cid, req.user.id]
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('romantic:action', {
+        type: 'bucket_updated',
+        conversation_id: cid,
+        item: fullItem,
+        sender_id: req.user.id,
+        sender_name: req.user.name,
+      });
+    }
+
+    res.json({ ok: true, item: fullItem });
+  });
+
+  app.delete('/api/conversations/:id/romantic-surprises/bucket-list/:itemId', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const itemId = id.parse(req.params.itemId);
+    await membership(req.user.id, cid);
+
+    await db.query('DELETE FROM couple_bucket_list WHERE id=$1 AND conversation_id=$2', [itemId, cid]);
+
+    const peer = await one(
+      'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+      [cid, req.user.id]
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('romantic:action', {
+        type: 'bucket_deleted',
+        conversation_id: cid,
+        item_id: itemId,
       });
     }
 
@@ -2104,6 +2576,380 @@ export function createApp(io) {
   // End Calendar & To-Do Lists Endpoints
   // ========================================
 
+  // ========================================
+  // Quick Replies Endpoints
+  // ========================================
+  
+  app.get('/api/quick-replies', async (req, res) => {
+    const result = await db.query(
+      'SELECT * FROM quick_replies WHERE user_id=$1 ORDER BY category, usage_count DESC, created_at DESC',
+      [req.user.id]
+    );
+    res.json({ replies: result.rows });
+  });
+
+  app.post('/api/quick-replies', async (req, res) => {
+    await limit(`quick-replies:${req.user.id}`, 30, 60);
+    const input = z.object({
+      category: z.string().min(1).max(50),
+      text: z.string().trim().min(1).max(500),
+    }).parse(req.body);
+
+    const reply = await one(
+      'INSERT INTO quick_replies(id, user_id, category, text) VALUES($1, $2, $3, $4) RETURNING *',
+      [randomUUID(), req.user.id, input.category, input.text]
+    );
+    res.status(201).json(reply);
+  });
+
+  app.post('/api/quick-replies/:id/use', async (req, res) => {
+    const replyId = id.parse(req.params.id);
+    await db.query(
+      'UPDATE quick_replies SET usage_count = usage_count + 1 WHERE id=$1 AND user_id=$2',
+      [replyId, req.user.id]
+    );
+    res.json({ ok: true });
+  });
+
+  app.delete('/api/quick-replies/:id', async (req, res) => {
+    const replyId = id.parse(req.params.id);
+    await db.query('DELETE FROM quick_replies WHERE id=$1 AND user_id=$2', [replyId, req.user.id]);
+    res.json({ ok: true });
+  });
+
+  // ========================================
+  // Conversation Archive Endpoints
+  // ========================================
+
+  app.get('/api/conversations/archived', async (req, res) => {
+    const result = await db.query(
+      `SELECT arc.archived_at, c.id, c.name, c.description, c.avatar_id, c.direct_key IS NULL AS is_group,
+       (SELECT count(*)::int FROM messages m WHERE m.conversation_id=c.id AND m.seq>me.read_seq AND m.sender_id<>$1) AS unread,
+       (SELECT jsonb_build_object('text',m.text,'sticker',m.sticker,'attachment',m.attachment_id IS NOT NULL,'created_at',m.created_at) 
+        FROM messages m WHERE m.conversation_id=c.id ORDER BY m.seq DESC LIMIT 1) AS last_message,
+       jsonb_build_object('id',u.id,'name',u.name,'handle',u.handle,'avatar_id',u.avatar_id) AS peer
+       FROM archived_conversations arc
+       JOIN conversations c ON c.id = arc.conversation_id
+       JOIN members me ON me.conversation_id = c.id AND me.user_id = $1
+       LEFT JOIN LATERAL (SELECT user_id FROM members WHERE conversation_id=c.id AND user_id<>$1 ORDER BY user_id LIMIT 1) other ON true
+       LEFT JOIN users u ON u.id = other.user_id
+       WHERE arc.user_id = $1 AND c.deleted_at IS NULL
+       ORDER BY arc.archived_at DESC`,
+      [req.user.id]
+    );
+    res.json({ conversations: result.rows });
+  });
+
+  app.put('/api/conversations/:id/archive', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await db.query(
+      'INSERT INTO archived_conversations(conversation_id, user_id) VALUES($1, $2) ON CONFLICT DO NOTHING',
+      [cid, req.user.id]
+    );
+    res.json({ ok: true, archived: true });
+  });
+
+  app.delete('/api/conversations/:id/archive', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await db.query(
+      'DELETE FROM archived_conversations WHERE conversation_id=$1 AND user_id=$2',
+      [cid, req.user.id]
+    );
+    res.json({ ok: true, archived: false });
+  });
+
+  // ========================================
+  // Conversation Mute Endpoints
+  // ========================================
+
+  app.put('/api/conversations/:id/mute', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    
+    const input = z.object({
+      duration_minutes: z.number().int().min(1).max(525600).nullable(),
+    }).parse(req.body);
+
+    const mutedUntil = input.duration_minutes
+      ? new Date(Date.now() + input.duration_minutes * 60000).toISOString()
+      : null; // null means forever
+
+    await db.query(
+      `INSERT INTO muted_conversations(conversation_id, user_id, muted_until)
+       VALUES($1, $2, $3)
+       ON CONFLICT(conversation_id, user_id)
+       DO UPDATE SET muted_until = EXCLUDED.muted_until, created_at = now()`,
+      [cid, req.user.id, mutedUntil]
+    );
+
+    res.json({ ok: true, muted_until: mutedUntil || 'forever' });
+  });
+
+  app.delete('/api/conversations/:id/mute', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await db.query(
+      'DELETE FROM muted_conversations WHERE conversation_id=$1 AND user_id=$2',
+      [cid, req.user.id]
+    );
+    res.json({ ok: true, muted: false });
+  });
+
+  app.get('/api/conversations/:id/mute', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    const mute = await one(
+      'SELECT muted_until FROM muted_conversations WHERE conversation_id=$1 AND user_id=$2',
+      [cid, req.user.id]
+    );
+    
+    if (!mute) {
+      res.json({ muted: false });
+    } else if (!mute.muted_until) {
+      res.json({ muted: true, muted_until: 'forever' });
+    } else if (new Date(mute.muted_until) > new Date()) {
+      res.json({ muted: true, muted_until: mute.muted_until });
+    } else {
+      // Mute expired, clean up
+      await db.query(
+        'DELETE FROM muted_conversations WHERE conversation_id=$1 AND user_id=$2',
+        [cid, req.user.id]
+      );
+      res.json({ muted: false });
+    }
+  });
+
+  // ========================================
+  // End Quick Replies, Archive, Mute Endpoints
+  // ========================================
+
+  // ========================================
+  // Mentions Endpoints
+  // ========================================
+
+  app.get('/api/conversations/:id/mentions', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    
+    const input = z.object({
+      before: z.coerce.number().int().nonnegative().optional(),
+      limit: z.coerce.number().int().min(1).max(100).default(50),
+    }).parse(req.query);
+
+    // Find messages that mention the current user
+    const result = await db.query(
+      `${messageSelect} 
+       WHERE m.conversation_id=$1 
+       AND (m.text ~* $4 OR m.text ~* '@all')
+       AND ($5::bigint IS NULL OR m.seq < $5)
+       AND m.deleted_at IS NULL
+       ORDER BY m.seq DESC 
+       LIMIT $6`,
+      [
+        cid,
+        req.user.language,
+        req.user.id,
+        `@${req.user.handle}\\b`, // Regex to match @username
+        input.before || null,
+        input.limit + 1,
+      ]
+    );
+
+    const messages = result.rows.slice(0, input.limit);
+    await ensureReaderTranslations(req.user, messages);
+
+    res.json({
+      messages,
+      has_more: result.rows.length > input.limit,
+    });
+  });
+
+  // Get mention notifications count
+  app.get('/api/mentions/unread', async (req, res) => {
+    const result = await db.query(
+      `SELECT c.id as conversation_id, c.name, COUNT(m.id)::int as mention_count
+       FROM messages m
+       JOIN conversations c ON c.id = m.conversation_id
+       JOIN members me ON me.conversation_id = c.id AND me.user_id = $1
+       WHERE (m.text ~* $2 OR m.text ~* '@all')
+       AND m.seq > me.read_seq
+       AND m.sender_id <> $1
+       AND m.deleted_at IS NULL
+       AND (m.expires_at IS NULL OR m.expires_at > now())
+       GROUP BY c.id, c.name
+       ORDER BY MAX(m.created_at) DESC`,
+      [req.user.id, `@${req.user.handle}\\b`]
+    );
+
+    res.json({
+      conversations: result.rows,
+      total: result.rows.reduce((sum, row) => sum + row.mention_count, 0),
+    });
+  });
+
+  // ========================================
+  // End Mentions Endpoints
+  // ========================================
+
+  // ========================================
+  // Status/Stories Endpoints
+  // ========================================
+
+  app.get('/api/status/active', async (req, res) => {
+    // Get active statuses from contacts
+    const result = await db.query(
+      `SELECT s.*, u.name as user_name, u.handle, u.avatar_id,
+       EXISTS(SELECT 1 FROM status_views WHERE status_id = s.id AND viewer_id = $1) as viewed_by_me
+       FROM status_updates s
+       JOIN users u ON u.id = s.user_id
+       WHERE s.expires_at > now()
+       AND (
+         s.user_id = $1
+         OR EXISTS(
+           SELECT 1 FROM conversations c
+           JOIN members m1 ON m1.conversation_id = c.id AND m1.user_id = s.user_id
+           JOIN members m2 ON m2.conversation_id = c.id AND m2.user_id = $1
+         )
+       )
+       ORDER BY s.created_at DESC`,
+      [req.user.id]
+    );
+
+    res.json({ statuses: result.rows });
+  });
+
+  app.post('/api/status/upload', upload.single('file'), async (req, res) => {
+    await limit(`status-upload:${req.user.id}`, 10, 3600);
+    const type = await inspectFile(req.file, 'chat');
+    const fileId = randomUUID();
+    const key = `status/${req.user.id}/${fileId}.${type.ext}`;
+
+    await putObject(key, req.file.buffer, type.mime);
+
+    try {
+      const attachment = await one(
+        "INSERT INTO attachments(id,owner_id,purpose,object_key,name,mime,size) VALUES($1,$2,'status',$3,$4,$5,$6) RETURNING id",
+        [fileId, req.user.id, key, type.name, type.mime, req.file.size]
+      );
+      res.status(201).json({ id: attachment.id });
+    } catch (e) {
+      await removeObject(key);
+      throw e;
+    }
+  });
+
+  app.post('/api/status', async (req, res) => {
+    await limit(`status:${req.user.id}`, 20, 86400);
+
+    const input = z.object({
+      content_type: z.enum(['text', 'photo', 'video']),
+      text: z.string().trim().max(500).nullable().optional(),
+      attachment_id: z.string().uuid().nullable().optional(),
+      background_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
+    }).parse(req.body);
+
+    if (input.content_type === 'text' && !input.text) {
+      throw new HttpError(400, 'Text status requires text content');
+    }
+
+    if ((input.content_type === 'photo' || input.content_type === 'video') && !input.attachment_id) {
+      throw new HttpError(400, 'Media status requires attachment');
+    }
+
+    const statusId = randomUUID();
+    const status = await one(
+      `INSERT INTO status_updates(id, user_id, content_type, text, attachment_id, background_color)
+       VALUES($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [statusId, req.user.id, input.content_type, input.text || null, input.attachment_id || null, input.background_color || null]
+    );
+
+    res.status(201).json(status);
+  });
+
+  app.post('/api/status/:id/view', async (req, res) => {
+    const statusId = id.parse(req.params.id);
+
+    const status = await one(
+      'SELECT user_id FROM status_updates WHERE id=$1 AND expires_at > now()',
+      [statusId]
+    );
+
+    if (!status) {
+      throw new HttpError(404, 'Status not found or expired');
+    }
+
+    if (status.user_id !== req.user.id) {
+      await db.query(
+        `INSERT INTO status_views(status_id, viewer_id)
+         VALUES($1, $2)
+         ON CONFLICT DO NOTHING`,
+        [statusId, req.user.id]
+      );
+
+      await db.query(
+        'UPDATE status_updates SET views_count = views_count + 1 WHERE id=$1',
+        [statusId]
+      );
+    }
+
+    res.json({ ok: true });
+  });
+
+  app.get('/api/status/:id/views', async (req, res) => {
+    const statusId = id.parse(req.params.id);
+
+    const status = await one(
+      'SELECT user_id FROM status_updates WHERE id=$1',
+      [statusId]
+    );
+
+    if (!status || status.user_id !== req.user.id) {
+      throw new HttpError(403, 'Not authorized');
+    }
+
+    const views = await db.query(
+      `SELECT u.id, u.name, u.handle, u.avatar_id, sv.viewed_at
+       FROM status_views sv
+       JOIN users u ON u.id = sv.viewer_id
+       WHERE sv.status_id = $1
+       ORDER BY sv.viewed_at DESC`,
+      [statusId]
+    );
+
+    res.json({ views: views.rows });
+  });
+
+  app.delete('/api/status/:id', async (req, res) => {
+    const statusId = id.parse(req.params.id);
+
+    const deleted = await one(
+      'DELETE FROM status_updates WHERE id=$1 AND user_id=$2 RETURNING attachment_id',
+      [statusId, req.user.id]
+    );
+
+    if (!deleted) {
+      throw new HttpError(404, 'Status not found');
+    }
+
+    // Clean up attachment if exists
+    if (deleted.attachment_id) {
+      const attachment = await one(
+        'SELECT object_key FROM attachments WHERE id=$1',
+        [deleted.attachment_id]
+      );
+      if (attachment) {
+        await enqueue(db, 'delete_object', { key: attachment.object_key });
+        await db.query('DELETE FROM attachments WHERE id=$1', [deleted.attachment_id]);
+      }
+    }
+
+    res.json({ ok: true });
+  });
+
+  // ========================================
+  // End Status/Stories Endpoints
+  // ========================================
+
   app.post('/api/conversations/:id/messages', async (req, res) => {
     await limit(`messages:${req.user.id}`, 40, 60);
     const cid = id.parse(req.params.id),
@@ -2382,6 +3228,505 @@ export function createApp(io) {
     const action = z.enum(['accept', 'decline', 'end']).parse(req.body.action);
     res.json(await changeCall(req.user.id, id.parse(req.params.id), action));
   });
+
+  // ========================================
+  // Location Sharing Endpoints
+  // ========================================
+  app.post('/api/conversations/:id/location', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await assertCanContact(req.user.id, cid);
+    await limit(`location:${req.user.id}`, 20, 60);
+
+    const input = z.object({
+      latitude: z.number().min(-90).max(90),
+      longitude: z.number().min(-180).max(180),
+      address: z.string().max(500).nullable().optional(),
+      is_live: z.boolean().default(false),
+      live_duration_minutes: z.number().int().min(1).max(480).nullable().optional(),
+    }).parse(req.body);
+
+    const result = await transaction(async (c) => {
+      // Create message with location
+      const messageId = randomUUID();
+      const locationId = randomUUID();
+      
+      let liveUntil = null;
+      if (input.is_live && input.live_duration_minutes) {
+        liveUntil = new Date(Date.now() + input.live_duration_minutes * 60000);
+      }
+
+      // Insert location share record
+      await c.query(
+        `INSERT INTO location_shares(id, message_id, latitude, longitude, address, is_live, live_until, created_at)
+         VALUES($1, $2, $3, $4, $5, $6, $7, now())`,
+        [locationId, messageId, input.latitude, input.longitude, input.address || null, input.is_live, liveUntil]
+      );
+
+      // Create the message
+      const message = await sendMessage(
+        c,
+        req.user,
+        cid,
+        {
+          text: input.address || `📍 Location: ${input.latitude.toFixed(6)}, ${input.longitude.toFixed(6)}`,
+          source_language: 'en',
+        }
+      );
+
+      // Update message ID in location share
+      await c.query('UPDATE location_shares SET message_id=$1 WHERE id=$2', [message.id, locationId]);
+
+      return { ...message, location: { id: locationId, ...input, live_until: liveUntil } };
+    });
+
+    res.status(201).json(result);
+  });
+
+  app.post('/api/messages/:id/location/update', async (req, res) => {
+    const messageId = id.parse(req.params.id);
+    await limit(`location-update:${req.user.id}`, 120, 60);
+
+    const input = z.object({
+      latitude: z.number().min(-90).max(90),
+      longitude: z.number().min(-180).max(180),
+    }).parse(req.body);
+
+    const location = await one(
+      'SELECT ls.*, m.conversation_id, m.sender_id FROM location_shares ls JOIN messages m ON m.id=ls.message_id WHERE ls.message_id=$1',
+      [messageId]
+    );
+
+    if (!location) throw new HttpError(404, 'Location not found');
+    if (location.sender_id !== req.user.id) throw new HttpError(403, 'Only the sender can update live location');
+    if (!location.is_live || (location.live_until && new Date(location.live_until) < new Date())) {
+      throw new HttpError(400, 'Live location sharing has ended');
+    }
+
+    await membership(req.user.id, location.conversation_id);
+
+    await db.query(
+      'UPDATE location_shares SET latitude=$1, longitude=$2, updated_at=now() WHERE message_id=$3',
+      [input.latitude, input.longitude, messageId]
+    );
+
+    // Notify other conversation members
+    const peer = await one(
+      'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+      [location.conversation_id, req.user.id]
+    );
+    if (peer && io) {
+      io.to(`user:${peer.user_id}`).emit('location:update', {
+        message_id: messageId,
+        latitude: input.latitude,
+        longitude: input.longitude,
+      });
+    }
+
+    res.json({ ok: true });
+  });
+
+  // ========================================
+  // Poll Creation Endpoints
+  // ========================================
+  app.post('/api/conversations/:id/polls', async (req, res) => {
+    const cid = id.parse(req.params.id);
+    await membership(req.user.id, cid);
+    await assertCanContact(req.user.id, cid);
+    await limit(`polls:${req.user.id}`, 20, 60);
+
+    const input = z.object({
+      question: z.string().trim().min(1).max(200),
+      options: z.array(z.string().trim().min(1).max(100)).min(2).max(10),
+      multiple_choice: z.boolean().default(false),
+      anonymous: z.boolean().default(false),
+      ends_at: z.string().datetime().nullable().optional(),
+    }).parse(req.body);
+
+    const result = await transaction(async (c) => {
+      const pollId = randomUUID();
+      const messageId = randomUUID();
+
+      // Create poll
+      await c.query(
+        `INSERT INTO polls(id, message_id, question, options, multiple_choice, anonymous, ends_at, created_at)
+         VALUES($1, $2, $3, $4, $5, $6, $7, now())`,
+        [pollId, messageId, input.question, JSON.stringify(input.options), input.multiple_choice, input.anonymous, input.ends_at || null]
+      );
+
+      // Create message
+      const message = await sendMessage(
+        c,
+        req.user,
+        cid,
+        {
+          text: `📊 Poll: ${input.question}`,
+          source_language: 'en',
+        }
+      );
+
+      // Update poll message ID
+      await c.query('UPDATE polls SET message_id=$1 WHERE id=$2', [message.id, pollId]);
+
+      return { 
+        ...message, 
+        poll: { 
+          id: pollId, 
+          question: input.question, 
+          options: input.options,
+          multiple_choice: input.multiple_choice,
+          anonymous: input.anonymous,
+          ends_at: input.ends_at,
+          results: input.options.map((_, idx) => ({ option_index: idx, count: 0 })),
+        } 
+      };
+    });
+
+    res.status(201).json(result);
+  });
+
+  app.post('/api/polls/:id/vote', async (req, res) => {
+    const pollId = id.parse(req.params.id);
+    await limit(`poll-vote:${req.user.id}`, 60, 60);
+
+    const input = z.object({
+      option_indices: z.array(z.number().int().min(0).max(9)).min(1).max(10),
+    }).parse(req.body);
+
+    const result = await transaction(async (c) => {
+      const poll = await one(
+        'SELECT p.*, m.conversation_id FROM polls p JOIN messages m ON m.id=p.message_id WHERE p.id=$1',
+        [pollId],
+        c
+      );
+
+      if (!poll) throw new HttpError(404, 'Poll not found');
+      if (poll.ends_at && new Date(poll.ends_at) < new Date()) {
+        throw new HttpError(400, 'This poll has ended');
+      }
+
+      await membership(req.user.id, poll.conversation_id, c);
+
+      // Check if already voted
+      const existingVote = await one(
+        'SELECT 1 FROM poll_votes WHERE poll_id=$1 AND user_id=$2',
+        [pollId, req.user.id],
+        c
+      );
+
+      if (existingVote) {
+        // Delete old votes and insert new ones
+        await c.query('DELETE FROM poll_votes WHERE poll_id=$1 AND user_id=$2', [pollId, req.user.id]);
+      }
+
+      // Validate indices
+      const options = JSON.parse(poll.options);
+      for (const idx of input.option_indices) {
+        if (idx >= options.length) throw new HttpError(400, 'Invalid option index');
+      }
+
+      // Check multiple choice setting
+      if (!poll.multiple_choice && input.option_indices.length > 1) {
+        throw new HttpError(400, 'This poll only allows single choice');
+      }
+
+      // Insert votes
+      for (const idx of input.option_indices) {
+        await c.query(
+          'INSERT INTO poll_votes(poll_id, user_id, option_index, created_at) VALUES($1, $2, $3, now())',
+          [pollId, req.user.id, idx]
+        );
+      }
+
+      // Get updated results
+      const results = (await c.query(
+        'SELECT option_index, COUNT(*)::int as count FROM poll_votes WHERE poll_id=$1 GROUP BY option_index ORDER BY option_index',
+        [pollId]
+      )).rows;
+
+      // Notify other conversation members
+      const members = (await c.query(
+        'SELECT user_id FROM members WHERE conversation_id=$1 AND user_id<>$2',
+        [poll.conversation_id, req.user.id]
+      )).rows;
+
+      if (members.length > 0 && io) {
+        for (const member of members) {
+          io.to(`user:${member.user_id}`).emit('poll:voted', {
+            poll_id: pollId,
+            voter_name: req.user.name,
+            results,
+          });
+        }
+      }
+
+      return { ok: true, results };
+    });
+
+    res.json(result);
+  });
+
+  app.post('/api/polls/:id/end', async (req, res) => {
+    const pollId = id.parse(req.params.id);
+    
+    const poll = await one(
+      'SELECT p.*, m.conversation_id, m.sender_id FROM polls p JOIN messages m ON m.id=p.message_id WHERE p.id=$1',
+      [pollId]
+    );
+
+    if (!poll) throw new HttpError(404, 'Poll not found');
+    await membership(req.user.id, poll.conversation_id);
+    
+    // Only creator or admin can end poll
+    const member = await one(
+      'SELECT is_admin FROM members WHERE conversation_id=$1 AND user_id=$2',
+      [poll.conversation_id, req.user.id]
+    );
+    if (poll.sender_id !== req.user.id && (!member || !member.is_admin)) {
+      throw new HttpError(403, 'Only the poll creator or group admin can end this poll');
+    }
+
+    await db.query('UPDATE polls SET ends_at=now() WHERE id=$1', [pollId]);
+    
+    res.json({ ok: true });
+  });
+
+  app.delete('/api/polls/:id', async (req, res) => {
+    const pollId = id.parse(req.params.id);
+    
+    const poll = await one(
+      'SELECT p.*, m.conversation_id, m.sender_id FROM polls p JOIN messages m ON m.id=p.message_id WHERE p.id=$1',
+      [pollId]
+    );
+
+    if (!poll) throw new HttpError(404, 'Poll not found');
+    await membership(req.user.id, poll.conversation_id);
+    
+    if (poll.sender_id !== req.user.id) {
+      throw new HttpError(403, 'Only the poll creator can delete this poll');
+    }
+
+    await transaction(async (c) => {
+      await c.query('DELETE FROM poll_votes WHERE poll_id=$1', [pollId]);
+      await c.query('DELETE FROM polls WHERE id=$1', [pollId]);
+      // Optionally delete the message too
+      await c.query('UPDATE messages SET deleted_at=now() WHERE id=$1', [poll.message_id]);
+    });
+
+    res.json({ ok: true });
+  });
+
+  // ========================================
+  // Cloud Backup Endpoints
+  // ========================================
+  app.get('/api/backups', async (req, res) => {
+    // Get list of backups for current user
+    const result = await db.query(
+      `SELECT id, user_id, provider, include_media, size, created_at, status
+       FROM chat_backups
+       WHERE user_id=$1
+       ORDER BY created_at DESC
+       LIMIT 50`,
+      [req.user.id]
+    );
+
+    res.json({ backups: result.rows });
+  });
+
+  app.get('/api/backups/settings', async (req, res) => {
+    const settings = await one(
+      `SELECT auto_backup, backup_frequency, include_media, backup_provider
+       FROM user_backup_settings
+       WHERE user_id=$1`,
+      [req.user.id]
+    );
+
+    res.json(settings || {
+      auto_backup: false,
+      backup_frequency: 'weekly',
+      include_media: true,
+      backup_provider: 'local',
+    });
+  });
+
+  app.put('/api/backups/settings', async (req, res) => {
+    const input = z.object({
+      auto_backup: z.boolean(),
+      backup_frequency: z.enum(['daily', 'weekly', 'monthly']),
+      include_media: z.boolean(),
+      backup_provider: z.enum(['local', 'google_drive', 'icloud']),
+    }).parse(req.body);
+
+    await db.query(
+      `INSERT INTO user_backup_settings(user_id, auto_backup, backup_frequency, include_media, backup_provider, updated_at)
+       VALUES($1, $2, $3, $4, $5, now())
+       ON CONFLICT(user_id) DO UPDATE SET
+         auto_backup=EXCLUDED.auto_backup,
+         backup_frequency=EXCLUDED.backup_frequency,
+         include_media=EXCLUDED.include_media,
+         backup_provider=EXCLUDED.backup_provider,
+         updated_at=now()`,
+      [req.user.id, input.auto_backup, input.backup_frequency, input.include_media, input.backup_provider]
+    );
+
+    res.json({ ok: true });
+  });
+
+  app.post('/api/backups/create', async (req, res) => {
+    await limit(`backup-create:${req.user.id}`, 5, 3600); // 5 backups per hour
+
+    const input = z.object({
+      include_media: z.boolean().default(true),
+      provider: z.enum(['local', 'google_drive', 'icloud']).default('local'),
+    }).parse(req.body);
+
+    const backupId = randomUUID();
+
+    // Get user's conversations
+    const conversations = (await db.query(
+      `SELECT c.*, array_agg(m.user_id) as member_ids
+       FROM conversations c
+       JOIN members m ON m.conversation_id=c.id
+       WHERE EXISTS(SELECT 1 FROM members WHERE conversation_id=c.id AND user_id=$1)
+         AND c.deleted_at IS NULL
+       GROUP BY c.id`,
+      [req.user.id]
+    )).rows;
+
+    // Get messages for each conversation
+    const backupData = {
+      version: '1.0',
+      user_id: req.user.id,
+      user_name: req.user.name,
+      user_handle: req.user.handle,
+      created_at: new Date().toISOString(),
+      conversations: [],
+    };
+
+    for (const conv of conversations) {
+      const messages = (await db.query(
+        `SELECT m.*, u.name as sender_name, u.handle as sender_handle,
+                a.name as attachment_name, a.mime as attachment_mime, a.size as attachment_size
+         FROM messages m
+         JOIN users u ON u.id=m.sender_id
+         LEFT JOIN attachments a ON a.id=m.attachment_id
+         WHERE m.conversation_id=$1 AND m.deleted_at IS NULL
+         ORDER BY m.created_at ASC`,
+        [conv.id]
+      )).rows;
+
+      backupData.conversations.push({
+        id: conv.id,
+        name: conv.name,
+        is_group: conv.direct_key === null,
+        created_at: conv.created_at,
+        member_count: conv.member_ids.length,
+        messages: messages.map(msg => ({
+          id: msg.id,
+          sender_name: msg.sender_name,
+          sender_handle: msg.sender_handle,
+          text: msg.text,
+          sticker: msg.sticker,
+          attachment: msg.attachment_id ? {
+            name: msg.attachment_name,
+            mime: msg.attachment_mime,
+            size: msg.attachment_size,
+          } : null,
+          created_at: msg.created_at,
+          edited_at: msg.edited_at,
+        })),
+      });
+    }
+
+    const backupJson = JSON.stringify(backupData, null, 2);
+    const backupSize = Buffer.byteLength(backupJson, 'utf8');
+
+    // Store backup metadata
+    await db.query(
+      `INSERT INTO chat_backups(id, user_id, provider, include_media, size, status, created_at)
+       VALUES($1, $2, $3, $4, $5, 'completed', now())`,
+      [backupId, req.user.id, input.provider, input.include_media, backupSize]
+    );
+
+    if (input.provider === 'local') {
+      // For local, we'll need to store the backup temporarily and allow download
+      // In a production app, you'd store this in S3 or similar
+      await redis.set(`backup:${backupId}`, backupJson, 'EX', 3600); // Store for 1 hour
+    }
+
+    res.json({ 
+      ok: true, 
+      id: backupId, 
+      size: backupSize,
+      provider: input.provider,
+    });
+  });
+
+  app.get('/api/backups/:id/download', async (req, res) => {
+    const backupId = id.parse(req.params.id);
+    
+    const backup = await one(
+      'SELECT * FROM chat_backups WHERE id=$1 AND user_id=$2',
+      [backupId, req.user.id]
+    );
+
+    if (!backup) throw new HttpError(404, 'Backup not found');
+
+    if (backup.provider === 'local') {
+      const backupData = await redis.get(`backup:${backupId}`);
+      if (!backupData) throw new HttpError(410, 'Backup expired. Please create a new backup.');
+
+      res.set({
+        'Content-Type': 'application/json',
+        'Content-Disposition': `attachment; filename="kipenzi-backup-${backup.created_at.toISOString().split('T')[0]}.json"`,
+      });
+      res.send(backupData);
+    } else {
+      throw new HttpError(501, 'Cloud provider downloads not yet implemented');
+    }
+  });
+
+  app.post('/api/backups/:id/restore', async (req, res) => {
+    const backupId = id.parse(req.params.id);
+    await limit(`backup-restore:${req.user.id}`, 2, 86400); // 2 restores per day
+
+    const backup = await one(
+      'SELECT * FROM chat_backups WHERE id=$1 AND user_id=$2',
+      [backupId, req.user.id]
+    );
+
+    if (!backup) throw new HttpError(404, 'Backup not found');
+
+    // TODO: Implement restore logic
+    // This is complex and would require:
+    // 1. Parse backup data
+    // 2. Match existing conversations or create new ones
+    // 3. Restore messages
+    // 4. Handle conflicts
+    
+    throw new HttpError(501, 'Backup restore feature is under development');
+  });
+
+  app.delete('/api/backups/:id', async (req, res) => {
+    const backupId = id.parse(req.params.id);
+
+    const backup = await one(
+      'SELECT * FROM chat_backups WHERE id=$1 AND user_id=$2',
+      [backupId, req.user.id]
+    );
+
+    if (!backup) throw new HttpError(404, 'Backup not found');
+
+    await db.query('DELETE FROM chat_backups WHERE id=$1', [backupId]);
+    
+    // Delete from Redis if exists
+    if (backup.provider === 'local') {
+      await redis.del(`backup:${backupId}`);
+    }
+
+    res.json({ ok: true });
+  });
+
   app.use('/api', (_req, _res, next) => next(new HttpError(404, 'API route not found.')));
   if (production) {
     app.use(express.static('dist'));

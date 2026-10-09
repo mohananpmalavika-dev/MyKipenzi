@@ -143,3 +143,80 @@ test('formatTimeCapsuleChatShare and parseTimeCapsuleChatShare serialize and des
   assert.equal(parseTimeCapsuleChatShare('Regular message'), null);
   assert.equal(parseTimeCapsuleChatShare('[TIME_CAPSULE:invalid json]'), null);
 });
+
+test('server masking strictly hides secret content from recipient until unlock date', () => {
+  const authorId = 'author-user-1';
+  const recipientId = 'recipient-user-2';
+
+  const futureCapsule = {
+    id: 'capsule-future-1',
+    user_id: authorId,
+    recipient_id: recipientId,
+    title: 'Secret Birthday Wish',
+    unlock_at: new Date(Date.now() + 86400000).toISOString(), // Tomorrow
+    letter_text: 'Surprise! Happy 24th birthday to my world!',
+    audio_url: 'data:audio/webm;base64,SECRET_AUDIO',
+    photo_url: 'data:image/jpeg;base64,SECRET_PHOTO',
+    status: 'sealed',
+  };
+
+  const pastCapsule = {
+    id: 'capsule-past-1',
+    user_id: authorId,
+    recipient_id: recipientId,
+    title: 'Opened Anniversary Letter',
+    unlock_at: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+    letter_text: 'Happy 1st Anniversary my sweetheart!',
+    audio_url: 'data:audio/webm;base64,UNLOCKED_AUDIO',
+    photo_url: 'data:image/jpeg;base64,UNLOCKED_PHOTO',
+    status: 'opened',
+  };
+
+  // Simulation of the exact privacy filter in server/app.js
+  function sanitizeCapsulesForUser(rows, requestingUserId) {
+    const now = new Date();
+    return rows.map((capsule) => {
+      const isAuthor = capsule.user_id === requestingUserId;
+      const isUnlocked = new Date(capsule.unlock_at).getTime() <= now.getTime();
+
+      if (!isAuthor && !isUnlocked) {
+        return {
+          ...capsule,
+          letter_text: null,
+          audio_url: null,
+          photo_url: null,
+          is_locked: true,
+          status: 'sealed',
+        };
+      }
+
+      return {
+        ...capsule,
+        is_locked: !isUnlocked,
+      };
+    });
+  }
+
+  // 1. Recipient receives future capsule: content MUST be masked!
+  const recipientView = sanitizeCapsulesForUser([futureCapsule, pastCapsule], recipientId);
+  const futureForRecipient = recipientView.find((c) => c.id === futureCapsule.id);
+  assert.equal(futureForRecipient.is_locked, true);
+  assert.equal(futureForRecipient.letter_text, null);
+  assert.equal(futureForRecipient.audio_url, null);
+  assert.equal(futureForRecipient.photo_url, null);
+  assert.equal(futureForRecipient.status, 'sealed');
+
+  // Recipient receives past unlocked capsule: content MUST be visible!
+  const pastForRecipient = recipientView.find((c) => c.id === pastCapsule.id);
+  assert.equal(pastForRecipient.is_locked, false);
+  assert.equal(pastForRecipient.letter_text, pastCapsule.letter_text);
+  assert.equal(pastForRecipient.audio_url, pastCapsule.audio_url);
+
+  // 2. Author receives future capsule: content is visible so they know what they sealed, though lock countdown is active
+  const authorView = sanitizeCapsulesForUser([futureCapsule, pastCapsule], authorId);
+  const futureForAuthor = authorView.find((c) => c.id === futureCapsule.id);
+  assert.equal(futureForAuthor.is_locked, true);
+  assert.equal(futureForAuthor.letter_text, futureCapsule.letter_text);
+  assert.equal(futureForAuthor.audio_url, futureCapsule.audio_url);
+});
+

@@ -1,0 +1,12 @@
+.capture-privacy-notice { flex-shrink:0; margin:8px 24px 0; border:1px solid var(--card-border); border-radius:11px; background:var(--bg-panel); font-size:11px; color:var(--text-muted); max-height:220px; overflow:auto; }
+.capture-privacy-notice summary { display:flex; align-items:center; gap:7px; cursor:pointer; padding:9px 12px; color:var(--green); }
+.capture-privacy-notice summary > span { margin-left:auto; color:var(--text-muted); font-size:10px; }
+.capture-privacy-notice > p { margin:0 12px 10px; line-height:1.7; }
+.capture-privacy-notice h4 { margin:10px 12px; display:flex; align-items:center; gap:6px; font-size:11px; }
+.capture-privacy-notice ul { list-style:none; margin:0; padding:0 12px 12px; }
+.capture-privacy-notice li { padding:9px 0; border-top:1px solid var(--line); }
+.capture-privacy-notice li p { font-size:11px; line-height:1.7; }
+.capture-privacy-notice time { display:block; margin-top:4px; font-size:10px; }
+.capture-privacy-notice button { text-decoration:underline; color:var(--green); }
+@media(max-width:600px) { .capture-privacy-notice { margin:6px 10px 0; } }
+@media print { .app-shell, .incoming-message-alert, .photo-viewer, .modal { visibility:hidden !important; } }

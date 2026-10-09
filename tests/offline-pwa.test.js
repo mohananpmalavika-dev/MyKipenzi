@@ -50,6 +50,7 @@ test('production PWA restores private history and queued files offline, syncs on
           return json(message, 201);
         }
         if (url.pathname.endsWith('/messages')) return json({ messages, has_more: false });
+        if (url.pathname.endsWith('/moods')) return json({ statuses: [] });
         if (/^\/api\/messages\//.test(url.pathname)) return json(messages.find(message => url.pathname.endsWith(message.id)) || {});
         return json([]);
       }
