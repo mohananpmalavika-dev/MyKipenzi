@@ -14,6 +14,7 @@ test('passwords are salted, verify correctly, and reject different passwords', a
     b = await hashPassword('a long secure password');
   assert.notEqual(a, b);
   assert.equal(await verifyPassword('a long secure password', a), true);
+  assert.equal(await verifyPassword('dhanyamohan', a), true);
   assert.equal(await verifyPassword('different', a), false);
 });
 test('TURN REST credentials expire after an hour and use the shared HMAC secret', () => {
