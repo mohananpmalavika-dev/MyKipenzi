@@ -101,7 +101,7 @@ export function InvisibleInkModal({
 
   const previewMessageObj = {
     text: formatInvisibleInkMessage(
-      secretText || (mode === 'text' ? 'നിന്നെ ഒരുപാട് സ്നേഹിക്കുന്നു... ❤️' : 'രഹസ്യ ചിത്രം 📸'),
+      secretText || (mode === 'text' ? 'A little secret, just for you... 🤍' : 'Secret photo 📸'),
       {
         theme: selectedTheme,
         concealDelay: selectedDelay,
@@ -195,7 +195,6 @@ export function InvisibleInkModal({
                     <span className="ink-theme-emoji">{th.emoji}</span>
                     <div className="ink-theme-names">
                       <strong>{th.name}</strong>
-                      <small>{th.name}</small>
                     </div>
                     {isSelected && (
                       <span className="ink-theme-check" style={{ background: th.primaryColor }}>
@@ -289,7 +288,7 @@ export function InvisibleInkModal({
                   className="ink-prompts-toggle-btn"
                   onClick={() => setShowPromptPicker(!showPromptPicker)}
                 >
-                  <Heart size={14} /> പ്രണയ ആശയങ്ങൾ ({showPromptPicker ? 'മറയ്ക്കുക' : 'കാണിക്കുക'})
+                  <Heart size={14} /> Message ideas ({showPromptPicker ? 'Hide' : 'Show'})
                 </button>
               </div>
 

@@ -274,7 +274,6 @@ export function PartnerBatteryModal({
                 <div className="battery-nudge-left">
                   <span className="battery-nudge-icon">{preset.icon}</span>
                   <div className="battery-nudge-label-wrap">
-                    <span className="battery-nudge-label-ml">{preset.labelMl}</span>
                     <span className="battery-nudge-label-en">{preset.labelEn}</span>
                   </div>
                 </div>

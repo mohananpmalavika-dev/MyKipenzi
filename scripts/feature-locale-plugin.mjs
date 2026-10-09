@@ -50,7 +50,11 @@ export default function featureLocalePlugin({ types: t }) {
       },
       JSXAttribute(path, state) {
         if (!state.featureLocale || !['title', 'aria-label', 'placeholder', 'alt', 'label'].includes(path.node.name.name)) return;
-        if (t.isStringLiteral(path.node.value)) path.node.value.value = featureText(path.node.value.value);
+        if (t.isStringLiteral(path.node.value)) {
+          // Use a JavaScript string expression so emoji escapes are interpreted, not shown literally.
+          const english = featureText(path.node.value.value);
+          if (english !== path.node.value.value) path.node.value = t.jsxExpressionContainer(t.stringLiteral(english));
+        }
       },
     },
   };

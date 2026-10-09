@@ -22,4 +22,4 @@ npx playwright test --config tests/friendship-check.config.js
 npm run build
 ```
 
-Browser checks use mocked messages and sockets to validate receiver-language rendering, source preservation, feature search, activity launch, deleted-message privacy, mobile layout, account screens, and dark mode. They do not verify live provider translations or real two-device calls.
+Browser checks use mocked messages and sockets to validate an English interface for every receive language, translated chat with its sender original, English invisible-ink controls, feature search, activity launch, deleted-message privacy, mobile layout, account screens, and dark mode. They do not verify live provider translations or real two-device calls.

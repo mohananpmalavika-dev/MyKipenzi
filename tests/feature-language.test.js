@@ -43,3 +43,10 @@ test('interface transform normalizes labels across the shell while preserving us
   assert.match(shell, /KipenziFeatureText/);
   assert.doesNotMatch(shell, /KipenziFeatureText value=\{message.text/);
 });
+
+test('English placeholders retain emoji as string expressions, avoiding visible Unicode escape text', () => {
+  const transformed = transformSync('<textarea placeholder="എന്താണ് ആ രഹസ്യം? സ്നേഹവാക്കുകൾ ഇവിടെ കുറിക്കൂ... 💌" />', { filename: 'C:/MyKipenzi/src/InvisibleInkModal.jsx', plugins: [plugin], parserOpts: { plugins: ['jsx'] }, configFile: false, babelrc: false }).code;
+  assert.match(transformed, /placeholder=\{/);
+  assert.match(transformed, /What's the secret/);
+  assert.doesNotMatch(transformed, /placeholder="/);
+});

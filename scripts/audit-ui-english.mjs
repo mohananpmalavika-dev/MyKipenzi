@@ -14,6 +14,10 @@ for (const file of (await readdir('src')).filter(file => file.endsWith('.jsx')))
   catch { continue; }
   traverse(tree, {
     JSXText(path) { inspect(path.node.value, file); },
+    JSXExpressionContainer(path) {
+      if (path.parent.type === 'JSXAttribute') return;
+      path.traverse({ StringLiteral(child) { inspect(child.node.value, file); } });
+    },
     JSXAttribute(path) {
       if (['title', 'aria-label', 'placeholder', 'alt', 'label'].includes(path.node.name.name) && path.node.value?.type === 'StringLiteral') inspect(path.node.value.value, file);
     },

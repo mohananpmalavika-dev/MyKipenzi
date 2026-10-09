@@ -63,6 +63,7 @@ test('invisible-ink controls and theme menus are English while the actual secret
   const modal = page.getByRole('dialog', { name: 'Invisible Ink Message Studio' });
   await expect(modal).toBeVisible();
   await expect(modal).not.toContainText(/[\u0d00-\u0d7f]/);
+  await expect(modal.locator('textarea')).toHaveAttribute('placeholder', "What's the secret? Write your message here... 💌");
   await page.screenshot({ path: `${artifacts}/english-invisible-ink-menu.png` });
 });
 
