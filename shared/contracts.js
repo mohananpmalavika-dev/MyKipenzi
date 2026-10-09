@@ -4,24 +4,58 @@ export { languages, stickers, stickerCategories };
 export const id = z.string().uuid();
 export const language = z.enum(['en', 'ml', 'manglish', 'sw']);
 export const targetLanguage = z.enum(['en', 'ml', 'manglish', 'sw', 'transcript']);
-export const registration = z.object({
-  handle: z.string().regex(/^[a-z0-9_]{3,30}$/),
-  name: z.string().trim().min(1).max(80),
-  email: z
-    .email()
-    .max(254)
-    .transform((v) => v.toLowerCase()),
-  password: z.string().min(12).max(128),
-  language: language.default('en'),
-  ai_consent: z.boolean().default(false),
-});
-export const login = z.object({
-  email: z
-    .email()
-    .max(254)
-    .transform((v) => v.toLowerCase()),
-  password: z.string().max(128),
-});
+export const registration = z
+  .object({
+    username: z.string().regex(/^[a-zA-Z0-9_]{3,30}$/).optional(),
+    handle: z.string().regex(/^[a-zA-Z0-9_]{3,30}$/).optional(),
+    name: z.string().trim().min(1).max(80).optional(),
+    email: z
+      .string()
+      .trim()
+      .max(254)
+      .optional()
+      .refine((v) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), {
+        message: 'Invalid email address',
+      }),
+    password: z.string().min(12).max(128),
+    language: language.default('en'),
+    ai_consent: z.boolean().default(false),
+  })
+  .refine((v) => Boolean(v.handle || v.username), {
+    message: 'Username is required',
+  })
+  .transform((v) => {
+    const rawHandle = (v.username || v.handle || '').toLowerCase();
+    const handle = rawHandle;
+    const name = v.name || v.username || v.handle || rawHandle;
+    const email = v.email ? v.email.toLowerCase() : `${rawHandle}@kipenzi.local`;
+    return {
+      handle,
+      name,
+      email,
+      password: v.password,
+      language: v.language || 'en',
+      ai_consent: Boolean(v.ai_consent),
+    };
+  });
+export const login = z
+  .object({
+    email: z.string().max(254).optional(),
+    username: z.string().max(254).optional(),
+    account: z.string().max(254).optional(),
+    password: z.string().max(128),
+  })
+  .refine((v) => Boolean((v.account && v.account.trim()) || (v.username && v.username.trim()) || (v.email && v.email.trim())), {
+    message: 'Username or email is required',
+  })
+  .transform((v) => {
+    const raw = (v.account || v.username || v.email || '').trim().toLowerCase();
+    return {
+      account: raw,
+      email: raw,
+      password: v.password,
+    };
+  });
 export const profile = z.object({
   name: z.string().trim().min(1).max(80),
   language,

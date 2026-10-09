@@ -18,6 +18,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { ButtonIcon, Avatar } from './components.jsx';
+import { useFeatureLanguage } from './FriendshipLocale.jsx';
 
 // Curated trivia question presets
 const TRIVIA_PRESETS = [
@@ -161,6 +162,7 @@ export function CoupleGamesModal({
   onSendToChat,
   isCallMode = false,
 }) {
+  const { t } = useFeatureLanguage();
   const [activeTab, setActiveTab] = useState('trivia'); // 'trivia' | 'truthdare' | 'wouldyourather'
   const [soundEnabled, setSoundEnabled] = useState(true);
 
@@ -175,7 +177,6 @@ export function CoupleGamesModal({
   const [tdCategory, setTdCategory] = useState('romantic');
   const [currentPrompt, setCurrentPrompt] = useState(TRUTH_PROMPTS[0]);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [completedPrompts, setCompletedPrompts] = useState([]);
 
   // Would You Rather state
   const [wyrIndex, setWyrIndex] = useState(0);
@@ -490,7 +491,7 @@ export function CoupleGamesModal({
                       disabled={isRevealed}
                     >
                       <span className="option-letter">{String.fromCharCode(65 + optIdx)}</span>
-                      <span className="option-text">{opt}</span>
+                      <span className="option-text">{t(opt)}</span>
                       {isRevealed && isCorrect && <CheckCircle2 size={16} className="correct-mark" />}
                     </button>
                   );

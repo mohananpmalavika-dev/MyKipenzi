@@ -64,6 +64,9 @@ async function translation(data) {
       await conversationEvent(c, m.conversation_id, 'message:changed', {
         conversation_id: m.conversation_id,
         message_id,
+        translations: Object.fromEntries(
+          Object.entries(results).map(([k, v]) => [k, { status: 'ready', text: v, language: k }]),
+        ),
       });
     });
     return;
@@ -88,6 +91,7 @@ async function translation(data) {
     await conversationEvent(c, m.conversation_id, 'message:changed', {
       conversation_id: m.conversation_id,
       message_id,
+      translation: { language, status: 'ready', text },
     });
   });
 }

@@ -6,7 +6,7 @@ export const mediaId = '44444444-4444-4444-8444-444444444444';
 export const alertId = '55555555-5555-4555-8555-555555555555';
 const pixel = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
 export async function setupPrivacy(page, options = {}) {
-  const user = { id: me, name: 'Dhanya', handle: 'dhanya', language: 'en', ai_consent: false };
+  const user = { id: me, name: 'Dhanya', handle: 'dhanya', language: options.language || 'en', ai_consent: false };
   const reports = [], history = [];
   let conversationReads = 0, socket;
   await page.routeWebSocket('**/socket.io/**', ws => {
@@ -29,7 +29,7 @@ export async function setupPrivacy(page, options = {}) {
       id: mediaId, conversation_id: cid, sender_id: peer, sender: { id: peer, name: 'My Person' }, client_id: mediaId, seq: '1',
       text: '', source_language: 'en', created_at: new Date().toISOString(), view_once: true,
       attachment: { id: mediaId, mime: 'image/png', name: 'private.png', size: 100 },
-    }] : [], has_more: false };
+    }] : options.messages || [], has_more: false };
     else if (p.endsWith('/view-once')) return route.fulfill({ body: Buffer.from(pixel, 'base64'), contentType: 'image/png' });
     else if (p.endsWith('/capture-alerts')) {
       if (route.request().method() === 'POST') {

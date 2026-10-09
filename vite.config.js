@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import featureLocalePlugin from './scripts/feature-locale-plugin.mjs';
 
 function offlinePwa() {
   const modules = ['offline-store.js', 'offline-sync.js', 'lockPrivacy.js'];
@@ -27,7 +28,7 @@ function offlinePwa() {
   };
 }
 export default defineConfig({
-  plugins: [react(), offlinePwa()],
+  plugins: [react({ babel: { plugins: [featureLocalePlugin] } }), offlinePwa()],
   server: {
     proxy: {
       '/api': 'http://127.0.0.1:3001',

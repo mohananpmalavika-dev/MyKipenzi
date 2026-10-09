@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { db, one, transaction } from './db.js';
 import { HttpError } from './security.js';
 import { config } from './config.js';
+import { getCachedTranslation } from './providers.js';
 export async function membership(userId, conversationId, client = db) {
   if (
     !(await one(
@@ -26,10 +27,25 @@ export async function ensureReaderTranslations(user, messages) {
   if (!missing.length) return;
   await transaction(async c => {
     for (const m of missing) {
-      const result = await c.query('INSERT INTO translations(message_id,language) SELECT m.id,$2 FROM messages m JOIN users u ON u.id=m.sender_id WHERE m.id=$1 AND u.ai_consent AND m.deleted_at IS NULL ON CONFLICT DO NOTHING RETURNING message_id', [m.id, user.language]);
-      if (result.rowCount) {
-        await enqueue(c, 'translate', { message_id: m.id, language: user.language, requester_id: user.id });
-        m.translation = { language: user.language, status: 'pending', text: null };
+      const trimmed = (m.text || '').trim();
+      const isTargetMalayalam = user.language === 'ml';
+      const isPureMalayalam = isTargetMalayalam && /\p{sc=Malayalam}/u.test(trimmed) && !/[a-zA-Z]/.test(trimmed);
+      const isPureEmojiOrSymbols = !/[a-zA-Z]/i.test(trimmed) && !/\p{sc=Malayalam}/u.test(trimmed);
+      const isSame = m.source_language === user.language || isPureMalayalam || isPureEmojiOrSymbols;
+      const cached = !m.attachment && !isSame ? getCachedTranslation(m.text, m.source_language, user.language) : null;
+
+      if (isSame || cached) {
+        const readyText = isSame ? m.text : cached;
+        const result = await c.query("INSERT INTO translations(message_id,language,status,text) SELECT m.id,$2,'ready',$3 FROM messages m JOIN users u ON u.id=m.sender_id WHERE m.id=$1 AND u.ai_consent AND m.deleted_at IS NULL ON CONFLICT(message_id,language) DO UPDATE SET status='ready',text=EXCLUDED.text RETURNING message_id", [m.id, user.language, readyText]);
+        if (result.rowCount) {
+          m.translation = { language: user.language, status: 'ready', text: readyText };
+        }
+      } else {
+        const result = await c.query('INSERT INTO translations(message_id,language) SELECT m.id,$2 FROM messages m JOIN users u ON u.id=m.sender_id WHERE m.id=$1 AND u.ai_consent AND m.deleted_at IS NULL ON CONFLICT DO NOTHING RETURNING message_id', [m.id, user.language]);
+        if (result.rowCount) {
+          await enqueue(c, 'translate', { message_id: m.id, language: user.language, requester_id: user.id });
+          m.translation = { language: user.language, status: 'pending', text: null };
+        }
       }
     }
   });
@@ -163,11 +179,27 @@ export async function sendMessage(user, input, conversationId, client) {
         )
       ).rows;
       for (const { requester_ids, language } of recipients) {
-        await c.query('INSERT INTO translations(message_id,language) VALUES($1,$2)', [
-          m.id,
-          language,
-        ]);
-        await enqueue(c, 'translate', { message_id: m.id, language, requester_ids });
+        const trimmed = (m.text || '').trim();
+        const isTargetMalayalam = language === 'ml';
+        const isPureMalayalam = isTargetMalayalam && /\p{sc=Malayalam}/u.test(trimmed) && !/[a-zA-Z]/.test(trimmed);
+        const isPureEmojiOrSymbols = !/[a-zA-Z]/i.test(trimmed) && !/\p{sc=Malayalam}/u.test(trimmed);
+        const isSame = m.source_language === language || isPureMalayalam || isPureEmojiOrSymbols;
+        const cached = !isVoiceNote && !isSame ? getCachedTranslation(m.text, m.source_language, language) : null;
+
+        if (isSame || cached) {
+          const readyText = isSame ? m.text : cached;
+          await c.query("INSERT INTO translations(message_id,language,status,text) VALUES($1,$2,'ready',$3) ON CONFLICT(message_id,language) DO UPDATE SET status='ready',text=EXCLUDED.text", [
+            m.id,
+            language,
+            readyText,
+          ]);
+        } else {
+          await c.query('INSERT INTO translations(message_id,language) VALUES($1,$2) ON CONFLICT DO NOTHING', [
+            m.id,
+            language,
+          ]);
+          await enqueue(c, 'translate', { message_id: m.id, language, requester_ids });
+        }
       }
     }
     await conversationEvent(c, conversationId, 'message:changed', {

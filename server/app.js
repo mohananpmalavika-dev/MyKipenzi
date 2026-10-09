@@ -177,6 +177,13 @@ export function createApp(io) {
     if (!config.ALLOW_REGISTRATION) throw new HttpError(403, 'Registration is closed.');
     await limit(`auth:${req.ip}`, 10, 900);
     const input = registration.parse(req.body);
+    const existing = await one(
+      'SELECT id FROM users WHERE lower(handle)=$1 OR lower(email)=$2',
+      [input.handle.toLowerCase(), input.email.toLowerCase()],
+    );
+    if (existing) {
+      throw new HttpError(409, 'Username is already taken.');
+    }
     const user = await one(
       'INSERT INTO users(id,handle,name,email,password_hash,language,ai_consent) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *',
       [
@@ -195,10 +202,11 @@ export function createApp(io) {
   app.post('/api/auth/login', async (req, res) => {
     await limit(`auth:${req.ip}`, 10, 900);
     const input = login.parse(req.body);
-    const user = await one('SELECT * FROM users WHERE email=$1', [input.email]);
+    const identifier = (input.account || input.email || '').toLowerCase();
+    const user = await one('SELECT * FROM users WHERE lower(email)=$1 OR lower(handle)=$1', [identifier]);
     const dummy = 'scrypt:00000000000000000000000000000000:' + '00'.repeat(64);
     if (!(await verifyPassword(input.password, user?.password_hash || dummy)) || !user)
-      throw new HttpError(401, 'Email or password is incorrect.');
+      throw new HttpError(401, 'Username, email or password is incorrect.');
     const csrf = await issueSession(res, user.id);
     res.json({ user: publicUser(user), csrf });
   });

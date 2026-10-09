@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FeatureDirectory, FriendshipDock, TogetherExplorer } from './FriendshipSpace.jsx';
+import { FeatureLocaleProvider } from './FriendshipLocale.jsx';
 import { io } from 'socket.io-client';
 import { MessageThread } from './MessageThread.jsx';
 import { useDraftManager } from './useDraftManager.js';
@@ -167,7 +168,7 @@ function Auth({ capabilities, onSession, onError }) {
     try {
       const result = await api(`/auth/${register ? 'register' : 'login'}`, {
         method: 'POST',
-        body: register ? { ...values, ai_consent: values.ai_consent === 'on' } : values,
+        body: register ? { username: (values.username || values.handle || '').trim(), password: values.password } : { account: (values.account || values.email || values.username || '').trim(), password: values.password },
       });
       onSession(result);
     } catch (e) {
@@ -243,73 +244,54 @@ function Auth({ capabilities, onSession, onError }) {
               : 'Your favorite conversations are waiting. Come on in.'}
           </p>
           <form onSubmit={submit}>
-            {register && (
+            {register ? (
               <>
                 <label>
-                  Your name
+                  Username
                   <input
-                    name="name"
-                    autoComplete="name"
-                    placeholder="What does your bestie call you?"
+                    name="username"
+                    autoComplete="username"
+                    placeholder="e.g. sweetheart or alex"
+                    pattern="[a-zA-Z0-9_]{3,30}"
+                    title="3–30 letters, numbers, or underscores"
                     required
-                    maxLength={80}
                   />
                 </label>
                 <label>
-                  Unique handle
+                  Password
                   <input
-                    name="handle"
-                    autoComplete="username"
-                    placeholder="e.g. bestie_nickname"
-                    pattern="[a-z0-9_]{3,30}"
-                    title="3–30 lowercase letters, digits or underscores"
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="At least 12 characters"
+                    minLength={12}
+                    maxLength={128}
                     required
                   />
                 </label>
               </>
-            )}
-            <label>
-              Email address
-              <input
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="you@example.com"
-                required
-              />
-            </label>
-            <label>
-              Password
-              <input
-                name="password"
-                type="password"
-                autoComplete={register ? 'new-password' : 'current-password'}
-                placeholder={register ? 'At least 12 characters (keep our secrets safe)' : 'Your secret password'}
-                minLength={register ? 12 : undefined}
-                maxLength={128}
-                required
-              />
-            </label>
-            {register && (
+            ) : (
               <>
                 <label>
-                  I’d like to read messages in
-                  <select name="language" defaultValue="en">
-                    {Object.entries(languages).map(([v, label]) => (
-                      <option key={v} value={v}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
+                  Username or Email
+                  <input
+                    name="account"
+                    type="text"
+                    autoComplete="username"
+                    placeholder="Enter your username or email"
+                    required
+                  />
                 </label>
-                <label className="check-label">
-                  <input type="checkbox" name="ai_consent" />
-                  <span>
-                    Enable AI translation and voice reading
-                    <small>
-                      Allow your messages to be processed by AI providers for translation and voice features. You can change this in Settings.
-                    </small>
-                  </span>
+                <label>
+                  Password
+                  <input
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    placeholder="Your password"
+                    maxLength={128}
+                    required
+                  />
                 </label>
               </>
             )}
@@ -620,20 +602,48 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
         onError(e.message);
       }
     };
-    const changed = async ({ conversation_id, message_id }) => {
+    const changed = async (payload = {}) => {
+      const { conversation_id, message_id, translation, receiver_translation, translations } = payload;
       try {
-        await loadConversations();
-        if (selectedRef.current === conversation_id) await loadMessages(conversation_id);
-        if (message_id) {
-          if (selectedRef.current === conversation_id) {
+        if (message_id && selectedRef.current === conversation_id && (translation || translations || receiver_translation)) {
+          setMessages(old => old.map(m => {
+            if (m.id !== message_id) return m;
+            const updatedTranslations = {
+              ...m.translations,
+              ...(translations || (translation ? { [translation.language]: translation } : {})),
+            };
+            const isMine = m.sender_id === user.id;
+            const myTranslation = (!isMine && translation?.language === user.language)
+              ? translation
+              : (!isMine && translations?.[user.language])
+                ? translations[user.language]
+                : m.translation;
+            const myReceiverTranslation = isMine && (receiver_translation || translation)
+              ? (receiver_translation || translation)
+              : m.receiver_translation;
+            return {
+              ...m,
+              translations: updatedTranslations,
+              translation: myTranslation,
+              receiver_translation: myReceiverTranslation,
+            };
+          }));
+        }
+
+        const updateSingleMessage = async () => {
+          if (message_id && selectedRef.current === conversation_id) {
             const updated = await api(`/messages/${message_id}`);
             if (selectedRef.current === conversation_id) {
               const parent = updated.reply_to_id ? await api(`/messages/${updated.reply_to_id}`).catch(() => null) : null;
               if (selectedRef.current === conversation_id) setMessages(old => mergeMessages(old, parent ? [updated, parent] : [updated]));
             }
+            void updateAlert(message_id);
           }
-          void updateAlert(message_id);
-        }
+        };
+
+        const updatePromise = updateSingleMessage();
+        void loadConversations();
+        await updatePromise;
       } catch (e) {
         onError(e.message);
       }
@@ -1394,6 +1404,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
   ];
 
   return (
+    <FeatureLocaleProvider language={user.language}>
     <CaptureGuard conversationId={selected} user={user} active={!!chosen && !chosen.is_group && !chosen.contact_blocked && !isStealthDisguised}>
     <>
       <ReactionOverlay reaction={reaction} onDone={() => setReaction(null)} />
@@ -2085,11 +2096,10 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
                       )}
                       <div className="conversation-start">
                         <span>
-                          <ShieldCheck size={14} /> Our Private Sanctuary · Just the two of us
+                          <HeartHandshake size={14} /> A little space for your friendship
                         </span>
                         <p>
-                          No filters, no secrets, no judgments. Just you and me against the whole
-                          world. Tell me everything.
+                          Big news, tiny victories, or a simple hello. Start wherever you are.
                         </p>
                       </div>
                       {messages.map((m, i) => (
@@ -3257,6 +3267,7 @@ function Chat({ session, capabilities, onSession, onError, themeControls }) {
       </div>
     </>
     </CaptureGuard>
+    </FeatureLocaleProvider>
   );
 }
 function AppNotice({ text, onDismiss }) {

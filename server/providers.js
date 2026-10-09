@@ -38,6 +38,13 @@ export async function providerFetch(url, options = {}) {
     );
   return response;
 }
+export function getCachedTranslation(text, source, target) {
+  const trimmed = (text || '').trim();
+  if (!trimmed) return '';
+  const cacheKey = `trans:${source}:${target}:${createHash('sha256').update(trimmed).digest('hex')}`;
+  return getCached(cacheKey);
+}
+
 export async function translateText(text, source, target) {
   if (!config.GEMINI_API_KEY) throw new HttpError(503, 'Translation is not configured.');
   const trimmed = (text || '').trim();
@@ -47,7 +54,7 @@ export async function translateText(text, source, target) {
   const memoryHit = getCached(cacheKey);
   if (memoryHit) return memoryHit;
 
-  const maxTokens = Math.min(2048, Math.max(256, Math.ceil(trimmed.length * 4)));
+  const maxTokens = Math.min(1024, Math.max(128, Math.ceil(trimmed.length * 3)));
   const response = await providerFetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.GEMINI_MODEL)}:generateContent`,
     {

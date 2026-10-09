@@ -1,0 +1,6086 @@
+{
+  "ഭാവം / മൂഡ് തിരഞ്ഞെടുക്കുക (Select Emotion & Tone)": {
+    "en": "Select Emotion & Tone",
+    "ml": "ഭാവം / മൂഡ് തിരഞ്ഞെടുക്കുക"
+  },
+  "Select Emotion & Tone": {
+    "en": "Select Emotion & Tone",
+    "ml": "ഭാവം / മൂഡ് തിരഞ്ഞെടുക്കുക"
+  },
+  "ഭാവം / മൂഡ് തിരഞ്ഞെടുക്കുക": {
+    "en": "Select Emotion & Tone",
+    "ml": "ഭാവം / മൂഡ് തിരഞ്ഞെടുക്കുക"
+  },
+  "ഭാഷ (Language):": {
+    "en": "Language",
+    "ml": "ഭാഷ:"
+  },
+  "Language": {
+    "en": "Language",
+    "ml": "ഭാഷ:"
+  },
+  "ഭാഷ:": {
+    "en": "Language",
+    "ml": "ഭാഷ:"
+  },
+  "ശൈലി (Style):": {
+    "en": "Style",
+    "ml": "ശൈലി:"
+  },
+  "Style": {
+    "en": "Style",
+    "ml": "ശൈലി:"
+  },
+  "ശൈലി:": {
+    "en": "Style",
+    "ml": "ശൈലി:"
+  },
+  "കുഞ്ഞു വരികൾ (Short)": {
+    "en": "Short",
+    "ml": "കുഞ്ഞു വരികൾ"
+  },
+  "Short": {
+    "en": "Short",
+    "ml": "കുഞ്ഞു വരികൾ"
+  },
+  "കുഞ്ഞു വരികൾ": {
+    "en": "Short",
+    "ml": "കുഞ്ഞു വരികൾ"
+  },
+  "കവിതാ ശൈലി (Poetic)": {
+    "en": "Poetic",
+    "ml": "കവിതാ ശൈലി"
+  },
+  "Poetic": {
+    "en": "Poetic",
+    "ml": "കവിതാ ശൈലി"
+  },
+  "കവിതാ ശൈലി": {
+    "en": "Poetic",
+    "ml": "കവിതാ ശൈലി"
+  },
+  "പ്രണയലേഖനം (Letter)": {
+    "en": "Letter",
+    "ml": "പ്രണയലേഖനം"
+  },
+  "Letter": {
+    "en": "Letter",
+    "ml": "പ്രണയലേഖനം"
+  },
+  "പ്രണയലേഖനം": {
+    "en": "Letter",
+    "ml": "പ്രണയലേഖനം"
+  },
+  "പ്രചോദനം (Quick Sparks):": {
+    "en": "Quick Sparks",
+    "ml": "പ്രചോദനം:"
+  },
+  "Quick Sparks": {
+    "en": "Quick Sparks",
+    "ml": "പ്രചോദനം:"
+  },
+  "പ്രചോദനം:": {
+    "en": "Quick Sparks",
+    "ml": "പ്രചോദനം:"
+  },
+  "വരികൾ മിനുക്കുന്നു... (Polishing Words)": {
+    "en": "Polishing Words",
+    "ml": "വരികൾ മിനുക്കുന്നു..."
+  },
+  "Polishing Words": {
+    "en": "Polishing Words",
+    "ml": "വരികൾ മിനുക്കുന്നു..."
+  },
+  "വരികൾ മിനുക്കുന്നു...": {
+    "en": "Polishing Words",
+    "ml": "വരികൾ മിനുക്കുന്നു..."
+  },
+  "വീണ്ടും മിനുക്കൂ (Polish Again)": {
+    "en": "Polish Again",
+    "ml": "വീണ്ടും മിനുക്കൂ"
+  },
+  "Polish Again": {
+    "en": "Polish Again",
+    "ml": "വീണ്ടും മിനുക്കൂ"
+  },
+  "വീണ്ടും മിനുക്കൂ": {
+    "en": "Polish Again",
+    "ml": "വീണ്ടും മിനുക്കൂ"
+  },
+  "മിനുക്കി എടുക്കൂ ✨ (Generate & Polish)": {
+    "en": "Generate & Polish",
+    "ml": "മിനുക്കി എടുക്കൂ ✨"
+  },
+  "Generate & Polish": {
+    "en": "Generate & Polish",
+    "ml": "മിനുക്കി എടുക്കൂ ✨"
+  },
+  "മിനുക്കി എടുക്കൂ ✨": {
+    "en": "Generate & Polish",
+    "ml": "മിനുക്കി എടുക്കൂ ✨"
+  },
+  "മറ്റൊരു വരി കാണുക (Generate another)": {
+    "en": "Generate another",
+    "ml": "മറ്റൊരു വരി കാണുക"
+  },
+  "Generate another": {
+    "en": "Generate another",
+    "ml": "മറ്റൊരു വരി കാണുക"
+  },
+  "മറ്റൊരു വരി കാണുക": {
+    "en": "Generate another",
+    "ml": "മറ്റൊരു വരി കാണുക"
+  },
+  "പകർത്തി! (Copied)": {
+    "en": "Copied",
+    "ml": "പകർത്തി!"
+  },
+  "Copied": {
+    "en": "Copied",
+    "ml": "പകർത്തി!"
+  },
+  "പകർത്തി!": {
+    "en": "Copied",
+    "ml": "പകർത്തി!"
+  },
+  "പകർത്തുക (Copy)": {
+    "en": "Copy",
+    "ml": "പകർത്തുക"
+  },
+  "Copy": {
+    "en": "Copy",
+    "ml": "പകർത്തുക"
+  },
+  "പകർത്തുക": {
+    "en": "Copy",
+    "ml": "പകർത്തുക"
+  },
+  "ചാറ്റിലേക്ക് ചേർക്കുക (Apply to Chat)": {
+    "en": "Apply to Chat",
+    "ml": "ചാറ്റിലേക്ക് ചേർക്കുക"
+  },
+  "Apply to Chat": {
+    "en": "Apply to Chat",
+    "ml": "ചാറ്റിലേക്ക് ചേർക്കുക"
+  },
+  "ചാറ്റിലേക്ക് ചേർക്കുക": {
+    "en": "Apply to Chat",
+    "ml": "ചാറ്റിലേക്ക് ചേർക്കുക"
+  },
+  "നേരിട്ട് അയക്കുക (Send)": {
+    "en": "Send",
+    "ml": "നേരിട്ട് അയക്കുക"
+  },
+  "Send": {
+    "en": "Send",
+    "ml": "നേരിട്ട് അയക്കുക"
+  },
+  "നേരിട്ട് അയക്കുക": {
+    "en": "Send",
+    "ml": "നേരിട്ട് അയക്കുക"
+  },
+  "Switch to light theme (ലൈറ്റ്)": {
+    "en": "Switch to light theme",
+    "ml": "ലൈറ്റ്"
+  },
+  "Switch to light theme": {
+    "en": "Switch to light theme",
+    "ml": "ലൈറ്റ്"
+  },
+  "ലൈറ്റ്": {
+    "en": "Switch to light theme",
+    "ml": "ലൈറ്റ്"
+  },
+  "Switch to dark theme (ഡാർക്ക്)": {
+    "en": "Switch to dark theme",
+    "ml": "ഡാർക്ക്"
+  },
+  "Switch to dark theme": {
+    "en": "Switch to dark theme",
+    "ml": "ഡാർക്ക്"
+  },
+  "ഡാർക്ക്": {
+    "en": "Switch to dark theme",
+    "ml": "ഡാർക്ക്"
+  },
+  "is inviting you to Live Doodle! (തത്സമയം ഒന്നിച്ച് ചിത്രം വരയ്ക്കാം 🤍)": {
+    "en": "is inviting you to Live Doodle!",
+    "ml": "തത്സമയം ഒന്നിച്ച് ചിത്രം വരയ്ക്കാം 🤍"
+  },
+  "is inviting you to Live Doodle!": {
+    "en": "is inviting you to Live Doodle!",
+    "ml": "തത്സമയം ഒന്നിച്ച് ചിത്രം വരയ്ക്കാം 🤍"
+  },
+  "തത്സമയം ഒന്നിച്ച് ചിത്രം വരയ്ക്കാം 🤍": {
+    "en": "is inviting you to Live Doodle!",
+    "ml": "തത്സമയം ഒന്നിച്ച് ചിത്രം വരയ്ക്കാം 🤍"
+  },
+  "is sending their live heartbeat! (ലൈവ് ഹൃദയമിടിപ്പ് അയക്കുന്നു · സ്പർശിക്കാൻ തൊടൂ)": {
+    "en": "is sending their live heartbeat!",
+    "ml": "ലൈവ് ഹൃദയമിടിപ്പ് അയക്കുന്നു · സ്പർശിക്കാൻ തൊടൂ"
+  },
+  "is sending their live heartbeat!": {
+    "en": "is sending their live heartbeat!",
+    "ml": "ലൈവ് ഹൃദയമിടിപ്പ് അയക്കുന്നു · സ്പർശിക്കാൻ തൊടൂ"
+  },
+  "ലൈവ് ഹൃദയമിടിപ്പ് അയക്കുന്നു · സ്പർശിക്കാൻ തൊടൂ": {
+    "en": "is sending their live heartbeat!",
+    "ml": "ലൈവ് ഹൃദയമിടിപ്പ് അയക്കുന്നു · സ്പർശിക്കാൻ തൊടൂ"
+  },
+  "is touching the screen! (തത്സമയ സ്പർശനം അയക്കുന്നു · സ്പർശിക്കാൻ തൊടൂ)": {
+    "en": "is touching the screen!",
+    "ml": "തത്സമയ സ്പർശനം അയക്കുന്നു · സ്പർശിക്കാൻ തൊടൂ"
+  },
+  "is touching the screen!": {
+    "en": "is touching the screen!",
+    "ml": "തത്സമയ സ്പർശനം അയക്കുന്നു · സ്പർശിക്കാൻ തൊടൂ"
+  },
+  "തത്സമയ സ്പർശനം അയക്കുന്നു · സ്പർശിക്കാൻ തൊടൂ": {
+    "en": "is touching the screen!",
+    "ml": "തത്സമയ സ്പർശനം അയക്കുന്നു · സ്പർശിക്കാൻ തൊടൂ"
+  },
+  "answered today's “Us” Prompt! (ഇന്നത്തെ ചോദ്യത്തിന് ഉത്തരം നൽകി · തുറക്കാൻ നിങ്ങളുടെ ഉത്തരം എഴുതൂ 🔒)": {
+    "en": "answered today's “Us” Prompt!",
+    "ml": "ഇന്നത്തെ ചോദ്യത്തിന് ഉത്തരം നൽകി · തുറക്കാൻ നിങ്ങളുടെ ഉത്തരം എഴുതൂ 🔒"
+  },
+  "answered today's “Us” Prompt!": {
+    "en": "answered today's “Us” Prompt!",
+    "ml": "ഇന്നത്തെ ചോദ്യത്തിന് ഉത്തരം നൽകി · തുറക്കാൻ നിങ്ങളുടെ ഉത്തരം എഴുതൂ 🔒"
+  },
+  "ഇന്നത്തെ ചോദ്യത്തിന് ഉത്തരം നൽകി · തുറക്കാൻ നിങ്ങളുടെ ഉത്തരം എഴുതൂ 🔒": {
+    "en": "answered today's “Us” Prompt!",
+    "ml": "ഇന്നത്തെ ചോദ്യത്തിന് ഉത്തരം നൽകി · തുറക്കാൻ നിങ്ങളുടെ ഉത്തരം എഴുതൂ 🔒"
+  },
+  "Both of you answered today's prompt! (രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ തുറന്നു!)": {
+    "en": "Both of you answered today's prompt!",
+    "ml": "രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ തുറന്നു!"
+  },
+  "Both of you answered today's prompt!": {
+    "en": "Both of you answered today's prompt!",
+    "ml": "രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ തുറന്നു!"
+  },
+  "രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ തുറന്നു!": {
+    "en": "Both of you answered today's prompt!",
+    "ml": "രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ തുറന്നു!"
+  },
+  "nudged you to answer today's “Us” Prompt! 💌 (ഇന്നത്തെ ചോദ്യം കാത്തിരിക്കുന്നു)": {
+    "en": "nudged you to answer today's “Us” Prompt! 💌",
+    "ml": "ഇന്നത്തെ ചോദ്യം കാത്തിരിക്കുന്നു"
+  },
+  "nudged you to answer today's “Us” Prompt! 💌": {
+    "en": "nudged you to answer today's “Us” Prompt! 💌",
+    "ml": "ഇന്നത്തെ ചോദ്യം കാത്തിരിക്കുന്നു"
+  },
+  "ഇന്നത്തെ ചോദ്യം കാത്തിരിക്കുന്നു": {
+    "en": "nudged you to answer today's “Us” Prompt! 💌",
+    "ml": "ഇന്നത്തെ ചോദ്യം കാത്തിരിക്കുന്നു"
+  },
+  "invited you to the Night Room! 🌌🛌 (ഒരുമിച്ച് ഉറങ്ങാം · മൃദുവായ മഴ & കടലലകൾ)": {
+    "en": "invited you to the Night Room! 🌌🛌",
+    "ml": "ഒരുമിച്ച് ഉറങ്ങാം · മൃദുവായ മഴ & കടലലകൾ"
+  },
+  "invited you to the Night Room! 🌌🛌": {
+    "en": "invited you to the Night Room! 🌌🛌",
+    "ml": "ഒരുമിച്ച് ഉറങ്ങാം · മൃദുവായ മഴ & കടലലകൾ"
+  },
+  "ഒരുമിച്ച് ഉറങ്ങാം · മൃദുവായ മഴ & കടലലകൾ": {
+    "en": "invited you to the Night Room! 🌌🛌",
+    "ml": "ഒരുമിച്ച് ഉറങ്ങാം · മൃദുവായ മഴ & കടലലകൾ"
+  },
+  "invited you to play Couple Games in Our Playroom! 💖 (കളിക്കാൻ ക്ഷണിച്ചു!)": {
+    "en": "invited you to play Couple Games in Our Playroom! 💖",
+    "ml": "കളിക്കാൻ ക്ഷണിച്ചു!"
+  },
+  "invited you to play Couple Games in Our Playroom! 💖": {
+    "en": "invited you to play Couple Games in Our Playroom! 💖",
+    "ml": "കളിക്കാൻ ക്ഷണിച്ചു!"
+  },
+  "കളിക്കാൻ ക്ഷണിച്ചു!": {
+    "en": "invited you to play Couple Games in Our Playroom! 💖",
+    "ml": "കളിക്കാൻ ക്ഷണിച്ചു!"
+  },
+  "invited you to Romantic Surprises & Love Coupons! 💖 (റൊമാന്റിക് സർപ്രൈസുകളിലേക്ക് ക്ഷണിച്ചു!)": {
+    "en": "invited you to Romantic Surprises & Love Coupons! 💖",
+    "ml": "റൊമാന്റിക് സർപ്രൈസുകളിലേക്ക് ക്ഷണിച്ചു!"
+  },
+  "invited you to Romantic Surprises & Love Coupons! 💖": {
+    "en": "invited you to Romantic Surprises & Love Coupons! 💖",
+    "ml": "റൊമാന്റിക് സർപ്രൈസുകളിലേക്ക് ക്ഷണിച്ചു!"
+  },
+  "റൊമാന്റിക് സർപ്രൈസുകളിലേക്ക് ക്ഷണിച്ചു!": {
+    "en": "invited you to Romantic Surprises & Love Coupons! 💖",
+    "ml": "റൊമാന്റിക് സർപ്രൈസുകളിലേക്ക് ക്ഷണിച്ചു!"
+  },
+  "🪄 രഹസ്യ മഷി (Magic Fog)": {
+    "en": "Magic Fog",
+    "ml": "🪄 രഹസ്യ മഷി"
+  },
+  "Magic Fog": {
+    "en": "Magic Fog",
+    "ml": "🪄 രഹസ്യ മഷി"
+  },
+  "🪄 രഹസ്യ മഷി": {
+    "en": "Magic Fog",
+    "ml": "🪄 രഹസ്യ മഷി"
+  },
+  "സന്ദേശം പുക മൂടി പോകും (Scratch to reveal)": {
+    "en": "Scratch to reveal",
+    "ml": "സന്ദേശം പുക മൂടി പോകും"
+  },
+  "Scratch to reveal": {
+    "en": "Scratch to reveal",
+    "ml": "സന്ദേശം പുക മൂടി പോകും"
+  },
+  "സന്ദേശം പുക മൂടി പോകും": {
+    "en": "Scratch to reveal",
+    "ml": "സന്ദേശം പുക മൂടി പോകും"
+  },
+  "Fun Voice Filters (ശബ്ദം മാറ്റാനുള്ള ഇഫക്റ്റുകൾ)": {
+    "en": "Fun Voice Filters",
+    "ml": "ശബ്ദം മാറ്റാനുള്ള ഇഫക്റ്റുകൾ"
+  },
+  "Fun Voice Filters": {
+    "en": "Fun Voice Filters",
+    "ml": "ശബ്ദം മാറ്റാനുള്ള ഇഫക്റ്റുകൾ"
+  },
+  "ശബ്ദം മാറ്റാനുള്ള ഇഫക്റ്റുകൾ": {
+    "en": "Fun Voice Filters",
+    "ml": "ശബ്ദം മാറ്റാനുള്ള ഇഫക്റ്റുകൾ"
+  },
+  "ഈ സന്ദേശം രഹസ്യ മഷിയാക്കി അയക്കുക (Cover with magical fog)": {
+    "en": "Cover with magical fog",
+    "ml": "ഈ സന്ദേശം രഹസ്യ മഷിയാക്കി അയക്കുക"
+  },
+  "Cover with magical fog": {
+    "en": "Cover with magical fog",
+    "ml": "ഈ സന്ദേശം രഹസ്യ മഷിയാക്കി അയക്കുക"
+  },
+  "ഈ സന്ദേശം രഹസ്യ മഷിയാക്കി അയക്കുക": {
+    "en": "Cover with magical fog",
+    "ml": "ഈ സന്ദേശം രഹസ്യ മഷിയാക്കി അയക്കുക"
+  },
+  "Unlock your private space. (ആപ്പ് അൺലോക്ക് ചെയ്യൂ)": {
+    "en": "Unlock your private space.",
+    "ml": "ആപ്പ് അൺലോക്ക് ചെയ്യൂ"
+  },
+  "Unlock your private space.": {
+    "en": "Unlock your private space.",
+    "ml": "ആപ്പ് അൺലോക്ക് ചെയ്യൂ"
+  },
+  "ആപ്പ് അൺലോക്ക് ചെയ്യൂ": {
+    "en": "Unlock your private space.",
+    "ml": "ആപ്പ് അൺലോക്ക് ചെയ്യൂ"
+  },
+  "App Lock (ആപ്പ് ലോക്ക്)": {
+    "en": "App Lock",
+    "ml": "ആപ്പ് ലോക്ക്"
+  },
+  "App Lock": {
+    "en": "App Lock",
+    "ml": "ആപ്പ് ലോക്ക്"
+  },
+  "ആപ്പ് ലോക്ക്": {
+    "en": "App Lock",
+    "ml": "ആപ്പ് ലോക്ക്"
+  },
+  "🎭 Decoy PIN · കപട പിൻ കോഡ്": {
+    "en": "🎭 Decoy PIN",
+    "ml": "കപട പിൻ കോഡ്"
+  },
+  "🎭 Decoy PIN": {
+    "en": "🎭 Decoy PIN",
+    "ml": "കപട പിൻ കോഡ്"
+  },
+  "കപട പിൻ കോഡ്": {
+    "en": "🎭 Decoy PIN",
+    "ml": "കപട പിൻ കോഡ്"
+  },
+  "ബ്ലർ തീവ്രത (Bokeh Blur)": {
+    "en": "Bokeh Blur",
+    "ml": "ബ്ലർ തീവ്രത"
+  },
+  "Bokeh Blur": {
+    "en": "Bokeh Blur",
+    "ml": "ബ്ലർ തീവ്രത"
+  },
+  "ബ്ലർ തീവ്രത": {
+    "en": "Bokeh Blur",
+    "ml": "ബ്ലർ തീവ്രത"
+  },
+  "Romantic & Cute": {
+    "en": "Romantic & Cute",
+    "ml": "റൊമാന്റിക് & ക്യൂട്ട്"
+  },
+  "റൊമാന്റിക് & ക്യൂട്ട്": {
+    "en": "Romantic & Cute",
+    "ml": "റൊമാന്റിക് & ക്യൂട്ട്"
+  },
+  "Fun & Playful": {
+    "en": "Fun & Playful",
+    "ml": "ഫണ്ണി & കുസൃതി"
+  },
+  "ഫണ്ണി & കുസൃതി": {
+    "en": "Fun & Playful",
+    "ml": "ഫണ്ണി & കുസൃതി"
+  },
+  "Virtual Backgrounds": {
+    "en": "Virtual Backgrounds",
+    "ml": "വെർച്വൽ പശ്ചാത്തലങ്ങൾ"
+  },
+  "വെർച്വൽ പശ്ചാത്തലങ്ങൾ": {
+    "en": "Virtual Backgrounds",
+    "ml": "വെർച്വൽ പശ്ചാത്തലങ്ങൾ"
+  },
+  "Cinematic Moods": {
+    "en": "Cinematic Moods",
+    "ml": "കളർ മൂഡുകൾ"
+  },
+  "കളർ മൂഡുകൾ": {
+    "en": "Cinematic Moods",
+    "ml": "കളർ മൂഡുകൾ"
+  },
+  "Normal Camera": {
+    "en": "Normal Camera",
+    "ml": "യഥാർത്ഥ ക്യാമറ"
+  },
+  "യഥാർത്ഥ ക്യാമറ": {
+    "en": "Normal Camera",
+    "ml": "യഥാർത്ഥ ക്യാമറ"
+  },
+  "Original natural camera feed without effects": {
+    "en": "Original natural camera feed without effects",
+    "ml": "ഫിൽട്ടറുകൾ ഇല്ലാത്ത സ്വാഭാവിക ക്യാമറ"
+  },
+  "ഫിൽട്ടറുകൾ ഇല്ലാത്ത സ്വാഭാവിക ക്യാമറ": {
+    "en": "Original natural camera feed without effects",
+    "ml": "ഫിൽട്ടറുകൾ ഇല്ലാത്ത സ്വാഭാവിക ക്യാമറ"
+  },
+  "Love Halo & Hearts": {
+    "en": "Love Halo & Hearts",
+    "ml": "ലവ് ഹാലോ & ഹൃദയങ്ങൾ"
+  },
+  "ലവ് ഹാലോ & ഹൃദയങ്ങൾ": {
+    "en": "Love Halo & Hearts",
+    "ml": "ലവ് ഹാലോ & ഹൃദയങ്ങൾ"
+  },
+  "Glowing love halo floating above head with orbiting animated hearts & soft blush": {
+    "en": "Glowing love halo floating above head with orbiting animated hearts & soft blush",
+    "ml": "തലയ്ക്ക് മുകളിൽ പ്രകാശിക്കുന്ന ഹാലോയും ഒഴുകിനടക്കുന്ന ഹൃദയങ്ങളും"
+  },
+  "തലയ്ക്ക് മുകളിൽ പ്രകാശിക്കുന്ന ഹാലോയും ഒഴുകിനടക്കുന്ന ഹൃദയങ്ങളും": {
+    "en": "Glowing love halo floating above head with orbiting animated hearts & soft blush",
+    "ml": "തലയ്ക്ക് മുകളിൽ പ്രകാശിക്കുന്ന ഹാലോയും ഒഴുകിനടക്കുന്ന ഹൃദയങ്ങളും"
+  },
+  "Rose Crown & Petals": {
+    "en": "Rose Crown & Petals",
+    "ml": "റോസ് കിരീടവും പൂവിതളുകളും"
+  },
+  "റോസ് കിരീടവും പൂവിതളുകളും": {
+    "en": "Rose Crown & Petals",
+    "ml": "റോസ് കിരീടവും പൂവിതളുകളും"
+  },
+  "Crown of blooming crimson roses with gentle fluttering falling petals": {
+    "en": "Crown of blooming crimson roses with gentle fluttering falling petals",
+    "ml": "റോസാപ്പൂ കിരീടവും കാറ്റിൽ പറക്കുന്ന മനോഹര പൂവിതളുകളും"
+  },
+  "റോസാപ്പൂ കിരീടവും കാറ്റിൽ പറക്കുന്ന മനോഹര പൂവിതളുകളും": {
+    "en": "Crown of blooming crimson roses with gentle fluttering falling petals",
+    "ml": "റോസാപ്പൂ കിരീടവും കാറ്റിൽ പറക്കുന്ന മനോഹര പൂവിതളുകളും"
+  },
+  "Fairy Sparkles & Glow": {
+    "en": "Fairy Sparkles & Glow",
+    "ml": "മാന്ത്രിക തിളക്കവും ഗ്ലോയും"
+  },
+  "മാന്ത്രിക തിളക്കവും ഗ്ലോയും": {
+    "en": "Fairy Sparkles & Glow",
+    "ml": "മാന്ത്രിക തിളക്കവും ഗ്ലോയും"
+  },
+  "Twinkling golden fairy dust, celestial starbursts and angelic cheek radiance": {
+    "en": "Twinkling golden fairy dust, celestial starbursts and angelic cheek radiance",
+    "ml": "സ്വർണ്ണ നക്ഷത്ര തിളക്കങ്ങളും കവിളുകളിൽ സുന്ദരമായ ഗ്ലോയും"
+  },
+  "സ്വർണ്ണ നക്ഷത്ര തിളക്കങ്ങളും കവിളുകളിൽ സുന്ദരമായ ഗ്ലോയും": {
+    "en": "Twinkling golden fairy dust, celestial starbursts and angelic cheek radiance",
+    "ml": "സ്വർണ്ണ നക്ഷത്ര തിളക്കങ്ങളും കവിളുകളിൽ സുന്ദരമായ ഗ്ലോയും"
+  },
+  "Sakura Petal Breeze": {
+    "en": "Sakura Petal Breeze",
+    "ml": "ചെറി പൂക്കളുടെ വസന്തം"
+  },
+  "ചെറി പൂക്കളുടെ വസന്തം": {
+    "en": "Sakura Petal Breeze",
+    "ml": "ചെറി പൂക്കളുടെ വസന്തം"
+  },
+  "Blooming sakura branch canopy with delicate pink petals drifting downwards": {
+    "en": "Blooming sakura branch canopy with delicate pink petals drifting downwards",
+    "ml": "ചെറി പൂക്കളുടെ കൊമ്പുകളും താഴേക്ക് വീഴുന്ന പിങ്ക് ഇതളുകളും"
+  },
+  "ചെറി പൂക്കളുടെ കൊമ്പുകളും താഴേക്ക് വീഴുന്ന പിങ്ക് ഇതളുകളും": {
+    "en": "Blooming sakura branch canopy with delicate pink petals drifting downwards",
+    "ml": "ചെറി പൂക്കളുടെ കൊമ്പുകളും താഴേക്ക് വീഴുന്ന പിങ്ക് ഇതളുകളും"
+  },
+  "Cute Kitten Ears": {
+    "en": "Cute Kitten Ears",
+    "ml": "ക്യൂട്ട് പൂച്ചക്കുട്ടി"
+  },
+  "ക്യൂട്ട് പൂച്ചക്കുട്ടി": {
+    "en": "Cute Kitten Ears",
+    "ml": "ക്യൂട്ട് പൂച്ചക്കുട്ടി"
+  },
+  "Animated twitching cat ears, pink heart nose, and sweet whiskers": {
+    "en": "Animated twitching cat ears, pink heart nose, and sweet whiskers",
+    "ml": "ഇളകുന്ന പൂച്ച ചെവികളും പിങ്ക് മൂക്കും വിസ്കേഴ്സും"
+  },
+  "ഇളകുന്ന പൂച്ച ചെവികളും പിങ്ക് മൂക്കും വിസ്കേഴ്സും": {
+    "en": "Animated twitching cat ears, pink heart nose, and sweet whiskers",
+    "ml": "ഇളകുന്ന പൂച്ച ചെവികളും പിങ്ക് മൂക്കും വിസ്കേഴ്സും"
+  },
+  "Playful Puppy Ears": {
+    "en": "Playful Puppy Ears",
+    "ml": "കുസൃതി നായക്കുട്ടി"
+  },
+  "കുസൃതി നായക്കുട്ടി": {
+    "en": "Playful Puppy Ears",
+    "ml": "കുസൃതി നായക്കുട്ടി"
+  },
+  "Bouncing floppy puppy ears, cute button nose, and cheerful tongue": {
+    "en": "Bouncing floppy puppy ears, cute button nose, and cheerful tongue",
+    "ml": "തുള്ളിക്കളിക്കുന്ന നായക്കുട്ടി ചെവികളും മനോഹരമായ മൂക്കും"
+  },
+  "തുള്ളിക്കളിക്കുന്ന നായക്കുട്ടി ചെവികളും മനോഹരമായ മൂക്കും": {
+    "en": "Bouncing floppy puppy ears, cute button nose, and cheerful tongue",
+    "ml": "തുള്ളിക്കളിക്കുന്ന നായക്കുട്ടി ചെവികളും മനോഹരമായ മൂക്കും"
+  },
+  "Retro Neon Shades": {
+    "en": "Retro Neon Shades",
+    "ml": "കൂൾ നിയോൺ സൺഗ്ലാസ്"
+  },
+  "കൂൾ നിയോൺ സൺഗ്ലാസ്": {
+    "en": "Retro Neon Shades",
+    "ml": "കൂൾ നിയോൺ സൺഗ്ലാസ്"
+  },
+  "Ultra-cool reflective dark shades with neon glint and gold sparkle highlights": {
+    "en": "Ultra-cool reflective dark shades with neon glint and gold sparkle highlights",
+    "ml": "മിന്നുന്ന നിയോൺ പ്രതിഫലനമുള്ള സ്റ്റൈലിഷ് സൺഗ്ലാസ്"
+  },
+  "മിന്നുന്ന നിയോൺ പ്രതിഫലനമുള്ള സ്റ്റൈലിഷ് സൺഗ്ലാസ്": {
+    "en": "Ultra-cool reflective dark shades with neon glint and gold sparkle highlights",
+    "ml": "മിന്നുന്ന നിയോൺ പ്രതിഫലനമുള്ള സ്റ്റൈലിഷ് സൺഗ്ലാസ്"
+  },
+  "Vintage Mustache & Glass": {
+    "en": "Vintage Mustache & Glass",
+    "ml": "തമാശ മീശയും കണ്ണടയും"
+  },
+  "തമാശ മീശയും കണ്ണടയും": {
+    "en": "Vintage Mustache & Glass",
+    "ml": "തമാശ മീശയും കണ്ണടയും"
+  },
+  "Handlebar vintage gentleman mustache and classic round spectacles": {
+    "en": "Handlebar vintage gentleman mustache and classic round spectacles",
+    "ml": "പിരിച്ചുവെച്ച പഴയ തമാശ മീശയും വട്ടക്കണ്ണടയും"
+  },
+  "പിരിച്ചുവെച്ച പഴയ തമാശ മീശയും വട്ടക്കണ്ണടയും": {
+    "en": "Handlebar vintage gentleman mustache and classic round spectacles",
+    "ml": "പിരിച്ചുവെച്ച പഴയ തമാശ മീശയും വട്ടക്കണ്ണടയും"
+  },
+  "Party Hat & Confetti": {
+    "en": "Party Hat & Confetti",
+    "ml": "പാർട്ടി തൊപ്പിയും കോൺഫെറ്റിയും"
+  },
+  "പാർട്ടി തൊപ്പിയും കോൺഫെറ്റിയും": {
+    "en": "Party Hat & Confetti",
+    "ml": "പാർട്ടി തൊപ്പിയും കോൺഫെറ്റിയും"
+  },
+  "Festive striped party cone hat with exploding colorful ribbons & confetti": {
+    "en": "Festive striped party cone hat with exploding colorful ribbons & confetti",
+    "ml": "നിറമുള്ള പാർട്ടി തൊപ്പിയും ആകാശത്ത് പാറിപ്പറക്കുന്ന കോൺഫെറ്റിയും"
+  },
+  "നിറമുള്ള പാർട്ടി തൊപ്പിയും ആകാശത്ത് പാറിപ്പറക്കുന്ന കോൺഫെറ്റിയും": {
+    "en": "Festive striped party cone hat with exploding colorful ribbons & confetti",
+    "ml": "നിറമുള്ള പാർട്ടി തൊപ്പിയും ആകാശത്ത് പാറിപ്പറക്കുന്ന കോൺഫെറ്റിയും"
+  },
+  "Studio Portrait Blur": {
+    "en": "Studio Portrait Blur",
+    "ml": "പോർട്രെയിറ്റ് ബൊക്കെ ബ്ലർ"
+  },
+  "പോർട്രെയിറ്റ് ബൊക്കെ ബ്ലർ": {
+    "en": "Studio Portrait Blur",
+    "ml": "പോർട്രെയിറ്റ് ബൊക്കെ ബ്ലർ"
+  },
+  "Soft professional depth-of-field background blur focusing on you": {
+    "en": "Soft professional depth-of-field background blur focusing on you",
+    "ml": "നിങ്ങളെ കേന്ദ്രീകരിച്ച് പശ്ചാത്തലം മൃദുവായി ബ്ലർ ചെയ്യുന്ന സ്റ്റുഡിയോ ഇഫക്റ്റ്"
+  },
+  "നിങ്ങളെ കേന്ദ്രീകരിച്ച് പശ്ചാത്തലം മൃദുവായി ബ്ലർ ചെയ്യുന്ന സ്റ്റുഡിയോ ഇഫക്റ്റ്": {
+    "en": "Soft professional depth-of-field background blur focusing on you",
+    "ml": "നിങ്ങളെ കേന്ദ്രീകരിച്ച് പശ്ചാത്തലം മൃദുവായി ബ്ലർ ചെയ്യുന്ന സ്റ്റുഡിയോ ഇഫക്റ്റ്"
+  },
+  "Romantic Sunset Beach": {
+    "en": "Romantic Sunset Beach",
+    "ml": "റൊമാന്റിക് സൺസെറ്റ് ബീച്ച്"
+  },
+  "റൊമാന്റിക് സൺസെറ്റ് ബീച്ച്": {
+    "en": "Romantic Sunset Beach",
+    "ml": "റൊമാന്റിക് സൺസെറ്റ് ബീച്ച്"
+  },
+  "Golden twilight beach horizon with warm waves and serene sunset glow": {
+    "en": "Golden twilight beach horizon with warm waves and serene sunset glow",
+    "ml": "സുവർണ്ണ സായാഹ്ന സൂര്യനും ശാന്തമായ കടൽതീര പശ്ചാത്തലവും"
+  },
+  "സുവർണ്ണ സായാഹ്ന സൂര്യനും ശാന്തമായ കടൽതീര പശ്ചാത്തലവും": {
+    "en": "Golden twilight beach horizon with warm waves and serene sunset glow",
+    "ml": "സുവർണ്ണ സായാഹ്ന സൂര്യനും ശാന്തമായ കടൽതീര പശ്ചാത്തലവും"
+  },
+  "Candlelight Dinner": {
+    "en": "Candlelight Dinner",
+    "ml": "ക്യാൻഡിൽലൈറ്റ് ഡിന്നർ"
+  },
+  "ക്യാൻഡിൽലൈറ്റ് ഡിന്നർ": {
+    "en": "Candlelight Dinner",
+    "ml": "ക്യാൻഡിൽലൈറ്റ് ഡിന്നർ"
+  },
+  "Intimate candle glow with warm mahogany ambiance and dreamy bokeh lights": {
+    "en": "Intimate candle glow with warm mahogany ambiance and dreamy bokeh lights",
+    "ml": "മെഴുകുതിരി വെളിച്ചവും മനോഹരമായ റൊമാന്റിക് ഡിന്നർ ആംബിയൻസും"
+  },
+  "മെഴുകുതിരി വെളിച്ചവും മനോഹരമായ റൊമാന്റിക് ഡിന്നർ ആംബിയൻസും": {
+    "en": "Intimate candle glow with warm mahogany ambiance and dreamy bokeh lights",
+    "ml": "മെഴുകുതിരി വെളിച്ചവും മനോഹരമായ റൊമാന്റിക് ഡിന്നർ ആംബിയൻസും"
+  },
+  "Cozy Parisian Cafe": {
+    "en": "Cozy Parisian Cafe",
+    "ml": "കോസി പാരീസിയൻ കഫേ"
+  },
+  "കോസി പാരീസിയൻ കഫേ": {
+    "en": "Cozy Parisian Cafe",
+    "ml": "കോസി പാരീസിയൻ കഫേ"
+  },
+  "Charming vintage coffee bistro backdrop with fairy string lights": {
+    "en": "Charming vintage coffee bistro backdrop with fairy string lights",
+    "ml": "ചെറിയ ലൈറ്റുകൾ അലങ്കരിച്ച സുഖപ്രദമായ വിന്റേജ് കോഫി കഫേ"
+  },
+  "ചെറിയ ലൈറ്റുകൾ അലങ്കരിച്ച സുഖപ്രദമായ വിന്റേജ് കോഫി കഫേ": {
+    "en": "Charming vintage coffee bistro backdrop with fairy string lights",
+    "ml": "ചെറിയ ലൈറ്റുകൾ അലങ്കരിച്ച സുഖപ്രദമായ വിന്റേജ് കോഫി കഫേ"
+  },
+  "Starry Milky Way": {
+    "en": "Starry Milky Way",
+    "ml": "നക്ഷത്ര തിളക്കമുള്ള ആകാശം"
+  },
+  "നക്ഷത്ര തിളക്കമുള്ള ആകാശം": {
+    "en": "Starry Milky Way",
+    "ml": "നക്ഷത്ര തിളക്കമുള്ള ആകാശം"
+  },
+  "Twinkling indigo night sky with purple cosmic nebula dust and moonlight": {
+    "en": "Twinkling indigo night sky with purple cosmic nebula dust and moonlight",
+    "ml": "നക്ഷത്രങ്ങളും മാന്ത്രിക നെബുലയും നിറഞ്ഞ നീലാകാശ പശ്ചാത്തലം"
+  },
+  "നക്ഷത്രങ്ങളും മാന്ത്രിക നെബുലയും നിറഞ്ഞ നീലാകാശ പശ്ചാത്തലം": {
+    "en": "Twinkling indigo night sky with purple cosmic nebula dust and moonlight",
+    "ml": "നക്ഷത്രങ്ങളും മാന്ത്രിക നെബുലയും നിറഞ്ഞ നീലാകാശ പശ്ചാത്തലം"
+  },
+  "Zen Cherry Garden": {
+    "en": "Zen Cherry Garden",
+    "ml": "ശാന്തമായ ചെറി ഗാർഡൻ"
+  },
+  "ശാന്തമായ ചെറി ഗാർഡൻ": {
+    "en": "Zen Cherry Garden",
+    "ml": "ശാന്തമായ ചെറി ഗാർഡൻ"
+  },
+  "Peaceful Japanese wooden porch overlooking blossoming cherry trees": {
+    "en": "Peaceful Japanese wooden porch overlooking blossoming cherry trees",
+    "ml": "ചെറി മരങ്ങൾ പൂത്തുനിൽക്കുന്ന ശാന്തസുന്ദരമായ പൂന്തോട്ടം"
+  },
+  "ചെറി മരങ്ങൾ പൂത്തുനിൽക്കുന്ന ശാന്തസുന്ദരമായ പൂന്തോട്ടം": {
+    "en": "Peaceful Japanese wooden porch overlooking blossoming cherry trees",
+    "ml": "ചെറി മരങ്ങൾ പൂത്തുനിൽക്കുന്ന ശാന്തസുന്ദരമായ പൂന്തോട്ടം"
+  },
+  "Cozy Lo-Fi Room": {
+    "en": "Cozy Lo-Fi Room",
+    "ml": "ലോ-ഫൈ ബെഡ്‌റൂം"
+  },
+  "ലോ-ഫൈ ബെഡ്‌റൂം": {
+    "en": "Cozy Lo-Fi Room",
+    "ml": "ലോ-ഫൈ ബെഡ്‌റൂം"
+  },
+  "Warm fairy lights, purple-pink neon glow, and cozy bedroom atmosphere": {
+    "en": "Warm fairy lights, purple-pink neon glow, and cozy bedroom atmosphere",
+    "ml": "ഫെയറി ലൈറ്റുകളും നിയോൺ തിളക്കവുമുള്ള ശാന്തമായ ലോ-ഫൈ മുറി"
+  },
+  "ഫെയറി ലൈറ്റുകളും നിയോൺ തിളക്കവുമുള്ള ശാന്തമായ ലോ-ഫൈ മുറി": {
+    "en": "Warm fairy lights, purple-pink neon glow, and cozy bedroom atmosphere",
+    "ml": "ഫെയറി ലൈറ്റുകളും നിയോൺ തിളക്കവുമുള്ള ശാന്തമായ ലോ-ഫൈ മുറി"
+  },
+  "Kipenzi Emerald Studio": {
+    "en": "Kipenzi Emerald Studio",
+    "ml": "എമറാൾഡ് സ്റ്റുഡിയോ ഡ്രോപ്പ്"
+  },
+  "എമറാൾഡ് സ്റ്റുഡിയോ ഡ്രോപ്പ്": {
+    "en": "Kipenzi Emerald Studio",
+    "ml": "എമറാൾഡ് സ്റ്റുഡിയോ ഡ്രോപ്പ്"
+  },
+  "Signature Kipenzi deep emerald studio wall with golden ambient accents": {
+    "en": "Signature Kipenzi deep emerald studio wall with golden ambient accents",
+    "ml": "ആഢംബരപൂർണ്ണമായ ഇരുണ്ട എമറാൾഡ് പച്ച നിറത്തിലുള്ള സ്റ്റുഡിയോ പശ്ചാത്തലം"
+  },
+  "ആഢംബരപൂർണ്ണമായ ഇരുണ്ട എമറാൾഡ് പച്ച നിറത്തിലുള്ള സ്റ്റുഡിയോ പശ്ചാത്തലം": {
+    "en": "Signature Kipenzi deep emerald studio wall with golden ambient accents",
+    "ml": "ആഢംബരപൂർണ്ണമായ ഇരുണ്ട എമറാൾഡ് പച്ച നിറത്തിലുള്ള സ്റ്റുഡിയോ പശ്ചാത്തലം"
+  },
+  "Golden Hour Warmth": {
+    "en": "Golden Hour Warmth",
+    "ml": "സുവർണ്ണ സായാഹ്ന വെളിച്ചം"
+  },
+  "സുവർണ്ണ സായാഹ്ന വെളിച്ചം": {
+    "en": "Golden Hour Warmth",
+    "ml": "സുവർണ്ണ സായാഹ്ന വെളിച്ചം"
+  },
+  "Warm honey amber sunlit radiance enhancing skin tone": {
+    "en": "Warm honey amber sunlit radiance enhancing skin tone",
+    "ml": "സ്വർണ്ണ നിറത്തിലുള്ള സായാഹ്ന സൂര്യപ്രകാശത്തിന്റെ സുന്ദര തിളക്കം"
+  },
+  "സ്വർണ്ണ നിറത്തിലുള്ള സായാഹ്ന സൂര്യപ്രകാശത്തിന്റെ സുന്ദര തിളക്കം": {
+    "en": "Warm honey amber sunlit radiance enhancing skin tone",
+    "ml": "സ്വർണ്ണ നിറത്തിലുള്ള സായാഹ്ന സൂര്യപ്രകാശത്തിന്റെ സുന്ദര തിളക്കം"
+  },
+  "90s Nostalgic Film": {
+    "en": "90s Nostalgic Film",
+    "ml": "90s വിന്റേജ് ഫിലിം"
+  },
+  "90s വിന്റേജ് ഫിലിം": {
+    "en": "90s Nostalgic Film",
+    "ml": "90s വിന്റേജ് ഫിലിം"
+  },
+  "Classic 35mm film grain, gentle sepia tones, and authentic retro vignette": {
+    "en": "Classic 35mm film grain, gentle sepia tones, and authentic retro vignette",
+    "ml": "പഴയ സിനിമാ ക്യാമറയുടെ റെട്രോ ടോണും വിന്റേജ് ബോർഡറും"
+  },
+  "പഴയ സിനിമാ ക്യാമറയുടെ റെട്രോ ടോണും വിന്റേജ് ബോർഡറും": {
+    "en": "Classic 35mm film grain, gentle sepia tones, and authentic retro vignette",
+    "ml": "പഴയ സിനിമാ ക്യാമറയുടെ റെട്രോ ടോണും വിന്റേജ് ബോർഡറും"
+  },
+  "Cyberpunk Neon Vibe": {
+    "en": "Cyberpunk Neon Vibe",
+    "ml": "സൈബർപങ്ക് നിയോൺ വൈബ്"
+  },
+  "സൈബർപങ്ക് നിയോൺ വൈബ്": {
+    "en": "Cyberpunk Neon Vibe",
+    "ml": "സൈബർപങ്ക് നിയോൺ വൈബ്"
+  },
+  "Electric magenta and cyan duo-tone futuristic lighting": {
+    "en": "Electric magenta and cyan duo-tone futuristic lighting",
+    "ml": "ഇലക്ട്രിക് മജന്തയും സിയാനും ചേർന്ന ഫ്യൂച്ചറിസ്റ്റിക് നിയോൺ ലൈറ്റിംഗ്"
+  },
+  "ഇലക്ട്രിക് മജന്തയും സിയാനും ചേർന്ന ഫ്യൂച്ചറിസ്റ്റിക് നിയോൺ ലൈറ്റിംഗ്": {
+    "en": "Electric magenta and cyan duo-tone futuristic lighting",
+    "ml": "ഇലക്ട്രിക് മജന്തയും സിയാനും ചേർന്ന ഫ്യൂച്ചറിസ്റ്റിക് നിയോൺ ലൈറ്റിംഗ്"
+  },
+  "Dreamy Pastel Mist": {
+    "en": "Dreamy Pastel Mist",
+    "ml": "ഡ്രീമി പാസ്റ്റൽ മിസ്റ്റ്"
+  },
+  "ഡ്രീമി പാസ്റ്റൽ മിസ്റ്റ്": {
+    "en": "Dreamy Pastel Mist",
+    "ml": "ഡ്രീമി പാസ്റ്റൽ മിസ്റ്റ്"
+  },
+  "Soft ethereal focus, gentle pearlescent lavender-rose illumination": {
+    "en": "Soft ethereal focus, gentle pearlescent lavender-rose illumination",
+    "ml": "മൃദുവായ വെളിച്ചവും സ്വപ്നതുല്യമായ പാസ്റ്റൽ വർണ്ണങ്ങളും"
+  },
+  "മൃദുവായ വെളിച്ചവും സ്വപ്നതുല്യമായ പാസ്റ്റൽ വർണ്ണങ്ങളും": {
+    "en": "Soft ethereal focus, gentle pearlescent lavender-rose illumination",
+    "ml": "മൃദുവായ വെളിച്ചവും സ്വപ്നതുല്യമായ പാസ്റ്റൽ വർണ്ണങ്ങളും"
+  },
+  "Remind to plug in charger": {
+    "en": "Remind to plug in charger",
+    "ml": "ചാർജർ കുത്താൻ പറയൂ 🔌⚡"
+  },
+  "ചാർജർ കുത്താൻ പറയൂ 🔌⚡": {
+    "en": "Remind to plug in charger",
+    "ml": "ചാർജർ കുത്താൻ പറയൂ 🔌⚡"
+  },
+  "Don't worry if phone dies hug": {
+    "en": "Don't worry if phone dies hug",
+    "ml": "ടെൻഷൻ വേണ്ട, സ്നേഹാലിംഗനം 🫂🤍"
+  },
+  "ടെൻഷൻ വേണ്ട, സ്നേഹാലിംഗനം 🫂🤍": {
+    "en": "Don't worry if phone dies hug",
+    "ml": "ടെൻഷൻ വേണ്ട, സ്നേഹാലിംഗനം 🫂🤍"
+  },
+  "Happy your phone is charging": {
+    "en": "Happy your phone is charging",
+    "ml": "ചാർജ് ആകുന്നുണ്ടല്ലോ, സമാധാനം 🌸"
+  },
+  "ചാർജ് ആകുന്നുണ്ടല്ലോ, സമാധാനം 🌸": {
+    "en": "Happy your phone is charging",
+    "ml": "ചാർജ് ആകുന്നുണ്ടല്ലോ, സമാധാനം 🌸"
+  },
+  "ചെറുതാക്കുക (Collapse reactions)": {
+    "en": "Collapse reactions",
+    "ml": "ചെറുതാക്കുക"
+  },
+  "Collapse reactions": {
+    "en": "Collapse reactions",
+    "ml": "ചെറുതാക്കുക"
+  },
+  "ചെറുതാക്കുക": {
+    "en": "Collapse reactions",
+    "ml": "ചെറുതാക്കുക"
+  },
+  "ലൈവ് റിയാക്ഷനുകൾ (Open reactions)": {
+    "en": "Open reactions",
+    "ml": "ലൈവ് റിയാക്ഷനുകൾ"
+  },
+  "Open reactions": {
+    "en": "Open reactions",
+    "ml": "ലൈവ് റിയാക്ഷനുകൾ"
+  },
+  "ലൈവ് റിയാക്ഷനുകൾ": {
+    "en": "Open reactions",
+    "ml": "ലൈവ് റിയാക്ഷനുകൾ"
+  },
+  "ശബ്ദം ഓണാക്കുക (Unmute sounds)": {
+    "en": "Unmute sounds",
+    "ml": "ശബ്ദം ഓണാക്കുക"
+  },
+  "Unmute sounds": {
+    "en": "Unmute sounds",
+    "ml": "ശബ്ദം ഓണാക്കുക"
+  },
+  "ശബ്ദം ഓണാക്കുക": {
+    "en": "Unmute sounds",
+    "ml": "ശബ്ദം ഓണാക്കുക"
+  },
+  "ശബ്ദം ഓഫാക്കുക (Mute sounds)": {
+    "en": "Mute sounds",
+    "ml": "ശബ്ദം ഓഫാക്കുക"
+  },
+  "Mute sounds": {
+    "en": "Mute sounds",
+    "ml": "ശബ്ദം ഓഫാക്കുക"
+  },
+  "ശബ്ദം ഓഫാക്കുക": {
+    "en": "Mute sounds",
+    "ml": "ശബ്ദം ഓഫാക്കുക"
+  },
+  "📸 Open in Polaroid Scrapbook (പോളറോയ്ഡ് പ്രണയ ആൽബം)": {
+    "en": "📸 Open in Polaroid Scrapbook",
+    "ml": "പോളറോയ്ഡ് പ്രണയ ആൽബം"
+  },
+  "📸 Open in Polaroid Scrapbook": {
+    "en": "📸 Open in Polaroid Scrapbook",
+    "ml": "പോളറോയ്ഡ് പ്രണയ ആൽബം"
+  },
+  "പോളറോയ്ഡ് പ്രണയ ആൽബം": {
+    "en": "📸 Open in Polaroid Scrapbook",
+    "ml": "പോളറോയ്ഡ് പ്രണയ ആൽബം"
+  },
+  "Theme (തീം)": {
+    "en": "Theme",
+    "ml": "തീം"
+  },
+  "Theme": {
+    "en": "Theme",
+    "ml": "തീം"
+  },
+  "തീം": {
+    "en": "Theme",
+    "ml": "തീം"
+  },
+  "Mobile Reading Font Size (ഫോണ്ട് വലുപ്പം)": {
+    "en": "Mobile Reading Font Size",
+    "ml": "ഫോണ്ട് വലുപ്പം"
+  },
+  "Mobile Reading Font Size": {
+    "en": "Mobile Reading Font Size",
+    "ml": "ഫോണ്ട് വലുപ്പം"
+  },
+  "ഫോണ്ട് വലുപ്പം": {
+    "en": "Mobile Reading Font Size",
+    "ml": "ഫോണ്ട് വലുപ്പം"
+  },
+  "Live Preview (തത്സമയ പ്രിവ്യൂ)": {
+    "en": "Live Preview",
+    "ml": "തത്സമയ പ്രിവ്യൂ"
+  },
+  "Live Preview": {
+    "en": "Live Preview",
+    "ml": "തത്സമയ പ്രിവ്യൂ"
+  },
+  "തത്സമയ പ്രിവ്യൂ": {
+    "en": "Live Preview",
+    "ml": "തത്സമയ പ്രിവ്യൂ"
+  },
+  "Heartbeat Pulse (ഹൃദയസ്പന്ദനം)": {
+    "en": "Heartbeat Pulse",
+    "ml": "ഹൃദയസ്പന്ദനം"
+  },
+  "Heartbeat Pulse": {
+    "en": "Heartbeat Pulse",
+    "ml": "ഹൃദയസ്പന്ദനം"
+  },
+  "ഹൃദയസ്പന്ദനം": {
+    "en": "Heartbeat Pulse",
+    "ml": "ഹൃദയസ്പന്ദനം"
+  },
+  "Feel Heartbeat (സ്പന്ദനം അനുഭവിക്കൂ)": {
+    "en": "Feel Heartbeat",
+    "ml": "സ്പന്ദനം അനുഭവിക്കൂ"
+  },
+  "Feel Heartbeat": {
+    "en": "Feel Heartbeat",
+    "ml": "സ്പന്ദനം അനുഭവിക്കൂ"
+  },
+  "സ്പന്ദനം അനുഭവിക്കൂ": {
+    "en": "Feel Heartbeat",
+    "ml": "സ്പന്ദനം അനുഭവിക്കൂ"
+  },
+  "Haptic Hug 🫂 (സ്നേഹാലിംഗനം)": {
+    "en": "Haptic Hug 🫂",
+    "ml": "സ്നേഹാലിംഗനം"
+  },
+  "Haptic Hug 🫂": {
+    "en": "Haptic Hug 🫂",
+    "ml": "സ്നേഹാലിംഗനം"
+  },
+  "സ്നേഹാലിംഗനം": {
+    "en": "Haptic Hug",
+    "ml": "സ്നേഹാലിംഗനം"
+  },
+  "Virtual Touch 🌸 (മൃദുസ്പർശം)": {
+    "en": "Virtual Touch 🌸",
+    "ml": "മൃദുസ്പർശം"
+  },
+  "Virtual Touch 🌸": {
+    "en": "Virtual Touch 🌸",
+    "ml": "മൃദുസ്പർശം"
+  },
+  "മൃദുസ്പർശം": {
+    "en": "Gentle Touch",
+    "ml": "മൃദുസ്പർശം"
+  },
+  "Sent with loving touch presence · തത്സമയ സ്പർശനം": {
+    "en": "Sent with loving touch presence",
+    "ml": "തത്സമയ സ്പർശനം"
+  },
+  "Sent with loving touch presence": {
+    "en": "Sent with loving touch presence",
+    "ml": "തത്സമയ സ്പർശനം"
+  },
+  "തത്സമയ സ്പർശനം": {
+    "en": "Sent with loving touch presence",
+    "ml": "തത്സമയ സ്പർശനം"
+  },
+  "Feel Touch (സ്പർശനം അനുഭവിക്കൂ)": {
+    "en": "Feel Touch",
+    "ml": "സ്പർശനം അനുഭവിക്കൂ"
+  },
+  "Feel Touch": {
+    "en": "Feel Touch",
+    "ml": "സ്പർശനം അനുഭവിക്കൂ"
+  },
+  "സ്പർശനം അനുഭവിക്കൂ": {
+    "en": "Feel Touch",
+    "ml": "സ്പർശനം അനുഭവിക്കൂ"
+  },
+  "Daily “Us” Prompt · ഇന്നത്തെ ചോദ്യം": {
+    "en": "Daily “Us” Prompt",
+    "ml": "ഇന്നത്തെ ചോദ്യം"
+  },
+  "Daily “Us” Prompt": {
+    "en": "Daily “Us” Prompt",
+    "ml": "ഇന്നത്തെ ചോദ്യം"
+  },
+  "ഇന്നത്തെ ചോദ്യം": {
+    "en": "Daily “Us” Prompt",
+    "ml": "ഇന്നത്തെ ചോദ്യം"
+  },
+  "Mutual Reveal Keepsake 💖 (തുറന്ന ഉത്തരങ്ങൾ)": {
+    "en": "Mutual Reveal Keepsake 💖",
+    "ml": "തുറന്ന ഉത്തരങ്ങൾ"
+  },
+  "Mutual Reveal Keepsake 💖": {
+    "en": "Mutual Reveal Keepsake 💖",
+    "ml": "തുറന്ന ഉത്തരങ്ങൾ"
+  },
+  "തുറന്ന ഉത്തരങ്ങൾ": {
+    "en": "Mutual Reveal Keepsake 💖",
+    "ml": "തുറന്ന ഉത്തരങ്ങൾ"
+  },
+  "Listen Together (ഒരുമിച്ച് കേൾക്കാം 🎵)": {
+    "en": "Listen Together",
+    "ml": "ഒരുമിച്ച് കേൾക്കാം 🎵"
+  },
+  "Listen Together": {
+    "en": "Listen Together",
+    "ml": "ഒരുമിച്ച് കേൾക്കാം 🎵"
+  },
+  "ഒരുമിച്ച് കേൾക്കാം 🎵": {
+    "en": "Listen Together",
+    "ml": "ഒരുമിച്ച് കേൾക്കാം 🎵"
+  },
+  "Watch Together (ഒന്നിച്ച് കാണാം 🍿)": {
+    "en": "Watch Together",
+    "ml": "ഒന്നിച്ച് കാണാം 🍿"
+  },
+  "Watch Together": {
+    "en": "Watch Together",
+    "ml": "ഒന്നിച്ച് കാണാം 🍿"
+  },
+  "ഒന്നിച്ച് കാണാം 🍿": {
+    "en": "Watch Together",
+    "ml": "ഒന്നിച്ച് കാണാം 🍿"
+  },
+  "Our Story Memory · നമ്മുടെ ഓർമ്മകൾ 💕": {
+    "en": "Our Story Memory",
+    "ml": "നമ്മുടെ ഓർമ്മകൾ 💕"
+  },
+  "Our Story Memory": {
+    "en": "Our Story Memory",
+    "ml": "നമ്മുടെ ഓർമ്മകൾ 💕"
+  },
+  "നമ്മുടെ ഓർമ്മകൾ 💕": {
+    "en": "Our Story Memory",
+    "ml": "നമ്മുടെ ഓർമ്മകൾ 💕"
+  },
+  "വിശേഷ ദിവസം · Milestone": {
+    "en": "Milestone",
+    "ml": "വിശേഷ ദിവസം"
+  },
+  "Milestone": {
+    "en": "Milestone",
+    "ml": "വിശേഷ ദിവസം"
+  },
+  "വിശേഷ ദിവസം": {
+    "en": "Milestone",
+    "ml": "വിശേഷ ദിവസം"
+  },
+  "Countdown & Milestones · വിശേഷ ദിവസങ്ങൾ ✨": {
+    "en": "Countdown & Milestones",
+    "ml": "വിശേഷ ദിവസങ്ങൾ ✨"
+  },
+  "Countdown & Milestones": {
+    "en": "Countdown & Milestones",
+    "ml": "വിശേഷ ദിവസങ്ങൾ ✨"
+  },
+  "വിശേഷ ദിവസങ്ങൾ ✨": {
+    "en": "Countdown & Milestones",
+    "ml": "വിശേഷ ദിവസങ്ങൾ ✨"
+  },
+  "Unlocked with Love! 💌 (ഇപ്പോൾ തുറക്കാം)": {
+    "en": "Unlocked with Love! 💌",
+    "ml": "ഇപ്പോൾ തുറക്കാം"
+  },
+  "Unlocked with Love! 💌": {
+    "en": "Unlocked with Love! 💌",
+    "ml": "സ്നേഹത്തോടെ തുറന്നു! 💌"
+  },
+  "ഇപ്പോൾ തുറക്കാം": {
+    "en": "Unlocked with Love! 💌",
+    "ml": "ഇപ്പോൾ തുറക്കാം"
+  },
+  "Digital Time Capsule · രഹസ്യ കത്ത് ⏳": {
+    "en": "Digital Time Capsule",
+    "ml": "രഹസ്യ കത്ത് ⏳"
+  },
+  "Digital Time Capsule": {
+    "en": "Digital Time Capsule",
+    "ml": "രഹസ്യ കത്ത് ⏳"
+  },
+  "രഹസ്യ കത്ത് ⏳": {
+    "en": "Digital Time Capsule",
+    "ml": "രഹസ്യ കത്ത് ⏳"
+  },
+  "Open Secret Love Letter 🔓✨ (തുറക്കുക)": {
+    "en": "Open Secret Love Letter 🔓✨",
+    "ml": "തുറക്കുക"
+  },
+  "Open Secret Love Letter 🔓✨": {
+    "en": "Open Secret Love Letter 🔓✨",
+    "ml": "തുറക്കുക"
+  },
+  "തുറക്കുക": {
+    "en": "Open Secret Love Letter 🔓✨",
+    "ml": "തുറക്കുക"
+  },
+  "View Sealed Capsule 💌 (കാണുക)": {
+    "en": "View Sealed Capsule 💌",
+    "ml": "കാണുക"
+  },
+  "View Sealed Capsule 💌": {
+    "en": "View Sealed Capsule 💌",
+    "ml": "കാണുക"
+  },
+  "കാണുക": {
+    "en": "View Sealed Capsule 💌",
+    "ml": "കാണുക"
+  },
+  "Our Month in Review · പ്രതിമാസ റീക്യാപ്പ്": {
+    "en": "Our Month in Review",
+    "ml": "പ്രതിമാസ റീക്യാപ്പ്"
+  },
+  "Our Month in Review": {
+    "en": "Our Month in Review",
+    "ml": "നമ്മുടെ പ്രതിമാസ ഓർമ്മകൾ"
+  },
+  "പ്രതിമാസ റീക്യാപ്പ്": {
+    "en": "Our Month in Review",
+    "ml": "പ്രതിമാസ റീക്യാപ്പ്"
+  },
+  "Open Story 🎞️ (റീക്യാപ്പ് കാണുക)": {
+    "en": "Open Story 🎞️",
+    "ml": "റീക്യാപ്പ് കാണുക"
+  },
+  "Open Story 🎞️": {
+    "en": "Open Story 🎞️",
+    "ml": "റീക്യാപ്പ് കാണുക"
+  },
+  "റീക്യാപ്പ് കാണുക": {
+    "en": "Open Story 🎞️",
+    "ml": "റീക്യാപ്പ് കാണുക"
+  },
+  "Voice Note Duet · രണ്ടുപേരും ചേർന്ന പാട്ട്": {
+    "en": "Voice Note Duet",
+    "ml": "രണ്ടുപേരും ചേർന്ന പാട്ട്"
+  },
+  "Voice Note Duet": {
+    "en": "Voice Note Duet",
+    "ml": "രണ്ടുപേരും ചേർന്ന പാട്ട്"
+  },
+  "രണ്ടുപേരും ചേർന്ന പാട്ട്": {
+    "en": "Voice Note Duet",
+    "ml": "രണ്ടുപേരും ചേർന്ന പാട്ട്"
+  },
+  "പങ്കാളിയുടെ വരികൾക്ക് മറുപടിയായി പാടി ചേർത്തുവെച്ച പ്രണയഗാനം (Our Joint Harmony) 💖": {
+    "en": "Our Joint Harmony",
+    "ml": "പങ്കാളിയുടെ വരികൾക്ക് മറുപടിയായി പാടി ചേർത്തുവെച്ച പ്രണയഗാനം 💖"
+  },
+  "Our Joint Harmony": {
+    "en": "Our Joint Harmony",
+    "ml": "പങ്കാളിയുടെ വരികൾക്ക് മറുപടിയായി പാടി ചേർത്തുവെച്ച പ്രണയഗാനം 💖"
+  },
+  "പങ്കാളിയുടെ വരികൾക്ക് മറുപടിയായി പാടി ചേർത്തുവെച്ച പ്രണയഗാനം 💖": {
+    "en": "Our Joint Harmony",
+    "ml": "പങ്കാളിയുടെ വരികൾക്ക് മറുപടിയായി പാടി ചേർത്തുവെച്ച പ്രണയഗാനം 💖"
+  },
+  "Duet Studio 🎙️ (തുറക്കുക)": {
+    "en": "Duet Studio 🎙️",
+    "ml": "തുറക്കുക"
+  },
+  "Duet Studio 🎙️": {
+    "en": "Duet Studio 🎙️",
+    "ml": "തുറക്കുക"
+  },
+  "ചുരുക്കുക (Hide)": {
+    "en": "Hide",
+    "ml": "ചുരുക്കുക"
+  },
+  "Hide": {
+    "en": "Hide",
+    "ml": "ചുരുക്കുക"
+  },
+  "ചുരുക്കുക": {
+    "en": "Hide",
+    "ml": "ചുരുക്കുക"
+  },
+  "വായിക്കുക (Read)": {
+    "en": "Read",
+    "ml": "വായിക്കുക"
+  },
+  "Read": {
+    "en": "Read",
+    "ml": "വായിക്കുക"
+  },
+  "വായിക്കുക": {
+    "en": "Read",
+    "ml": "വായിക്കുക"
+  },
+  "🎙️ ഒറിജിനൽ ശബ്ദം (Original voice speech)": {
+    "en": "Original voice speech",
+    "ml": "🎙️ ഒറിജിനൽ ശബ്ദം"
+  },
+  "Original voice speech": {
+    "en": "Original voice speech",
+    "ml": "🎙️ ഒറിജിനൽ ശബ്ദം"
+  },
+  "🎙️ ഒറിജിനൽ ശബ്ദം": {
+    "en": "Original voice speech",
+    "ml": "🎙️ ഒറിജിനൽ ശബ്ദം"
+  },
+  "ഒറ്റ ക്ലിക്കിൽ വായിക്കുക (Transcribe & Read)": {
+    "en": "Transcribe & Read",
+    "ml": "ഒറ്റ ക്ലിക്കിൽ വായിക്കുക"
+  },
+  "Transcribe & Read": {
+    "en": "Transcribe & Read",
+    "ml": "ഒറ്റ ക്ലിക്കിൽ വായിക്കുക"
+  },
+  "ഒറ്റ ക്ലിക്കിൽ വായിക്കുക": {
+    "en": "Transcribe & Read",
+    "ml": "ഒറ്റ ക്ലിക്കിൽ വായിക്കുക"
+  },
+  "ഡ്യുയറ്റ് പാടുക 🎙️🎶 (Sing Duet with this line)": {
+    "en": "Sing Duet with this line",
+    "ml": "ഡ്യുയറ്റ് പാടുക 🎙️🎶"
+  },
+  "Sing Duet with this line": {
+    "en": "Sing Duet with this line",
+    "ml": "ഡ്യുയറ്റ് പാടുക 🎙️🎶"
+  },
+  "ഡ്യുയറ്റ് പാടുക 🎙️🎶": {
+    "en": "Sing Duet with this line",
+    "ml": "ഡ്യുയറ്റ് പാടുക 🎙️🎶"
+  },
+  "സമ്മതം 💖 (Allow)": {
+    "en": "Allow",
+    "ml": "സമ്മതം 💖"
+  },
+  "Allow": {
+    "en": "Allow",
+    "ml": "സമ്മതം 💖"
+  },
+  "സമ്മതം 💖": {
+    "en": "Allow",
+    "ml": "സമ്മതം 💖"
+  },
+  "വേണ്ട (Decline)": {
+    "en": "Decline",
+    "ml": "വേണ്ട"
+  },
+  "Decline": {
+    "en": "Decline",
+    "ml": "വേണ്ട"
+  },
+  "വേണ്ട": {
+    "en": "Decline",
+    "ml": "വേണ്ട"
+  },
+  "15-Second Memory Snippet 📸 (15 സെക്കൻഡ് മെമ്മറി സ്നിപ്പെറ്റ്)": {
+    "en": "15-Second Memory Snippet 📸",
+    "ml": "15 സെക്കൻഡ് മെമ്മറി സ്നിപ്പെറ്റ്"
+  },
+  "15-Second Memory Snippet 📸": {
+    "en": "15-Second Memory Snippet 📸",
+    "ml": "15 സെക്കൻഡ് മെമ്മറി സ്നിപ്പെറ്റ്"
+  },
+  "15 സെക്കൻഡ് മെമ്മറി സ്നിപ്പെറ്റ്": {
+    "en": "15-Second Memory Snippet 📸",
+    "ml": "15 സെക്കൻഡ് മെമ്മറി സ്നിപ്പെറ്റ്"
+  },
+  "Play Couple Games in Call 🎮 (കോളിൽ കപ്പിൾ ഗെയിംസ് കളിക്കാം)": {
+    "en": "Play Couple Games in Call 🎮",
+    "ml": "കോളിൽ കപ്പിൾ ഗെയിംസ് കളിക്കാം"
+  },
+  "Play Couple Games in Call 🎮": {
+    "en": "Play Couple Games in Call 🎮",
+    "ml": "കോളിൽ കപ്പിൾ ഗെയിംസ് കളിക്കാം"
+  },
+  "കോളിൽ കപ്പിൾ ഗെയിംസ് കളിക്കാം": {
+    "en": "Play Couple Games in Call 🎮",
+    "ml": "കോളിൽ കപ്പിൾ ഗെയിംസ് കളിക്കാം"
+  },
+  "വാച്ച് & ലിസൺ ടുഗെതർ (Listen to Music Together 🎧)": {
+    "en": "Listen to Music Together 🎧",
+    "ml": "വാച്ച് & ലിസൺ ടുഗെതർ"
+  },
+  "Listen to Music Together 🎧": {
+    "en": "Listen to Music Together 🎧",
+    "ml": "വാച്ച് & ലിസൺ ടുഗെതർ"
+  },
+  "വാച്ച് & ലിസൺ ടുഗെതർ": {
+    "en": "Listen to Music Together 🎧",
+    "ml": "വാച്ച് & ലിസൺ ടുഗെതർ"
+  },
+  "What is my absolute comfort food when I'm stressed or down?": {
+    "en": "What is my absolute comfort food when I'm stressed or down?",
+    "ml": "എനിക്ക് സങ്കടമോ സ്ട്രെസ്സോ വരുമ്പോൾ ഏറ്റവും ഇഷ്ടപ്പെട്ട ഭക്ഷണം (Comfort Food) ഏതാണ്?"
+  },
+  "എനിക്ക് സങ്കടമോ സ്ട്രെസ്സോ വരുമ്പോൾ ഏറ്റവും ഇഷ്ടപ്പെട്ട ഭക്ഷണം (Comfort Food) ഏതാണ്?": {
+    "en": "What is my absolute comfort food when I'm stressed or down?",
+    "ml": "എനിക്ക് സങ്കടമോ സ്ട്രെസ്സോ വരുമ്പോൾ ഏറ്റവും ഇഷ്ടപ്പെട്ട ഭക്ഷണം (Comfort Food) ഏതാണ്?"
+  },
+  "Comfort Food": {
+    "en": "What is my absolute comfort food when I'm stressed or down?",
+    "ml": "എനിക്ക് സങ്കടമോ സ്ട്രെസ്സോ വരുമ്പോൾ ഏറ്റവും ഇഷ്ടപ്പെട്ട ഭക്ഷണം (Comfort Food) ഏതാണ്?"
+  },
+  "എനിക്ക് സങ്കടമോ സ്ട്രെസ്സോ വരുമ്പോൾ ഏറ്റവും ഇഷ്ടപ്പെട്ട ഭക്ഷണം ഏതാണ്?": {
+    "en": "What is my absolute comfort food when I'm stressed or down?",
+    "ml": "എനിക്ക് സങ്കടമോ സ്ട്രെസ്സോ വരുമ്പോൾ ഏറ്റവും ഇഷ്ടപ്പെട്ട ഭക്ഷണം (Comfort Food) ഏതാണ്?"
+  },
+  "What was my very first impression or feeling when we first met?": {
+    "en": "What was my very first impression or feeling when we first met?",
+    "ml": "നമ്മൾ ആദ്യം കണ്ടുമുട്ടിയപ്പോൾ എന്റെ മനസ്സിൽ തോന്നിയ ആദ്യ വികാരം എന്തായിരിക്കാം?"
+  },
+  "നമ്മൾ ആദ്യം കണ്ടുമുട്ടിയപ്പോൾ എന്റെ മനസ്സിൽ തോന്നിയ ആദ്യ വികാരം എന്തായിരിക്കാം?": {
+    "en": "What was my very first impression or feeling when we first met?",
+    "ml": "നമ്മൾ ആദ്യം കണ്ടുമുട്ടിയപ്പോൾ എന്റെ മനസ്സിൽ തോന്നിയ ആദ്യ വികാരം എന്തായിരിക്കാം?"
+  },
+  "What is my primary love language?": {
+    "en": "What is my primary love language?",
+    "ml": "എന്റെ പ്രധാനപ്പെട്ട ലവ് ലാംഗ്വേജ് (Love Language) ഇതിൽ ഏതാണ്?"
+  },
+  "എന്റെ പ്രധാനപ്പെട്ട ലവ് ലാംഗ്വേജ് (Love Language) ഇതിൽ ഏതാണ്?": {
+    "en": "What is my primary love language?",
+    "ml": "എന്റെ പ്രധാനപ്പെട്ട ലവ് ലാംഗ്വേജ് (Love Language) ഇതിൽ ഏതാണ്?"
+  },
+  "Love Language": {
+    "en": "What is my primary love language?",
+    "ml": "എന്റെ പ്രധാനപ്പെട്ട ലവ് ലാംഗ്വേജ് (Love Language) ഇതിൽ ഏതാണ്?"
+  },
+  "എന്റെ പ്രധാനപ്പെട്ട ലവ് ലാംഗ്വേജ് ഇതിൽ ഏതാണ്?": {
+    "en": "What is my primary love language?",
+    "ml": "എന്റെ പ്രധാനപ്പെട്ട ലവ് ലാംഗ്വേജ് (Love Language) ഇതിൽ ഏതാണ്?"
+  },
+  "Quality Time (ഒരുമിച്ചുള്ള സമയം) ⏳": {
+    "en": "Quality Time ⏳",
+    "ml": "ഒരുമിച്ചുള്ള സമയം"
+  },
+  "Quality Time ⏳": {
+    "en": "Quality Time ⏳",
+    "ml": "ഒരുമിച്ചുള്ള സമയം"
+  },
+  "ഒരുമിച്ചുള്ള സമയം": {
+    "en": "Quality Time ⏳",
+    "ml": "ഒരുമിച്ചുള്ള സമയം"
+  },
+  "Words of Affirmation (സ്നേഹവാക്കുകൾ) 💌": {
+    "en": "Words of Affirmation 💌",
+    "ml": "സ്നേഹവാക്കുകൾ"
+  },
+  "Words of Affirmation 💌": {
+    "en": "Words of Affirmation 💌",
+    "ml": "സ്നേഹവാക്കുകൾ"
+  },
+  "സ്നേഹവാക്കുകൾ": {
+    "en": "Words of Affirmation 💌",
+    "ml": "സ്നേഹവാക്കുകൾ"
+  },
+  "Physical Touch & Hugs (ആലിംഗനങ്ങൾ) 🫂": {
+    "en": "Physical Touch & Hugs 🫂",
+    "ml": "ആലിംഗനങ്ങൾ"
+  },
+  "Physical Touch & Hugs 🫂": {
+    "en": "Physical Touch & Hugs 🫂",
+    "ml": "ആലിംഗനങ്ങൾ"
+  },
+  "ആലിംഗനങ്ങൾ": {
+    "en": "Physical Touch & Hugs 🫂",
+    "ml": "ആലിംഗനങ്ങൾ"
+  },
+  "Acts of Service (കരുതലും സഹായവും) 🌸": {
+    "en": "Acts of Service 🌸",
+    "ml": "കരുതലും സഹായവും"
+  },
+  "Acts of Service 🌸": {
+    "en": "Acts of Service 🌸",
+    "ml": "കരുതലും സഹായവും"
+  },
+  "കരുതലും സഹായവും": {
+    "en": "Acts of Service 🌸",
+    "ml": "കരുതലും സഹായവും"
+  },
+  "What is my idea of our perfect dream date?": {
+    "en": "What is my idea of our perfect dream date?",
+    "ml": "നമ്മുടെ പെർഫെക്റ്റ് ഡ്രീം ഡേറ്റ് (Dream Date) ഇതിൽ ഏതായിരിക്കും?"
+  },
+  "നമ്മുടെ പെർഫെക്റ്റ് ഡ്രീം ഡേറ്റ് (Dream Date) ഇതിൽ ഏതായിരിക്കും?": {
+    "en": "What is my idea of our perfect dream date?",
+    "ml": "നമ്മുടെ പെർഫെക്റ്റ് ഡ്രീം ഡേറ്റ് (Dream Date) ഇതിൽ ഏതായിരിക്കും?"
+  },
+  "Dream Date": {
+    "en": "What is my idea of our perfect dream date?",
+    "ml": "നമ്മുടെ പെർഫെക്റ്റ് ഡ്രീം ഡേറ്റ് (Dream Date) ഇതിൽ ഏതായിരിക്കും?"
+  },
+  "നമ്മുടെ പെർഫെക്റ്റ് ഡ്രീം ഡേറ്റ് ഇതിൽ ഏതായിരിക്കും?": {
+    "en": "What is my idea of our perfect dream date?",
+    "ml": "നമ്മുടെ പെർഫെക്റ്റ് ഡ്രീം ഡേറ്റ് (Dream Date) ഇതിൽ ഏതായിരിക്കും?"
+  },
+  "What never fails to make me smile when I'm grumpy?": {
+    "en": "What never fails to make me smile when I'm grumpy?",
+    "ml": "എന്റെ മൂഡ് ഓഫ് ആവുമ്പോൾ എന്നെ ചിരിപ്പിക്കാൻ ഏറ്റവും എളുപ്പമുള്ള വഴി?"
+  },
+  "എന്റെ മൂഡ് ഓഫ് ആവുമ്പോൾ എന്നെ ചിരിപ്പിക്കാൻ ഏറ്റവും എളുപ്പമുള്ള വഴി?": {
+    "en": "What never fails to make me smile when I'm grumpy?",
+    "ml": "എന്റെ മൂഡ് ഓഫ് ആവുമ്പോൾ എന്നെ ചിരിപ്പിക്കാൻ ഏറ്റവും എളുപ്പമുള്ള വഴി?"
+  },
+  "ഒരു ഇറുക്കെയുള്ള ആലിംഗനം (Tight Hug) 🫂": {
+    "en": "Tight Hug",
+    "ml": "ഒരു ഇറുക്കെയുള്ള ആലിംഗനം 🫂"
+  },
+  "Tight Hug": {
+    "en": "Tight Hug",
+    "ml": "ഒരു ഇറുക്കെയുള്ള ആലിംഗനം 🫂"
+  },
+  "ഒരു ഇറുക്കെയുള്ള ആലിംഗനം 🫂": {
+    "en": "Tight Hug",
+    "ml": "ഒരു ഇറുക്കെയുള്ള ആലിംഗനം 🫂"
+  },
+  "What is that one magical moment in our relationship where you felt most deeply in love with me?": {
+    "en": "What is that one magical moment in our relationship where you felt most deeply in love with me?",
+    "ml": "നമ്മുടെ ബന്ധത്തിൽ എന്നെ ഏറ്റവും കൂടുതൽ സ്നേഹിക്കാൻ തോന്നിയ ആ മാന്ത്രിക നിമിഷം ഏതാണ്?"
+  },
+  "നമ്മുടെ ബന്ധത്തിൽ എന്നെ ഏറ്റവും കൂടുതൽ സ്നേഹിക്കാൻ തോന്നിയ ആ മാന്ത്രിക നിമിഷം ഏതാണ്?": {
+    "en": "What is that one magical moment in our relationship where you felt most deeply in love with me?",
+    "ml": "നമ്മുടെ ബന്ധത്തിൽ എന്നെ ഏറ്റവും കൂടുതൽ സ്നേഹിക്കാൻ തോന്നിയ ആ മാന്ത്രിക നിമിഷം ഏതാണ്?"
+  },
+  "What is a little habit or expression of mine that you secretly find irresistibly cute?": {
+    "en": "What is a little habit or expression of mine that you secretly find irresistibly cute?",
+    "ml": "എന്റെ ഏത് ചെറിയ ശീലമാണ് അല്ലെങ്കിൽ ഭാവമാണ് നിങ്ങൾക്ക് ഏറ്റവും കൂടുതൽ ക്യൂട്ട് ആയി തോന്നുന്നത്?"
+  },
+  "എന്റെ ഏത് ചെറിയ ശീലമാണ് അല്ലെങ്കിൽ ഭാവമാണ് നിങ്ങൾക്ക് ഏറ്റവും കൂടുതൽ ക്യൂട്ട് ആയി തോന്നുന്നത്?": {
+    "en": "What is a little habit or expression of mine that you secretly find irresistibly cute?",
+    "ml": "എന്റെ ഏത് ചെറിയ ശീലമാണ് അല്ലെങ്കിൽ ഭാവമാണ് നിങ്ങൾക്ക് ഏറ്റവും കൂടുതൽ ക്യൂട്ട് ആയി തോന്നുന്നത്?"
+  },
+  "What is one vivid dream you often have about our future together?": {
+    "en": "What is one vivid dream you often have about our future together?",
+    "ml": "നമ്മൾ ഒരുമിച്ച് ജീവിക്കുന്ന ഭാവിയെക്കുറിച്ച് നിങ്ങൾ ഏറ്റവും കൂടുതൽ സ്വപ്നം കാണുന്ന ഒരു കാര്യം എന്താണ്?"
+  },
+  "നമ്മൾ ഒരുമിച്ച് ജീവിക്കുന്ന ഭാവിയെക്കുറിച്ച് നിങ്ങൾ ഏറ്റവും കൂടുതൽ സ്വപ്നം കാണുന്ന ഒരു കാര്യം എന്താണ്?": {
+    "en": "What is one vivid dream you often have about our future together?",
+    "ml": "നമ്മൾ ഒരുമിച്ച് ജീവിക്കുന്ന ഭാവിയെക്കുറിച്ച് നിങ്ങൾ ഏറ്റവും കൂടുതൽ സ്വപ്നം കാണുന്ന ഒരു കാര്യം എന്താണ്?"
+  },
+  "What quality of mine gives you the most peace and emotional safety in life?": {
+    "en": "What quality of mine gives you the most peace and emotional safety in life?",
+    "ml": "നിങ്ങൾക്ക് ജീവിതത്തിൽ ഏറ്റവും ധൈര്യവും സമാധാനവും നൽകുന്ന എന്റെ ഒരു പ്രത്യേകത എന്താണ്?"
+  },
+  "നിങ്ങൾക്ക് ജീവിതത്തിൽ ഏറ്റവും ധൈര്യവും സമാധാനവും നൽകുന്ന എന്റെ ഒരു പ്രത്യേകത എന്താണ്?": {
+    "en": "What quality of mine gives you the most peace and emotional safety in life?",
+    "ml": "നിങ്ങൾക്ക് ജീവിതത്തിൽ ഏറ്റവും ധൈര്യവും സമാധാനവും നൽകുന്ന എന്റെ ഒരു പ്രത്യേകത എന്താണ്?"
+  },
+  "When was a moment near me where your heart was racing the fastest?": {
+    "en": "When was a moment near me where your heart was racing the fastest?",
+    "ml": "ഞാൻ നിങ്ങളുടെ അടുത്തുണ്ടായിരിക്കുമ്പോൾ നിങ്ങളുടെ ഹൃദയമിടിപ്പ് ഏറ്റവും കൂടുന്ന നിമിഷം ഏതാണ്?"
+  },
+  "ഞാൻ നിങ്ങളുടെ അടുത്തുണ്ടായിരിക്കുമ്പോൾ നിങ്ങളുടെ ഹൃദയമിടിപ്പ് ഏറ്റവും കൂടുന്ന നിമിഷം ഏതാണ്?": {
+    "en": "When was a moment near me where your heart was racing the fastest?",
+    "ml": "ഞാൻ നിങ്ങളുടെ അടുത്തുണ്ടായിരിക്കുമ്പോൾ നിങ്ങളുടെ ഹൃദയമിടിപ്പ് ഏറ്റവും കൂടുന്ന നിമിഷം ഏതാണ്?"
+  },
+  "What is the sweetest surprise you want to give me the next time we meet in person?": {
+    "en": "What is the sweetest surprise you want to give me the next time we meet in person?",
+    "ml": "നമ്മൾ അടുത്ത തവണ കാണുമ്പോൾ എനിക്ക് നൽകാൻ ആഗ്രഹിക്കുന്ന ഏറ്റവും മനോഹരമായ സർപ്രൈസ് എന്താണ്?"
+  },
+  "നമ്മൾ അടുത്ത തവണ കാണുമ്പോൾ എനിക്ക് നൽകാൻ ആഗ്രഹിക്കുന്ന ഏറ്റവും മനോഹരമായ സർപ്രൈസ് എന്താണ്?": {
+    "en": "What is the sweetest surprise you want to give me the next time we meet in person?",
+    "ml": "നമ്മൾ അടുത്ത തവണ കാണുമ്പോൾ എനിക്ക് നൽകാൻ ആഗ്രഹിക്കുന്ന ഏറ്റവും മനോഹരമായ സർപ്രൈസ് എന്താണ്?"
+  },
+  "Send a 10-second voice note singing a line of 'our song' right now! 🎵": {
+    "en": "Send a 10-second voice note singing a line of 'our song' right now! 🎵",
+    "ml": "നമുക്ക് രണ്ടുപേർക്കും പ്രിയപ്പെട്ട പാട്ടിന്റെ ഒരു വരി പാടി ഇപ്പോൾ തന്നെ 10 സെക്കൻഡ് വോയ്സ് നോട്ട് അയക്കൂ! 🎵"
+  },
+  "നമുക്ക് രണ്ടുപേർക്കും പ്രിയപ്പെട്ട പാട്ടിന്റെ ഒരു വരി പാടി ഇപ്പോൾ തന്നെ 10 സെക്കൻഡ് വോയ്സ് നോട്ട് അയക്കൂ! 🎵": {
+    "en": "Send a 10-second voice note singing a line of 'our song' right now! 🎵",
+    "ml": "നമുക്ക് രണ്ടുപേർക്കും പ്രിയപ്പെട്ട പാട്ടിന്റെ ഒരു വരി പാടി ഇപ്പോൾ തന്നെ 10 സെക്കൻഡ് വോയ്സ് നോട്ട് അയക്കൂ! 🎵"
+  },
+  "Write 3 romantic sentences about how much you cherish me in our chat right now! 💌": {
+    "en": "Write 3 romantic sentences about how much you cherish me in our chat right now! 💌",
+    "ml": "ഈ നിമിഷം എന്നെക്കുറിച്ച് തോന്നുന്ന ഏറ്റവും റൊമാന്റിക് ആയ 3 വരികൾ ചാറ്റിൽ എഴുതൂ! 💌"
+  },
+  "ഈ നിമിഷം എന്നെക്കുറിച്ച് തോന്നുന്ന ഏറ്റവും റൊമാന്റിക് ആയ 3 വരികൾ ചാറ്റിൽ എഴുതൂ! 💌": {
+    "en": "Write 3 romantic sentences about how much you cherish me in our chat right now! 💌",
+    "ml": "ഈ നിമിഷം എന്നെക്കുറിച്ച് തോന്നുന്ന ഏറ്റവും റൊമാന്റിക് ആയ 3 വരികൾ ചാറ്റിൽ എഴുതൂ! 💌"
+  },
+  "Open Virtual Touch and hold the screen for 10 seconds to give me a long warm hug! 🫂": {
+    "en": "Open Virtual Touch and hold the screen for 10 seconds to give me a long warm hug! 🫂",
+    "ml": "വിർച്വൽ ടച്ച് തുറന്ന് 10 സെക്കൻഡ് തുടർച്ചയായി സ്ക്രീനിൽ തൊട്ട് ഒരു ലോങ് ഹഗ് (Virtual Hug) തരൂ! 🫂"
+  },
+  "വിർച്വൽ ടച്ച് തുറന്ന് 10 സെക്കൻഡ് തുടർച്ചയായി സ്ക്രീനിൽ തൊട്ട് ഒരു ലോങ് ഹഗ് (Virtual Hug) തരൂ! 🫂": {
+    "en": "Open Virtual Touch and hold the screen for 10 seconds to give me a long warm hug! 🫂",
+    "ml": "വിർച്വൽ ടച്ച് തുറന്ന് 10 സെക്കൻഡ് തുടർച്ചയായി സ്ക്രീനിൽ തൊട്ട് ഒരു ലോങ് ഹഗ് (Virtual Hug) തരൂ! 🫂"
+  },
+  "Virtual Hug": {
+    "en": "Open Virtual Touch and hold the screen for 10 seconds to give me a long warm hug! 🫂",
+    "ml": "വിർച്വൽ ടച്ച് തുറന്ന് 10 സെക്കൻഡ് തുടർച്ചയായി സ്ക്രീനിൽ തൊട്ട് ഒരു ലോങ് ഹഗ് (Virtual Hug) തരൂ! 🫂"
+  },
+  "വിർച്വൽ ടച്ച് തുറന്ന് 10 സെക്കൻഡ് തുടർച്ചയായി സ്ക്രീനിൽ തൊട്ട് ഒരു ലോങ് ഹഗ് തരൂ! 🫂": {
+    "en": "Open Virtual Touch and hold the screen for 10 seconds to give me a long warm hug! 🫂",
+    "ml": "വിർച്വൽ ടച്ച് തുറന്ന് 10 സെക്കൻഡ് തുടർച്ചയായി സ്ക്രീനിൽ തൊട്ട് ഒരു ലോങ് ഹഗ് (Virtual Hug) തരൂ! 🫂"
+  },
+  "Take a spontaneous cute selfie right now and send it as view-once or regular media! 📸": {
+    "en": "Take a spontaneous cute selfie right now and send it as view-once or regular media! 📸",
+    "ml": "ഒരു നിമിഷം പോലും ആലോചിക്കാതെ ഇപ്പോൾ തന്നെ ഏറ്റവും ക്യൂട്ട് ആയ ഒരു സെൽഫി (View-once ആയിട്ടായാലും) അയക്കൂ! 📸"
+  },
+  "ഒരു നിമിഷം പോലും ആലോചിക്കാതെ ഇപ്പോൾ തന്നെ ഏറ്റവും ക്യൂട്ട് ആയ ഒരു സെൽഫി (View-once ആയിട്ടായാലും) അയക്കൂ! 📸": {
+    "en": "Take a spontaneous cute selfie right now and send it as view-once or regular media! 📸",
+    "ml": "ഒരു നിമിഷം പോലും ആലോചിക്കാതെ ഇപ്പോൾ തന്നെ ഏറ്റവും ക്യൂട്ട് ആയ ഒരു സെൽഫി (View-once ആയിട്ടായാലും) അയക്കൂ! 📸"
+  },
+  "Invent a brand new adorable pet nickname for me and use it for the next 24 hours! 🥰": {
+    "en": "Invent a brand new adorable pet nickname for me and use it for the next 24 hours! 🥰",
+    "ml": "അടുത്ത 24 മണിക്കൂറിലേക്ക് എന്നെ വിളിക്കാൻ ഒരു പുതിയ ക്യൂട്ട് പെറ്റ് നെയിം (Secret Nickname) കണ്ടുപിടിക്കൂ! 🥰"
+  },
+  "അടുത്ത 24 മണിക്കൂറിലേക്ക് എന്നെ വിളിക്കാൻ ഒരു പുതിയ ക്യൂട്ട് പെറ്റ് നെയിം (Secret Nickname) കണ്ടുപിടിക്കൂ! 🥰": {
+    "en": "Invent a brand new adorable pet nickname for me and use it for the next 24 hours! 🥰",
+    "ml": "അടുത്ത 24 മണിക്കൂറിലേക്ക് എന്നെ വിളിക്കാൻ ഒരു പുതിയ ക്യൂട്ട് പെറ്റ് നെയിം (Secret Nickname) കണ്ടുപിടിക്കൂ! 🥰"
+  },
+  "Secret Nickname": {
+    "en": "Invent a brand new adorable pet nickname for me and use it for the next 24 hours! 🥰",
+    "ml": "അടുത്ത 24 മണിക്കൂറിലേക്ക് എന്നെ വിളിക്കാൻ ഒരു പുതിയ ക്യൂട്ട് പെറ്റ് നെയിം (Secret Nickname) കണ്ടുപിടിക്കൂ! 🥰"
+  },
+  "അടുത്ത 24 മണിക്കൂറിലേക്ക് എന്നെ വിളിക്കാൻ ഒരു പുതിയ ക്യൂട്ട് പെറ്റ് നെയിം കണ്ടുപിടിക്കൂ! 🥰": {
+    "en": "Invent a brand new adorable pet nickname for me and use it for the next 24 hours! 🥰",
+    "ml": "അടുത്ത 24 മണിക്കൂറിലേക്ക് എന്നെ വിളിക്കാൻ ഒരു പുതിയ ക്യൂട്ട് പെറ്റ് നെയിം (Secret Nickname) കണ്ടുപിടിക്കൂ! 🥰"
+  },
+  "Cozy rainy evening watching movies with chai & a blanket 🌧️☕": {
+    "en": "Cozy rainy evening watching movies with chai & a blanket 🌧️☕",
+    "ml": "മഴയുള്ള വൈകുന്നേരം ചൂട് ചായയും കുടിച്ച് സിനിമ കാണൽ 🌧️☕"
+  },
+  "മഴയുള്ള വൈകുന്നേരം ചൂട് ചായയും കുടിച്ച് സിനിമ കാണൽ 🌧️☕": {
+    "en": "Cozy rainy evening watching movies with chai & a blanket 🌧️☕",
+    "ml": "മഴയുള്ള വൈകുന്നേരം ചൂട് ചായയും കുടിച്ച് സിനിമ കാണൽ 🌧️☕"
+  },
+  "Walking barefoot on the beach holding hands at sunset 🌅🌊": {
+    "en": "Walking barefoot on the beach holding hands at sunset 🌅🌊",
+    "ml": "കടൽത്തീരത്ത് കൈകൾ കോർത്തുപിടിച്ച് സൂര്യാസ്തമയം കാണൽ 🌅🌊"
+  },
+  "കടൽത്തീരത്ത് കൈകൾ കോർത്തുപിടിച്ച് സൂര്യാസ്തമയം കാണൽ 🌅🌊": {
+    "en": "Walking barefoot on the beach holding hands at sunset 🌅🌊",
+    "ml": "കടൽത്തീരത്ത് കൈകൾ കോർത്തുപിടിച്ച് സൂര്യാസ്തമയം കാണൽ 🌅🌊"
+  },
+  "Spontaneous midnight long drive listening to our favorite tracks 🚗🌙": {
+    "en": "Spontaneous midnight long drive listening to our favorite tracks 🚗🌙",
+    "ml": "പാട്ടുകൾ വെച്ച് പാതിരാത്രിയിൽ ഒരു അപ്രതീക്ഷിത ലോങ് ഡ്രൈവ് 🚗🌙"
+  },
+  "പാട്ടുകൾ വെച്ച് പാതിരാത്രിയിൽ ഒരു അപ്രതീക്ഷിത ലോങ് ഡ്രൈവ് 🚗🌙": {
+    "en": "Spontaneous midnight long drive listening to our favorite tracks 🚗🌙",
+    "ml": "പാട്ടുകൾ വെച്ച് പാതിരാത്രിയിൽ ഒരു അപ്രതീക്ഷിത ലോങ് ഡ്രൈവ് 🚗🌙"
+  },
+  "Candle-lit dinner cooking our favorite meal together at home 🕯️🍝": {
+    "en": "Candle-lit dinner cooking our favorite meal together at home 🕯️🍝",
+    "ml": "വീട്ടിൽ ഒരുമിച്ച് കുക്ക് ചെയ്യുന്ന ക്യാൻഡിൽ ലൈറ്റ് ഡിന്നർ 🕯️🍝"
+  },
+  "വീട്ടിൽ ഒരുമിച്ച് കുക്ക് ചെയ്യുന്ന ക്യാൻഡിൽ ലൈറ്റ് ഡിന്നർ 🕯️🍝": {
+    "en": "Candle-lit dinner cooking our favorite meal together at home 🕯️🍝",
+    "ml": "വീട്ടിൽ ഒരുമിച്ച് കുക്ക് ചെയ്യുന്ന ക്യാൻഡിൽ ലൈറ്റ് ഡിന്നർ 🕯️🍝"
+  },
+  "Peaceful misty mountain cabin escape away from the world 🏔️🪵": {
+    "en": "Peaceful misty mountain cabin escape away from the world 🏔️🪵",
+    "ml": "പുകമഞ്ഞുള്ള മലയോരത്തെ ശാന്തമായ ഒരു വുഡൻ ക്യാബിൻ 🏔️🪵"
+  },
+  "പുകമഞ്ഞുള്ള മലയോരത്തെ ശാന്തമായ ഒരു വുഡൻ ക്യാബിൻ 🏔️🪵": {
+    "en": "Peaceful misty mountain cabin escape away from the world 🏔️🪵",
+    "ml": "പുകമഞ്ഞുള്ള മലയോരത്തെ ശാന്തമായ ഒരു വുഡൻ ക്യാബിൻ 🏔️🪵"
+  },
+  "Tropical beach villa with private pool & endless ocean view 🏝️🍹": {
+    "en": "Tropical beach villa with private pool & endless ocean view 🏝️🍹",
+    "ml": "നീലക്കടലിനരികിലെ ഒരു സ്വകാര്യ ട്രോപ്പിക്കൽ വില്ല 🏝️🍹"
+  },
+  "നീലക്കടലിനരികിലെ ഒരു സ്വകാര്യ ട്രോപ്പിക്കൽ വില്ല 🏝️🍹": {
+    "en": "Tropical beach villa with private pool & endless ocean view 🏝️🍹",
+    "ml": "നീലക്കടലിനരികിലെ ഒരു സ്വകാര്യ ട്രോപ്പിക്കൽ വില്ല 🏝️🍹"
+  },
+  "Waking up together early for lazy breakfast in bed 🥞☀️": {
+    "en": "Waking up together early for lazy breakfast in bed 🥞☀️",
+    "ml": "രാവിലെ ഒന്നിച്ച് ഉണർന്ന് ഉണ്ടാക്കുന്ന ബ്രേക്ക്ഫാസ്റ്റ് ഇൻ ബെഡ് 🥞☀️"
+  },
+  "രാവിലെ ഒന്നിച്ച് ഉണർന്ന് ഉണ്ടാക്കുന്ന ബ്രേക്ക്ഫാസ്റ്റ് ഇൻ ബെഡ് 🥞☀️": {
+    "en": "Waking up together early for lazy breakfast in bed 🥞☀️",
+    "ml": "രാവിലെ ഒന്നിച്ച് ഉണർന്ന് ഉണ്ടാക്കുന്ന ബ്രേക്ക്ഫാസ്റ്റ് ഇൻ ബെഡ് 🥞☀️"
+  },
+  "Talking under the stars until 3 AM about everything in the world 🌌💬": {
+    "en": "Talking under the stars until 3 AM about everything in the world 🌌💬",
+    "ml": "ഉറക്കം വരാതെ പുലരുവോളം സംസാരിച്ചിരിക്കുന്ന പാതിരാവുകൾ 🌌💬"
+  },
+  "ഉറക്കം വരാതെ പുലരുവോളം സംസാരിച്ചിരിക്കുന്ന പാതിരാവുകൾ 🌌💬": {
+    "en": "Talking under the stars until 3 AM about everything in the world 🌌💬",
+    "ml": "ഉറക്കം വരാതെ പുലരുവോളം സംസാരിച്ചിരിക്കുന്ന പാതിരാവുകൾ 🌌💬"
+  },
+  "സത്യം (Truth)": {
+    "en": "Truth",
+    "ml": "സത്യം"
+  },
+  "Truth": {
+    "en": "Truth",
+    "ml": "സത്യം"
+  },
+  "സത്യം": {
+    "en": "Truth",
+    "ml": "സത്യം"
+  },
+  "ധൈര്യം (Dare)": {
+    "en": "Dare",
+    "ml": "ധൈര്യം"
+  },
+  "Dare": {
+    "en": "Dare",
+    "ml": "ധൈര്യം"
+  },
+  "ധൈര്യം": {
+    "en": "Dare",
+    "ml": "ധൈര്യം"
+  },
+  "Question of the Day · ഇന്നത്തെ ചോദ്യം": {
+    "en": "Question of the Day",
+    "ml": "ഇന്നത്തെ ചോദ്യം"
+  },
+  "Question of the Day": {
+    "en": "Question of the Day",
+    "ml": "ഇന്നത്തെ ചോദ്യം"
+  },
+  "Memory Lane (ഓർമ്മകൾ)": {
+    "en": "Memory Lane",
+    "ml": "ഓർമ്മകൾ"
+  },
+  "Memory Lane": {
+    "en": "Memory Lane",
+    "ml": "ഓർമ്മച്ചെപ്പ് 💫"
+  },
+  "ഓർമ്മകൾ": {
+    "en": "Memory Lane",
+    "ml": "ഓർമ്മകൾ"
+  },
+  "📖 Our Memory Scrapbook (നമ്മുടെ ഓർമ്മച്ചെപ്പ്)": {
+    "en": "📖 Our Memory Scrapbook",
+    "ml": "നമ്മുടെ ഓർമ്മച്ചെപ്പ്"
+  },
+  "📖 Our Memory Scrapbook": {
+    "en": "📖 Our Memory Scrapbook",
+    "ml": "നമ്മുടെ ഓർമ്മച്ചെപ്പ്"
+  },
+  "നമ്മുടെ ഓർമ്മച്ചെപ്പ്": {
+    "en": "📖 Our Memory Scrapbook",
+    "ml": "നമ്മുടെ ഓർമ്മച്ചെപ്പ്"
+  },
+  "Mutual Reveal Unlocked! (രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ തുറന്നു!) 🎉": {
+    "en": "Mutual Reveal Unlocked! 🎉",
+    "ml": "രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ തുറന്നു!"
+  },
+  "Mutual Reveal Unlocked! 🎉": {
+    "en": "Mutual Reveal Unlocked! 🎉",
+    "ml": "രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ തുറന്നു!"
+  },
+  "The Magic Is Revealed! (രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ)": {
+    "en": "The Magic Is Revealed!",
+    "ml": "രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ"
+  },
+  "The Magic Is Revealed!": {
+    "en": "The Magic Is Revealed!",
+    "ml": "രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ"
+  },
+  "രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ": {
+    "en": "The Magic Is Revealed!",
+    "ml": "രണ്ടുപേരുടെയും ഉത്തരങ്ങൾ"
+  },
+  "React to this moment (പ്രതികരണം നൽകൂ):": {
+    "en": "React to this moment:",
+    "ml": "പ്രതികരണം നൽകൂ"
+  },
+  "React to this moment:": {
+    "en": "React to this moment:",
+    "ml": "പ്രതികരണം നൽകൂ"
+  },
+  "പ്രതികരണം നൽകൂ": {
+    "en": "React to this moment:",
+    "ml": "പ്രതികരണം നൽകൂ"
+  },
+  "Share in Chat (ചാറ്റിൽ സൂക്ഷിക്കാം)": {
+    "en": "Share in Chat",
+    "ml": "ചാറ്റിൽ സൂക്ഷിക്കാം"
+  },
+  "Share in Chat": {
+    "en": "Share in Chat",
+    "ml": "ചാറ്റിൽ സൂക്ഷിക്കാം"
+  },
+  "ചാറ്റിൽ സൂക്ഷിക്കാം": {
+    "en": "Share in Chat",
+    "ml": "ചാറ്റിൽ സൂക്ഷിക്കാം"
+  },
+  "Sweet Nudge Sent! 💌 (ഓർമ്മിപ്പിച്ചു!)": {
+    "en": "Sweet Nudge Sent! 💌",
+    "ml": "ഓർമ്മിപ്പിച്ചു!"
+  },
+  "Sweet Nudge Sent! 💌": {
+    "en": "Sweet Nudge Sent! 💌",
+    "ml": "ഓർമ്മിപ്പിച്ചു!"
+  },
+  "ഓർമ്മിപ്പിച്ചു!": {
+    "en": "Sweet Nudge Sent! 💌",
+    "ml": "ഓർമ്മിപ്പിച്ചു!"
+  },
+  "നിങ്ങളുടെ ഹൃദയം തുറന്നെഴുതൂ 💭 (Pour your heart out):": {
+    "en": "Pour your heart out",
+    "ml": "നിങ്ങളുടെ ഹൃദയം തുറന്നെഴുതൂ 💭:"
+  },
+  "Pour your heart out": {
+    "en": "Pour your heart out",
+    "ml": "നിങ്ങളുടെ ഹൃദയം തുറന്നെഴുതൂ 💭:"
+  },
+  "നിങ്ങളുടെ ഹൃദയം തുറന്നെഴുതൂ 💭:": {
+    "en": "Pour your heart out",
+    "ml": "നിങ്ങളുടെ ഹൃദയം തുറന്നെഴുതൂ 💭:"
+  },
+  "Submit & Reveal Together! 🔓 (ഉത്തരം നൽകി തുറക്കൂ!)": {
+    "en": "Submit & Reveal Together! 🔓",
+    "ml": "ഉത്തരം നൽകി തുറക്കൂ!"
+  },
+  "Submit & Reveal Together! 🔓": {
+    "en": "Submit & Reveal Together! 🔓",
+    "ml": "ഉത്തരം നൽകി തുറക്കൂ!"
+  },
+  "ഉത്തരം നൽകി തുറക്കൂ!": {
+    "en": "Submit & Reveal Together! 🔓",
+    "ml": "ഉത്തരം നൽകി തുറക്കൂ!"
+  },
+  "Lock In My Answer 🔒 (രഹസ്യമായി സമർപ്പിക്കൂ)": {
+    "en": "Lock In My Answer 🔒",
+    "ml": "രഹസ്യമായി സമർപ്പിക്കൂ"
+  },
+  "Lock In My Answer 🔒": {
+    "en": "Lock In My Answer 🔒",
+    "ml": "രഹസ്യമായി സമർപ്പിക്കൂ"
+  },
+  "രഹസ്യമായി സമർപ്പിക്കൂ": {
+    "en": "Lock In My Answer 🔒",
+    "ml": "രഹസ്യമായി സമർപ്പിക്കൂ"
+  },
+  "5 സെക്കൻഡ് (Fast)": {
+    "en": "Fast",
+    "ml": "5 സെക്കൻഡ്"
+  },
+  "Fast": {
+    "en": "Fast",
+    "ml": "5 സെക്കൻഡ്"
+  },
+  "5 സെക്കൻഡ്": {
+    "en": "Fast",
+    "ml": "5 സെക്കൻഡ്"
+  },
+  "8 സെക്കൻഡ് (Default)": {
+    "en": "Default",
+    "ml": "8 സെക്കൻഡ്"
+  },
+  "Default": {
+    "en": "Default",
+    "ml": "8 സെക്കൻഡ്"
+  },
+  "8 സെക്കൻഡ്": {
+    "en": "Default",
+    "ml": "8 സെക്കൻഡ്"
+  },
+  "12 സെക്കൻഡ് (Relaxed)": {
+    "en": "Relaxed",
+    "ml": "12 സെക്കൻഡ്"
+  },
+  "Relaxed": {
+    "en": "Relaxed",
+    "ml": "12 സെക്കൻഡ്"
+  },
+  "12 സെക്കൻഡ്": {
+    "en": "Relaxed",
+    "ml": "12 സെക്കൻഡ്"
+  },
+  "20 സെക്കൻഡ് (Long)": {
+    "en": "Long",
+    "ml": "20 സെക്കൻഡ്"
+  },
+  "Long": {
+    "en": "Long",
+    "ml": "20 സെക്കൻഡ്"
+  },
+  "20 സെക്കൻഡ്": {
+    "en": "Long",
+    "ml": "20 സെക്കൻഡ്"
+  },
+  "I love you endlessly, always and forever...": {
+    "en": "I love you endlessly, always and forever...",
+    "ml": "നിന്നെ ഒരുപാട് സ്നേഹിക്കുന്നു, എന്നും എപ്പോഴും... ❤️"
+  },
+  "നിന്നെ ഒരുപാട് സ്നേഹിക്കുന്നു, എന്നും എപ്പോഴും... ❤️": {
+    "en": "I love you endlessly, always and forever...",
+    "ml": "നിന്നെ ഒരുപാട് സ്നേഹിക്കുന്നു, എന്നും എപ്പോഴും... ❤️"
+  },
+  "A sweet little surprise is waiting for you tonight!": {
+    "en": "A sweet little surprise is waiting for you tonight!",
+    "ml": "ഇന്ന് രാത്രി നിനക്കായി ഒരു ചെറിയ സർപ്രൈസ് ഒരുക്കിവെച്ചിട്ടുണ്ട്! 🤫✨"
+  },
+  "ഇന്ന് രാത്രി നിനക്കായി ഒരു ചെറിയ സർപ്രൈസ് ഒരുക്കിവെച്ചിട്ടുണ്ട്! 🤫✨": {
+    "en": "A sweet little surprise is waiting for you tonight!",
+    "ml": "ഇന്ന് രാത്രി നിനക്കായി ഒരു ചെറിയ സർപ്രൈസ് ഒരുക്കിവെച്ചിട്ടുണ്ട്! 🤫✨"
+  },
+  "You are all that occupies my thoughts...": {
+    "en": "You are all that occupies my thoughts...",
+    "ml": "എന്റെ ചിന്തകളിൽ മുഴുവൻ നീ മാത്രമാണ് പ്രിയേ... 💭💖"
+  },
+  "എന്റെ ചിന്തകളിൽ മുഴുവൻ നീ മാത്രമാണ് പ്രിയേ... 💭💖": {
+    "en": "You are all that occupies my thoughts...",
+    "ml": "എന്റെ ചിന്തകളിൽ മുഴുവൻ നീ മാത്രമാണ് പ്രിയേ... 💭💖"
+  },
+  "Once you reveal this, you owe me a warm kiss!": {
+    "en": "Once you reveal this, you owe me a warm kiss!",
+    "ml": "ഈ മെസ്സേജ് മായ്ച്ചു കഴിഞ്ഞാൽ എനിക്കൊരു ഉമ്മ അയക്കണം! 😘💋"
+  },
+  "ഈ മെസ്സേജ് മായ്ച്ചു കഴിഞ്ഞാൽ എനിക്കൊരു ഉമ്മ അയക്കണം! 😘💋": {
+    "en": "Once you reveal this, you owe me a warm kiss!",
+    "ml": "ഈ മെസ്സേജ് മായ്ച്ചു കഴിഞ്ഞാൽ എനിക്കൊരു ഉമ്മ അയക്കണം! 😘💋"
+  },
+  "You have the most breathtaking smile in the world...": {
+    "en": "You have the most breathtaking smile in the world...",
+    "ml": "ലോകത്തിലെ ഏറ്റവും മനോഹരമായ ചിരി നിന്റേതാണ്... ✨"
+  },
+  "ലോകത്തിലെ ഏറ്റവും മനോഹരമായ ചിരി നിന്റേതാണ്... ✨": {
+    "en": "You have the most breathtaking smile in the world...",
+    "ml": "ലോകത്തിലെ ഏറ്റവും മനോഹരമായ ചിരി നിന്റേതാണ്... ✨"
+  },
+  "No matter how far apart, my soul is always beside you...": {
+    "en": "No matter how far apart, my soul is always beside you...",
+    "ml": "എത്ര ദൂരെയാണെങ്കിലും എന്റെ മനസ്സ് നിന്റെ കൂടെയുണ്ട് 🫂💕"
+  },
+  "എത്ര ദൂരെയാണെങ്കിലും എന്റെ മനസ്സ് നിന്റെ കൂടെയുണ്ട് 🫂💕": {
+    "en": "No matter how far apart, my soul is always beside you...",
+    "ml": "എത്ര ദൂരെയാണെങ്കിലും എന്റെ മനസ്സ് നിന്റെ കൂടെയുണ്ട് 🫂💕"
+  },
+  "🪄 രഹസ്യ ഫോട്ടോ (Invisible Ink Photo · Scratch to reveal 🌫️)": {
+    "en": "Invisible Ink Photo · Scratch to reveal 🌫️",
+    "ml": "🪄 രഹസ്യ ഫോട്ടോ"
+  },
+  "Invisible Ink Photo · Scratch to reveal 🌫️": {
+    "en": "Invisible Ink Photo · Scratch to reveal 🌫️",
+    "ml": "🪄 രഹസ്യ ഫോട്ടോ"
+  },
+  "🪄 രഹസ്യ ഫോട്ടോ": {
+    "en": "Invisible Ink Photo · Scratch to reveal 🌫️",
+    "ml": "🪄 രഹസ്യ ഫോട്ടോ"
+  },
+  "🪄 രഹസ്യ സന്ദേശം (Invisible Ink · Scratch to reveal 🌫️)": {
+    "en": "Invisible Ink · Scratch to reveal 🌫️",
+    "ml": "🪄 രഹസ്യ സന്ദേശം"
+  },
+  "Invisible Ink · Scratch to reveal 🌫️": {
+    "en": "Invisible Ink · Scratch to reveal 🌫️",
+    "ml": "🪄 രഹസ്യ സന്ദേശം"
+  },
+  "🪄 രഹസ്യ സന്ദേശം": {
+    "en": "Invisible Ink · Scratch to reveal 🌫️",
+    "ml": "🪄 രഹസ്യ സന്ദേശം"
+  },
+  "🪄 രഹസ്യ മഷി (Invisible Ink)": {
+    "en": "Invisible Ink",
+    "ml": "🪄 രഹസ്യ മഷി"
+  },
+  "Invisible Ink": {
+    "en": "Invisible Ink",
+    "ml": "🪄 രഹസ്യ മഷി"
+  },
+  "✨ വിരൽ കൊണ്ട് ഉരച്ചു മായ്ക്കൂ (Scratch to reveal)": {
+    "en": "Scratch to reveal",
+    "ml": "✨ വിരൽ കൊണ്ട് ഉരച്ചു മായ്ക്കൂ"
+  },
+  "✨ വിരൽ കൊണ്ട് ഉരച്ചു മായ്ക്കൂ": {
+    "en": "Scratch to reveal",
+    "ml": "✨ വിരൽ കൊണ്ട് ഉരച്ചു മായ്ക്കൂ"
+  },
+  "വിരൽ കൊണ്ട് ഉരച്ചു മായ്ക്കൂ (Scratch fog)": {
+    "en": "Scratch fog",
+    "ml": "വിരൽ കൊണ്ട് ഉരച്ചു മായ്ക്കൂ"
+  },
+  "Scratch fog": {
+    "en": "Scratch fog",
+    "ml": "വിരൽ കൊണ്ട് ഉരച്ചു മായ്ക്കൂ"
+  },
+  "വിരൽ കൊണ്ട് ഉരച്ചു മായ്ക്കൂ": {
+    "en": "Scratch fog",
+    "ml": "വിരൽ കൊണ്ട് ഉരച്ചു മായ്ക്കൂ"
+  },
+  "ഇപ്പോൾ തന്നെ വീണ്ടും മൂടുക (Hide back now)": {
+    "en": "Hide back now",
+    "ml": "ഇപ്പോൾ തന്നെ വീണ്ടും മൂടുക"
+  },
+  "Hide back now": {
+    "en": "Hide back now",
+    "ml": "ഇപ്പോൾ തന്നെ വീണ്ടും മൂടുക"
+  },
+  "ഇപ്പോൾ തന്നെ വീണ്ടും മൂടുക": {
+    "en": "Hide back now",
+    "ml": "ഇപ്പോൾ തന്നെ വീണ്ടും മൂടുക"
+  },
+  "മൂടുക (Hide)": {
+    "en": "Hide",
+    "ml": "മൂടുക"
+  },
+  "മൂടുക": {
+    "en": "Hide",
+    "ml": "മൂടുക"
+  },
+  "മുഴുവൻ കാണുക (Reveal all)": {
+    "en": "Reveal all",
+    "ml": "മുഴുവൻ കാണുക"
+  },
+  "Reveal all": {
+    "en": "Reveal all",
+    "ml": "മുഴുവൻ കാണുക"
+  },
+  "മുഴുവൻ കാണുക": {
+    "en": "Reveal all",
+    "ml": "മുഴുവൻ കാണുക"
+  },
+  "തുറക്കുക (Reveal)": {
+    "en": "Reveal",
+    "ml": "തുറക്കുക"
+  },
+  "Reveal": {
+    "en": "Reveal",
+    "ml": "തുറക്കുക"
+  },
+  "വീണ്ടും വ്യക്തമാക്കുക (Clear fog)": {
+    "en": "Clear fog",
+    "ml": "വീണ്ടും വ്യക്തമാക്കുക"
+  },
+  "Clear fog": {
+    "en": "Clear fog",
+    "ml": "വീണ്ടും വ്യക്തമാക്കുക"
+  },
+  "വീണ്ടും വ്യക്തമാക്കുക": {
+    "en": "Clear fog",
+    "ml": "വീണ്ടും വ്യക്തമാക്കുക"
+  },
+  "ദയവായി ഒരു ചിത്രം (Image) തിരഞ്ഞെടുക്കുക.": {
+    "en": "Image",
+    "ml": "ദയവായി ഒരു ചിത്രം തിരഞ്ഞെടുക്കുക."
+  },
+  "Image": {
+    "en": "Image",
+    "ml": "ദയവായി ഒരു ചിത്രം തിരഞ്ഞെടുക്കുക."
+  },
+  "ദയവായി ഒരു ചിത്രം തിരഞ്ഞെടുക്കുക.": {
+    "en": "Image",
+    "ml": "ദയവായി ഒരു ചിത്രം തിരഞ്ഞെടുക്കുക."
+  },
+  "രഹസ്യ സന്ദേശം (Secret Note)": {
+    "en": "Secret Note",
+    "ml": "രഹസ്യ സന്ദേശം"
+  },
+  "Secret Note": {
+    "en": "Secret Note",
+    "ml": "രഹസ്യ സന്ദേശം"
+  },
+  "രഹസ്യ സന്ദേശം": {
+    "en": "Secret Note",
+    "ml": "രഹസ്യ സന്ദേശം"
+  },
+  "രഹസ്യ ഫോട്ടോ (Secret Photo)": {
+    "en": "Secret Photo",
+    "ml": "രഹസ്യ ഫോട്ടോ"
+  },
+  "Secret Photo": {
+    "en": "Secret Photo",
+    "ml": "രഹസ്യ ഫോട്ടോ"
+  },
+  "രഹസ്യ ഫോട്ടോ": {
+    "en": "Secret Photo",
+    "ml": "രഹസ്യ ഫോട്ടോ"
+  },
+  "മൂടൽമഞ്ഞ് നിറം (Fog Theme):": {
+    "en": "Fog Theme",
+    "ml": "മൂടൽമഞ്ഞ് നിറം:"
+  },
+  "Fog Theme": {
+    "en": "Fog Theme",
+    "ml": "മൂടൽമഞ്ഞ് നിറം:"
+  },
+  "മൂടൽമഞ്ഞ് നിറം:": {
+    "en": "Fog Theme",
+    "ml": "മൂടൽമഞ്ഞ് നിറം:"
+  },
+  "സ്വയം വീണ്ടും മറയാൻ (Auto-refog Timer):": {
+    "en": "Auto-refog Timer",
+    "ml": "സ്വയം വീണ്ടും മറയാൻ:"
+  },
+  "Auto-refog Timer": {
+    "en": "Auto-refog Timer",
+    "ml": "സ്വയം വീണ്ടും മറയാൻ:"
+  },
+  "സ്വയം വീണ്ടും മറയാൻ:": {
+    "en": "Auto-refog Timer",
+    "ml": "സ്വയം വീണ്ടും മറയാൻ:"
+  },
+  "ഫോട്ടോ മാറ്റുക (Change)": {
+    "en": "Change",
+    "ml": "ഫോട്ടോ മാറ്റുക"
+  },
+  "Change": {
+    "en": "Change",
+    "ml": "ഫോട്ടോ മാറ്റുക"
+  },
+  "ഫോട്ടോ മാറ്റുക": {
+    "en": "Change",
+    "ml": "ഫോട്ടോ മാറ്റുക"
+  },
+  "കളയുക (Remove)": {
+    "en": "Remove",
+    "ml": "കളയുക"
+  },
+  "Remove": {
+    "en": "Remove",
+    "ml": "കളയുക"
+  },
+  "കളയുക": {
+    "en": "Remove",
+    "ml": "കളയുക"
+  },
+  "ക്ലിക്ക് ചെയ്ത് ഫോട്ടോ അപ്‌ലോഡ് ചെയ്യാം (Max 20MB)": {
+    "en": "Max 20MB",
+    "ml": "ക്ലിക്ക് ചെയ്ത് ഫോട്ടോ അപ്‌ലോഡ് ചെയ്യാം"
+  },
+  "Max 20MB": {
+    "en": "Max 20MB",
+    "ml": "ക്ലിക്ക് ചെയ്ത് ഫോട്ടോ അപ്‌ലോഡ് ചെയ്യാം"
+  },
+  "ക്ലിക്ക് ചെയ്ത് ഫോട്ടോ അപ്‌ലോഡ് ചെയ്യാം": {
+    "en": "Max 20MB",
+    "ml": "ക്ലിക്ക് ചെയ്ത് ഫോട്ടോ അപ്‌ലോഡ് ചെയ്യാം"
+  },
+  "ഫോട്ടോയ്ക്ക് ഒരു രഹസ്യ അടിക്കുറിപ്പ് (Optional caption)...": {
+    "en": "Optional caption",
+    "ml": "ഫോട്ടോയ്ക്ക് ഒരു രഹസ്യ അടിക്കുറിപ്പ്..."
+  },
+  "Optional caption": {
+    "en": "Optional caption",
+    "ml": "ഫോട്ടോയ്ക്ക് ഒരു രഹസ്യ അടിക്കുറിപ്പ്..."
+  },
+  "ഫോട്ടോയ്ക്ക് ഒരു രഹസ്യ അടിക്കുറിപ്പ്...": {
+    "en": "Optional caption",
+    "ml": "ഫോട്ടോയ്ക്ക് ഒരു രഹസ്യ അടിക്കുറിപ്പ്..."
+  },
+  "റദ്ദാക്കുക (Cancel)": {
+    "en": "Cancel",
+    "ml": "റദ്ദാക്കുക"
+  },
+  "Cancel": {
+    "en": "Cancel",
+    "ml": "റദ്ദാക്കുക"
+  },
+  "റദ്ദാക്കുക": {
+    "en": "Cancel",
+    "ml": "റദ്ദാക്കുക"
+  },
+  "Listen Together · ഒന്നിച്ച് കേൾക്കാം": {
+    "en": "Listen Together",
+    "ml": "ഒന്നിച്ച് കേൾക്കാം"
+  },
+  "ഒന്നിച്ച് കേൾക്കാം": {
+    "en": "Listen Together",
+    "ml": "ഒന്നിച്ച് കേൾക്കാം"
+  },
+  "Add sweet note... (ഈ പാട്ട് കേൾക്കുമ്പോൾ ഓർമ്മ വന്നത് 🤍)": {
+    "en": "Add sweet note...",
+    "ml": "ഈ പാട്ട് കേൾക്കുമ്പോൾ ഓർമ്മ വന്നത് 🤍"
+  },
+  "Add sweet note...": {
+    "en": "Add sweet note...",
+    "ml": "ഈ പാട്ട് കേൾക്കുമ്പോൾ ഓർമ്മ വന്നത് 🤍"
+  },
+  "ഈ പാട്ട് കേൾക്കുമ്പോൾ ഓർമ്മ വന്നത് 🤍": {
+    "en": "Add sweet note...",
+    "ml": "ഈ പാട്ട് കേൾക്കുമ്പോൾ ഓർമ്മ വന്നത് 🤍"
+  },
+  "Heart of Stars (നക്ഷത്ര ഹൃദയം)": {
+    "en": "Heart of Stars",
+    "ml": "നക്ഷത്ര ഹൃദയം"
+  },
+  "Heart of Stars": {
+    "en": "Heart of Stars",
+    "ml": "നക്ഷത്ര ഹൃദയം"
+  },
+  "നക്ഷത്ര ഹൃദയം": {
+    "en": "Heart of Stars",
+    "ml": "നക്ഷത്ര ഹൃദയം"
+  },
+  "Infinity Bond (അനന്തമായ സ്നേഹം ♾️)": {
+    "en": "Infinity Bond",
+    "ml": "അനന്തമായ സ്നേഹം ♾️"
+  },
+  "Infinity Bond": {
+    "en": "Infinity Bond",
+    "ml": "അനന്തമായ സ്നേഹം ♾️"
+  },
+  "അനന്തമായ സ്നേഹം ♾️": {
+    "en": "Infinity Bond",
+    "ml": "അനന്തമായ സ്നേഹം ♾️"
+  },
+  "Clear the entire doodle canvas? (കാൻവാസ് മുഴുവൻ മായ്ക്കണോ?)": {
+    "en": "Clear the entire doodle canvas?",
+    "ml": "കാൻവാസ് മുഴുവൻ മായ്ക്കണോ?"
+  },
+  "Clear the entire doodle canvas?": {
+    "en": "Clear the entire doodle canvas?",
+    "ml": "കാൻവാസ് മുഴുവൻ മായ്ക്കണോ?"
+  },
+  "കാൻവാസ് മുഴുവൻ മായ്ക്കണോ?": {
+    "en": "Clear the entire doodle canvas?",
+    "ml": "കാൻവാസ് മുഴുവൻ മായ്ക്കണോ?"
+  },
+  "🎨 Our Live Doodle Masterpiece! (തത്സമയം ഒന്നിച്ച് വരച്ച ചിത്രം) 🤍": {
+    "en": "🎨 Our Live Doodle Masterpiece! 🤍",
+    "ml": "തത്സമയം ഒന്നിച്ച് വരച്ച ചിത്രം"
+  },
+  "🎨 Our Live Doodle Masterpiece! 🤍": {
+    "en": "🎨 Our Live Doodle Masterpiece! 🤍",
+    "ml": "തത്സമയം ഒന്നിച്ച് വരച്ച ചിത്രം"
+  },
+  "തത്സമയം ഒന്നിച്ച് വരച്ച ചിത്രം": {
+    "en": "🎨 Our Live Doodle Masterpiece! 🤍",
+    "ml": "തത്സമയം ഒന്നിച്ച് വരച്ച ചിത്രം"
+  },
+  "Next prompt (അടുത്ത വിഷയം)": {
+    "en": "Next prompt",
+    "ml": "അടുത്ത വിഷയം"
+  },
+  "Next prompt": {
+    "en": "Next prompt",
+    "ml": "അടുത്ത വിഷയം"
+  },
+  "അടുത്ത വിഷയം": {
+    "en": "Next prompt",
+    "ml": "അടുത്ത വിഷയം"
+  },
+  "Save & Send to Chat (ചാറ്റിലേക്ക് അയക്കാം)": {
+    "en": "Save & Send to Chat",
+    "ml": "ചാറ്റിലേക്ക് അയക്കാം"
+  },
+  "Save & Send to Chat": {
+    "en": "Save & Send to Chat",
+    "ml": "ചാറ്റിലേക്ക് അയക്കാം"
+  },
+  "ചാറ്റിലേക്ക് അയക്കാം": {
+    "en": "Save & Send to Chat",
+    "ml": "ചാറ്റിലേക്ക് അയക്കാം"
+  },
+  "Smooth Pen (സ്മൂത്ത് പെൻ)": {
+    "en": "Smooth Pen",
+    "ml": "സ്മൂത്ത് പെൻ"
+  },
+  "Smooth Pen": {
+    "en": "Smooth Pen",
+    "ml": "സ്മൂത്ത് പെൻ"
+  },
+  "സ്മൂത്ത് പെൻ": {
+    "en": "Smooth Pen",
+    "ml": "സ്മൂത്ത് പെൻ"
+  },
+  "Neon Glow (നിയോൺ ഗ്ലോ)": {
+    "en": "Neon Glow",
+    "ml": "നിയോൺ ഗ്ലോ"
+  },
+  "Neon Glow": {
+    "en": "Neon Glow",
+    "ml": "നിയോൺ ഗ്ലോ"
+  },
+  "നിയോൺ ഗ്ലോ": {
+    "en": "Neon Glow",
+    "ml": "നിയോൺ ഗ്ലോ"
+  },
+  "Heart Trail Brush (വിരൽത്തുമ്പിൽ ഹാർട്ടുകൾ)": {
+    "en": "Heart Trail Brush",
+    "ml": "വിരൽത്തുമ്പിൽ ഹാർട്ടുകൾ"
+  },
+  "Heart Trail Brush": {
+    "en": "Heart Trail Brush",
+    "ml": "വിരൽത്തുമ്പിൽ ഹാർട്ടുകൾ"
+  },
+  "വിരൽത്തുമ്പിൽ ഹാർട്ടുകൾ": {
+    "en": "Heart Trail Brush",
+    "ml": "വിരൽത്തുമ്പിൽ ഹാർട്ടുകൾ"
+  },
+  "Rainbow Pastel (റെയിൻബോ)": {
+    "en": "Rainbow Pastel",
+    "ml": "റെയിൻബോ"
+  },
+  "Rainbow Pastel": {
+    "en": "Rainbow Pastel",
+    "ml": "റെയിൻബോ"
+  },
+  "റെയിൻബോ": {
+    "en": "Rainbow Pastel",
+    "ml": "റെയിൻബോ"
+  },
+  "Eraser (ഇറേസർ)": {
+    "en": "Eraser",
+    "ml": "ഇറേസർ"
+  },
+  "Eraser": {
+    "en": "Eraser",
+    "ml": "ഇറേസർ"
+  },
+  "ഇറേസർ": {
+    "en": "Eraser",
+    "ml": "ഇറേസർ"
+  },
+  "Tap Heart Burst (തൊടുമ്പോൾ ഹാർട്ടുകൾ)": {
+    "en": "Tap Heart Burst",
+    "ml": "തൊടുമ്പോൾ ഹാർട്ടുകൾ"
+  },
+  "Tap Heart Burst": {
+    "en": "Tap Heart Burst",
+    "ml": "തൊടുമ്പോൾ ഹാർട്ടുകൾ"
+  },
+  "തൊടുമ്പോൾ ഹാർട്ടുകൾ": {
+    "en": "Tap Heart Burst",
+    "ml": "തൊടുമ്പോൾ ഹാർട്ടുകൾ"
+  },
+  "Add Love Note (ലവ് നോട്ട് എഴുതാം)": {
+    "en": "Add Love Note",
+    "ml": "ലവ് നോട്ട് എഴുതാം"
+  },
+  "Add Love Note": {
+    "en": "Add Love Note",
+    "ml": "ലവ് നോട്ട് എഴുതാം"
+  },
+  "ലവ് നോട്ട് എഴുതാം": {
+    "en": "Add Love Note",
+    "ml": "ലവ് നോട്ട് എഴുതാം"
+  },
+  "Mini Game (ചെറിയ കളികൾ)": {
+    "en": "Mini Game",
+    "ml": "ചെറിയ കളികൾ"
+  },
+  "Mini Game": {
+    "en": "Mini Game",
+    "ml": "ചെറിയ കളികൾ"
+  },
+  "ചെറിയ കളികൾ": {
+    "en": "Mini Game",
+    "ml": "ചെറിയ കളികൾ"
+  },
+  "Starry Midnight (ഗാലക്സി)": {
+    "en": "Starry Midnight",
+    "ml": "ഗാലക്സി"
+  },
+  "Starry Midnight": {
+    "en": "Starry Midnight",
+    "ml": "ഗാലക്സി"
+  },
+  "ഗാലക്സി": {
+    "en": "Starry Midnight",
+    "ml": "ഗാലക്സി"
+  },
+  "Romantic Rose (റോസ്)": {
+    "en": "Romantic Rose",
+    "ml": "റോസ്"
+  },
+  "Romantic Rose": {
+    "en": "Romantic Rose",
+    "ml": "റോസ്"
+  },
+  "റോസ്": {
+    "en": "Romantic Rose",
+    "ml": "റോസ്"
+  },
+  "Lined Love Letter (ലവ് ലെറ്റർ)": {
+    "en": "Lined Love Letter",
+    "ml": "ലവ് ലെറ്റർ"
+  },
+  "Lined Love Letter": {
+    "en": "Lined Love Letter",
+    "ml": "ലവ് ലെറ്റർ"
+  },
+  "ലവ് ലെറ്റർ": {
+    "en": "Lined Love Letter",
+    "ml": "ലവ് ലെറ്റർ"
+  },
+  "Chalkboard Dark (ബ്ലാക്ക്ബോർഡ്)": {
+    "en": "Chalkboard Dark",
+    "ml": "ബ്ലാക്ക്ബോർഡ്"
+  },
+  "Chalkboard Dark": {
+    "en": "Chalkboard Dark",
+    "ml": "ബ്ലാക്ക്ബോർഡ്"
+  },
+  "ബ്ലാക്ക്ബോർഡ്": {
+    "en": "Chalkboard Dark",
+    "ml": "ബ്ലാക്ക്ബോർഡ്"
+  },
+  "Undo (പിന്നോട്ട്)": {
+    "en": "Undo",
+    "ml": "പിന്നോട്ട്"
+  },
+  "Undo": {
+    "en": "Undo",
+    "ml": "പിന്നോട്ട്"
+  },
+  "പിന്നോട്ട്": {
+    "en": "Undo",
+    "ml": "പിന്നോട്ട്"
+  },
+  "Redo (മുന്നോട്ട്)": {
+    "en": "Redo",
+    "ml": "മുന്നോട്ട്"
+  },
+  "Redo": {
+    "en": "Redo",
+    "ml": "മുന്നോട്ട്"
+  },
+  "മുന്നോട്ട്": {
+    "en": "Redo",
+    "ml": "മുന്നോട്ട്"
+  },
+  "Clear Canvas (മായ്ക്കുക)": {
+    "en": "Clear Canvas",
+    "ml": "മായ്ക്കുക"
+  },
+  "Clear Canvas": {
+    "en": "Clear Canvas",
+    "ml": "മായ്ക്കുക"
+  },
+  "മായ്ക്കുക": {
+    "en": "Clear Canvas",
+    "ml": "മായ്ക്കുക"
+  },
+  "💌 Write a Love Note (ലവ് നോട്ട്)": {
+    "en": "💌 Write a Love Note",
+    "ml": "ലവ് നോട്ട്"
+  },
+  "💌 Write a Love Note": {
+    "en": "💌 Write a Love Note",
+    "ml": "ലവ് നോട്ട്"
+  },
+  "ലവ് നോട്ട്": {
+    "en": "💌 Write a Love Note",
+    "ml": "ലവ് നോട്ട്"
+  },
+  "Write something sweet for your person... (മനോഹരമായ ഒരു വാക്ക് എഴുതൂ)": {
+    "en": "Write something sweet for your person...",
+    "ml": "മനോഹരമായ ഒരു വാക്ക് എഴുതൂ"
+  },
+  "Write something sweet for your person...": {
+    "en": "Write something sweet for your person...",
+    "ml": "മനോഹരമായ ഒരു വാക്ക് എഴുതൂ"
+  },
+  "മനോഹരമായ ഒരു വാക്ക് എഴുതൂ": {
+    "en": "Write something sweet for your person...",
+    "ml": "മനോഹരമായ ഒരു വാക്ക് എഴുതൂ"
+  },
+  "Restart Match (വീണ്ടും കളിക്കാം)": {
+    "en": "Restart Match",
+    "ml": "വീണ്ടും കളിക്കാം"
+  },
+  "Restart Match": {
+    "en": "Restart Match",
+    "ml": "വീണ്ടും കളിക്കാം"
+  },
+  "വീണ്ടും കളിക്കാം": {
+    "en": "Restart Match",
+    "ml": "വീണ്ടും കളിക്കാം"
+  },
+  "Free Touch": {
+    "en": "Free Touch",
+    "ml": "തനത് സ്പർശനം"
+  },
+  "തനത് സ്പർശനം": {
+    "en": "Free Touch",
+    "ml": "തനത് സ്പർശനം"
+  },
+  "Calm Resting (68 BPM)": {
+    "en": "Calm Resting (68 BPM)",
+    "ml": "ശാന്തം (68 BPM)"
+  },
+  "ശാന്തം (68 BPM)": {
+    "en": "Calm Resting (68 BPM)",
+    "ml": "ശാന്തം (68 BPM)"
+  },
+  "68 BPM": {
+    "en": "Calm Resting (68 BPM)",
+    "ml": "ശാന്തം (68 BPM)"
+  },
+  "ശാന്തം": {
+    "en": "Calm Resting (68 BPM)",
+    "ml": "ശാന്തം (68 BPM)"
+  },
+  "Warm Loving (84 BPM)": {
+    "en": "Warm Loving (84 BPM)",
+    "ml": "സ്നേഹാർദ്രം (84 BPM)"
+  },
+  "സ്നേഹാർദ്രം (84 BPM)": {
+    "en": "Warm Loving (84 BPM)",
+    "ml": "സ്നേഹാർദ്രം (84 BPM)"
+  },
+  "84 BPM": {
+    "en": "Warm Loving (84 BPM)",
+    "ml": "സ്നേഹാർദ്രം (84 BPM)"
+  },
+  "സ്നേഹാർദ്രം": {
+    "en": "Warm Loving (84 BPM)",
+    "ml": "സ്നേഹാർദ്രം (84 BPM)"
+  },
+  "Racing Heart (112 BPM)": {
+    "en": "Racing Heart (112 BPM)",
+    "ml": "തുടിക്കുന്ന നെഞ്ചകം (112 BPM)"
+  },
+  "തുടിക്കുന്ന നെഞ്ചകം (112 BPM)": {
+    "en": "Racing Heart (112 BPM)",
+    "ml": "തുടിക്കുന്ന നെഞ്ചകം (112 BPM)"
+  },
+  "112 BPM": {
+    "en": "Racing Heart (112 BPM)",
+    "ml": "തുടിക്കുന്ന നെഞ്ചകം (112 BPM)"
+  },
+  "തുടിക്കുന്ന നെഞ്ചകം": {
+    "en": "Racing Heart (112 BPM)",
+    "ml": "തുടിക്കുന്ന നെഞ്ചകം (112 BPM)"
+  },
+  "You (നിങ്ങൾ)": {
+    "en": "You",
+    "ml": "നിങ്ങൾ"
+  },
+  "You": {
+    "en": "You",
+    "ml": "നിങ്ങൾ"
+  },
+  "നിങ്ങൾ": {
+    "en": "You",
+    "ml": "നിങ്ങൾ"
+  },
+  "Calm & Steady (ശാന്തം)": {
+    "en": "Calm & Steady",
+    "ml": "ശാന്തം"
+  },
+  "Calm & Steady": {
+    "en": "Calm & Steady",
+    "ml": "ശാന്തം"
+  },
+  "Warm & Loving (സ്നേഹാർദ്രം)": {
+    "en": "Warm & Loving",
+    "ml": "സ്നേഹാർദ്രം"
+  },
+  "Warm & Loving": {
+    "en": "Warm & Loving",
+    "ml": "സ്നേഹാർദ്രം"
+  },
+  "Racing For You! (തുടിക്കുന്ന നെഞ്ചകം)": {
+    "en": "Racing For You!",
+    "ml": "തുടിക്കുന്ന നെഞ്ചകം"
+  },
+  "Racing For You!": {
+    "en": "Racing For You!",
+    "ml": "തുടിക്കുന്ന നെഞ്ചകം"
+  },
+  "Add a loving message... (എന്റെ ഓരോ തുടിപ്പും നിനക്കായി)": {
+    "en": "Add a loving message...",
+    "ml": "എന്റെ ഓരോ തുടിപ്പും നിനക്കായി"
+  },
+  "Add a loving message...": {
+    "en": "Add a loving message...",
+    "ml": "എന്റെ ഓരോ തുടിപ്പും നിനക്കായി"
+  },
+  "എന്റെ ഓരോ തുടിപ്പും നിനക്കായി": {
+    "en": "Add a loving message...",
+    "ml": "എന്റെ ഓരോ തുടിപ്പും നിനക്കായി"
+  },
+  "Almost there (~5 mins)": {
+    "en": "Almost there (~5 mins)",
+    "ml": "ഇപ്പോൾ എത്തും (~5 മിനിറ്റ്)"
+  },
+  "ഇപ്പോൾ എത്തും (~5 മിനിറ്റ്)": {
+    "en": "Almost there (~5 mins)",
+    "ml": "ഇപ്പോൾ എത്തും (~5 മിനിറ്റ്)"
+  },
+  "On my way (~15 mins)": {
+    "en": "On my way (~15 mins)",
+    "ml": "വരുന്നുണ്ട് (~15 മിനിറ്റ്)"
+  },
+  "വരുന്നുണ്ട് (~15 മിനിറ്റ്)": {
+    "en": "On my way (~15 mins)",
+    "ml": "വരുന്നുണ്ട് (~15 മിനിറ്റ്)"
+  },
+  "Heading home (~30 mins)": {
+    "en": "Heading home (~30 mins)",
+    "ml": "വീട്ടിലേക്ക് തിരിച്ചു (~30 മിനിറ്റ്)"
+  },
+  "വീട്ടിലേക്ക് തിരിച്ചു (~30 മിനിറ്റ്)": {
+    "en": "Heading home (~30 mins)",
+    "ml": "വീട്ടിലേക്ക് തിരിച്ചു (~30 മിനിറ്റ്)"
+  },
+  "Stuck in traffic, slight delay": {
+    "en": "Stuck in traffic, slight delay",
+    "ml": "ട്രാഫിക്കിലാണ്, കുറച്ച് വൈകും"
+  },
+  "ട്രാഫിക്കിലാണ്, കുറച്ച് വൈകും": {
+    "en": "Stuck in traffic, slight delay",
+    "ml": "ട്രാഫിക്കിലാണ്, കുറച്ച് വൈകും"
+  },
+  "Reached safely, do not worry!": {
+    "en": "Reached safely, do not worry!",
+    "ml": "സുരക്ഷിതമായി എത്തിച്ചേർന്നു!"
+  },
+  "സുരക്ഷിതമായി എത്തിച്ചേർന്നു!": {
+    "en": "Reached safely, do not worry!",
+    "ml": "സുരക്ഷിതമായി എത്തിച്ചേർന്നു!"
+  },
+  "ഞാൻ എത്താറായി (ETA Status):": {
+    "en": "ETA Status",
+    "ml": "ഞാൻ എത്താറായി:"
+  },
+  "ETA Status": {
+    "en": "ETA Status",
+    "ml": "ഞാൻ എത്താറായി:"
+  },
+  "ഞാൻ എത്താറായി:": {
+    "en": "ETA Status",
+    "ml": "ഞാൻ എത്താറായി:"
+  },
+  "കസ്റ്റം സന്ദേശം (Custom note)": {
+    "en": "Custom note",
+    "ml": "കസ്റ്റം സന്ദേശം"
+  },
+  "Custom note": {
+    "en": "Custom note",
+    "ml": "കസ്റ്റം സന്ദേശം"
+  },
+  "കസ്റ്റം സന്ദേശം": {
+    "en": "Custom note",
+    "ml": "കസ്റ്റം സന്ദേശം"
+  },
+  "Private Scrapbook · സ്വകാര്യ ആൽബം": {
+    "en": "Private Scrapbook",
+    "ml": "സ്വകാര്യ ആൽബം"
+  },
+  "Private Scrapbook": {
+    "en": "Private Scrapbook",
+    "ml": "സ്വകാര്യ ആൽബം"
+  },
+  "സ്വകാര്യ ആൽബം": {
+    "en": "Private Scrapbook",
+    "ml": "സ്വകാര്യ ആൽബം"
+  },
+  "ചാറ്റിൽ അയച്ച പ്രിയപ്പെട്ട ഫോട്ടോകളും വീഡിയോകളും · Polaroid Memory Album": {
+    "en": "Polaroid Memory Album",
+    "ml": "ചാറ്റിൽ അയച്ച പ്രിയപ്പെട്ട ഫോട്ടോകളും വീഡിയോകളും"
+  },
+  "Polaroid Memory Album": {
+    "en": "Polaroid Memory Album",
+    "ml": "ചാറ്റിൽ അയച്ച പ്രിയപ്പെട്ട ഫോട്ടോകളും വീഡിയോകളും"
+  },
+  "ചാറ്റിൽ അയച്ച പ്രിയപ്പെട്ട ഫോട്ടോകളും വീഡിയോകളും": {
+    "en": "Polaroid Memory Album",
+    "ml": "ചാറ്റിൽ അയച്ച പ്രിയപ്പെട്ട ഫോട്ടോകളും വീഡിയോകളും"
+  },
+  "Polaroid Scrapbook Wall (ഗ്രിഡ്)": {
+    "en": "Polaroid Scrapbook Wall",
+    "ml": "ഗ്രിഡ്"
+  },
+  "Polaroid Scrapbook Wall": {
+    "en": "Polaroid Scrapbook Wall",
+    "ml": "ഗ്രിഡ്"
+  },
+  "ഗ്രിഡ്": {
+    "en": "Polaroid Scrapbook Wall",
+    "ml": "ഗ്രിഡ്"
+  },
+  "Storybook Flipbook (ആൽബം ബുക്ക്)": {
+    "en": "Storybook Flipbook",
+    "ml": "ആൽബം ബുക്ക്"
+  },
+  "Storybook Flipbook": {
+    "en": "Storybook Flipbook",
+    "ml": "ആൽബം ബുക്ക്"
+  },
+  "ആൽബം ബുക്ക്": {
+    "en": "Storybook Flipbook",
+    "ml": "ആൽബം ബുക്ക്"
+  },
+  "Memories (ആകെ ഓർമ്മകൾ)": {
+    "en": "Memories",
+    "ml": "ആകെ ഓർമ്മകൾ"
+  },
+  "Memories": {
+    "en": "Memories",
+    "ml": "ആകെ ഓർമ്മകൾ"
+  },
+  "ആകെ ഓർമ്മകൾ": {
+    "en": "Memories",
+    "ml": "ആകെ ഓർമ്മകൾ"
+  },
+  "Photos (ഫോട്ടോകൾ)": {
+    "en": "Photos",
+    "ml": "ഫോട്ടോകൾ"
+  },
+  "Photos": {
+    "en": "Photos",
+    "ml": "ഫോട്ടോകൾ"
+  },
+  "ഫോട്ടോകൾ": {
+    "en": "Photos",
+    "ml": "ഫോട്ടോകൾ"
+  },
+  "Videos (വീഡിയോകൾ)": {
+    "en": "Videos",
+    "ml": "വീഡിയോകൾ"
+  },
+  "Videos": {
+    "en": "Videos",
+    "ml": "വീഡിയോകൾ"
+  },
+  "വീഡിയോകൾ": {
+    "en": "Videos",
+    "ml": "വീഡിയോകൾ"
+  },
+  "All (എല്ലാം)": {
+    "en": "All",
+    "ml": "എല്ലാം"
+  },
+  "All": {
+    "en": "All",
+    "ml": "എല്ലാം"
+  },
+  "എല്ലാം": {
+    "en": "All",
+    "ml": "എല്ലാം"
+  },
+  "Starred (പ്രിയപ്പെട്ടവ)": {
+    "en": "Starred",
+    "ml": "പ്രിയപ്പെട്ടവ"
+  },
+  "Starred": {
+    "en": "Starred",
+    "ml": "പ്രിയപ്പെട്ടവ"
+  },
+  "പ്രിയപ്പെട്ടവ": {
+    "en": "Starred",
+    "ml": "പ്രിയപ്പെട്ടവ"
+  },
+  "By Me (ഞാൻ)": {
+    "en": "By Me",
+    "ml": "ഞാൻ"
+  },
+  "By Me": {
+    "en": "By Me",
+    "ml": "ഞാൻ"
+  },
+  "ഞാൻ": {
+    "en": "By Me",
+    "ml": "ഞാൻ"
+  },
+  "Search captions or files… (തിരയുക)": {
+    "en": "Search captions or files…",
+    "ml": "തിരയുക"
+  },
+  "Search captions or files…": {
+    "en": "Search captions or files…",
+    "ml": "തിരയുക"
+  },
+  "തിരയുക": {
+    "en": "Search captions or files…",
+    "ml": "തിരയുക"
+  },
+  "Gathering your sweet memories… (ഓർമ്മകൾ തുറക്കുന്നു)": {
+    "en": "Gathering your sweet memories…",
+    "ml": "ഓർമ്മകൾ തുറക്കുന്നു"
+  },
+  "Gathering your sweet memories…": {
+    "en": "Gathering your sweet memories…",
+    "ml": "ഓർമ്മകൾ തുറക്കുന്നു"
+  },
+  "ഓർമ്മകൾ തുറക്കുന്നു": {
+    "en": "Gathering your sweet memories…",
+    "ml": "ഓർമ്മകൾ തുറക്കുന്നു"
+  },
+  "View in Chat (ചാറ്റിൽ കാണുക)": {
+    "en": "View in Chat",
+    "ml": "ചാറ്റിൽ കാണുക"
+  },
+  "View in Chat": {
+    "en": "View in Chat",
+    "ml": "ചാറ്റിൽ കാണുക"
+  },
+  "ചാറ്റിൽ കാണുക": {
+    "en": "View in Chat",
+    "ml": "ചാറ്റിൽ കാണുക"
+  },
+  "Share memory card to chat (ചാറ്റിൽ ഓർമ്മ പങ്കിടുക)": {
+    "en": "Share memory card to chat",
+    "ml": "ചാറ്റിൽ ഓർമ്മ പങ്കിടുക"
+  },
+  "Share memory card to chat": {
+    "en": "Share memory card to chat",
+    "ml": "ചാറ്റിൽ ഓർമ്മ പങ്കിടുക"
+  },
+  "ചാറ്റിൽ ഓർമ്മ പങ്കിടുക": {
+    "en": "Share memory card to chat",
+    "ml": "ചാറ്റിൽ ഓർമ്മ പങ്കിടുക"
+  },
+  "Jump to message in chat (ചാറ്റിൽ കാണുക)": {
+    "en": "Jump to message in chat",
+    "ml": "ചാറ്റിൽ കാണുക"
+  },
+  "Jump to message in chat": {
+    "en": "Jump to message in chat",
+    "ml": "ചാറ്റിൽ കാണുക"
+  },
+  "തുടരാൻ ടാപ്പ് ചെയ്യുക (Tap to explore)": {
+    "en": "Tap to explore",
+    "ml": "തുടരാൻ ടാപ്പ് ചെയ്യുക"
+  },
+  "Tap to explore": {
+    "en": "Tap to explore",
+    "ml": "തുടരാൻ ടാപ്പ് ചെയ്യുക"
+  },
+  "തുടരാൻ ടാപ്പ് ചെയ്യുക": {
+    "en": "Tap to explore",
+    "ml": "തുടരാൻ ടാപ്പ് ചെയ്യുക"
+  },
+  "AI Love Chronicle · പ്രണയകാവ്യം": {
+    "en": "AI Love Chronicle",
+    "ml": "പ്രണയകാവ്യം"
+  },
+  "AI Love Chronicle": {
+    "en": "AI Love Chronicle",
+    "ml": "പ്രണയകാവ്യം"
+  },
+  "പ്രണയകാവ്യം": {
+    "en": "AI Love Chronicle",
+    "ml": "പ്രണയകാവ്യം"
+  },
+  "ചാറ്റിലേക്ക് അയച്ചു! (Shared to Chat ✨)": {
+    "en": "Shared to Chat ✨",
+    "ml": "ചാറ്റിലേക്ക് അയച്ചു!"
+  },
+  "Shared to Chat ✨": {
+    "en": "Shared to Chat ✨",
+    "ml": "ചാറ്റിലേക്ക് അയച്ചു!"
+  },
+  "ചാറ്റിലേക്ക് അയച്ചു!": {
+    "en": "Shared to Chat ✨",
+    "ml": "ചാറ്റിലേക്ക് അയച്ചു!"
+  },
+  "ഈ സ്റ്റോറി ചാറ്റിൽ പങ്കിടുക (Share Story)": {
+    "en": "Share Story",
+    "ml": "ഈ സ്റ്റോറി ചാറ്റിൽ പങ്കിടുക"
+  },
+  "Share Story": {
+    "en": "Share Story",
+    "ml": "ഈ സ്റ്റോറി ചാറ്റിൽ പങ്കിടുക"
+  },
+  "ഈ സ്റ്റോറി ചാറ്റിൽ പങ്കിടുക": {
+    "en": "Share Story",
+    "ml": "ഈ സ്റ്റോറി ചാറ്റിൽ പങ്കിടുക"
+  },
+  "Rainy Romance Lo-Fi": {
+    "en": "Rainy Romance Lo-Fi",
+    "ml": "മഴ തോരാത്ത രാവ്"
+  },
+  "മഴ തോരാത്ത രാവ്": {
+    "en": "Rainy Romance Lo-Fi",
+    "ml": "മഴ തോരാത്ത രാവ്"
+  },
+  "As the soft rain taps the glass, watching the night together with you.": {
+    "en": "As the soft rain taps the glass, watching the night together with you.",
+    "ml": "ജനലരികിൽ മഴ പെയ്യുമ്പോൾ, നിന്റെ കരം പിടിച്ച് ഈണം മൂളാൻ... ☕🌧️"
+  },
+  "ജനലരികിൽ മഴ പെയ്യുമ്പോൾ, നിന്റെ കരം പിടിച്ച് ഈണം മൂളാൻ... ☕🌧️": {
+    "en": "As the soft rain taps the glass, watching the night together with you.",
+    "ml": "ജനലരികിൽ മഴ പെയ്യുമ്പോൾ, നിന്റെ കരം പിടിച്ച് ഈണം മൂളാൻ... ☕🌧️"
+  },
+  "Moonlit Acoustic Serenade": {
+    "en": "Moonlit Acoustic Serenade",
+    "ml": "പ്രണയ നിലാവ്"
+  },
+  "പ്രണയ നിലാവ്": {
+    "en": "Moonlit Acoustic Serenade",
+    "ml": "പ്രണയ നിലാവ്"
+  },
+  "Beneath the quiet moonlight, every gentle chord belongs to you.": {
+    "en": "Beneath the quiet moonlight, every gentle chord belongs to you.",
+    "ml": "നിലാവുള്ള ഈ രാത്രിയിൽ എന്റെ ഹൃദയം പാടുന്നത് നിന്നെക്കുറിച്ചാണ്... 🤍🌙"
+  },
+  "നിലാവുള്ള ഈ രാത്രിയിൽ എന്റെ ഹൃദയം പാടുന്നത് നിന്നെക്കുറിച്ചാണ്... 🤍🌙": {
+    "en": "Beneath the quiet moonlight, every gentle chord belongs to you.",
+    "ml": "നിലാവുള്ള ഈ രാത്രിയിൽ എന്റെ ഹൃദയം പാടുന്നത് നിന്നെക്കുറിച്ചാണ്... 🤍🌙"
+  },
+  "Starry Night Piano": {
+    "en": "Starry Night Piano",
+    "ml": "നക്ഷത്രക്കൂട്"
+  },
+  "നക്ഷത്രക്കൂട്": {
+    "en": "Starry Night Piano",
+    "ml": "നക്ഷത്രക്കൂട്"
+  },
+  "Among ten thousand stars, your smile is my only guiding light.": {
+    "en": "Among ten thousand stars, your smile is my only guiding light.",
+    "ml": "ആകാശത്തെ കോടി നക്ഷത്രങ്ങളിൽ ഞാൻ തിരയുന്നത് നിന്റെ ചിരി മാത്രമാണ്... ✨💖"
+  },
+  "ആകാശത്തെ കോടി നക്ഷത്രങ്ങളിൽ ഞാൻ തിരയുന്നത് നിന്റെ ചിരി മാത്രമാണ്... ✨💖": {
+    "en": "Among ten thousand stars, your smile is my only guiding light.",
+    "ml": "ആകാശത്തെ കോടി നക്ഷത്രങ്ങളിൽ ഞാൻ തിരയുന്നത് നിന്റെ ചിരി മാത്രമാണ്... ✨💖"
+  },
+  "Sunset Serenade": {
+    "en": "Sunset Serenade",
+    "ml": "സന്ധ്യാ രാഗം"
+  },
+  "സന്ധ്യാ രാഗം": {
+    "en": "Sunset Serenade",
+    "ml": "സന്ധ്യാ രാഗം"
+  },
+  "As the sun dips into the crimson ocean, distances fade away.": {
+    "en": "As the sun dips into the crimson ocean, distances fade away.",
+    "ml": "സന്ധ്യാസൂര്യൻ കടലിൽ മുങ്ങുമ്പോൾ, ദൂരങ്ങൾ മറന്ന് ഞാൻ നിന്നരികിൽ... 🌅🧡"
+  },
+  "സന്ധ്യാസൂര്യൻ കടലിൽ മുങ്ങുമ്പോൾ, ദൂരങ്ങൾ മറന്ന് ഞാൻ നിന്നരികിൽ... 🌅🧡": {
+    "en": "As the sun dips into the crimson ocean, distances fade away.",
+    "ml": "സന്ധ്യാസൂര്യൻ കടലിൽ മുങ്ങുമ്പോൾ, ദൂരങ്ങൾ മറന്ന് ഞാൻ നിന്നരികിൽ... 🌅🧡"
+  },
+  "Cozy Cafe Vibes": {
+    "en": "Cozy Cafe Vibes",
+    "ml": "ഒരു കപ്പ് ചായയും നീയും"
+  },
+  "ഒരു കപ്പ് ചായയും നീയും": {
+    "en": "Cozy Cafe Vibes",
+    "ml": "ഒരു കപ്പ് ചായയും നീയും"
+  },
+  "A warm cup of coffee, our favorite song, and your laugh beside me.": {
+    "en": "A warm cup of coffee, our favorite song, and your laugh beside me.",
+    "ml": "ഒരു ചൂടു കാപ്പിയും പ്രിയപ്പെട്ട പാട്ടും... കൂടെ നീ കൂടെയുണ്ടെങ്കിൽ സ്വർഗ്ഗം! ☕✨"
+  },
+  "ഒരു ചൂടു കാപ്പിയും പ്രിയപ്പെട്ട പാട്ടും... കൂടെ നീ കൂടെയുണ്ടെങ്കിൽ സ്വർഗ്ഗം! ☕✨": {
+    "en": "A warm cup of coffee, our favorite song, and your laugh beside me.",
+    "ml": "ഒരു ചൂടു കാപ്പിയും പ്രിയപ്പെട്ട പാട്ടും... കൂടെ നീ കൂടെയുണ്ടെങ്കിൽ സ്വർഗ്ഗം! ☕✨"
+  },
+  "Soulful Deep Ambient": {
+    "en": "Soulful Deep Ambient",
+    "ml": "നിന്റെ ശ്വാസം പോലെ"
+  },
+  "നിന്റെ ശ്വാസം പോലെ": {
+    "en": "Soulful Deep Ambient",
+    "ml": "നിന്റെ ശ്വാസം പോലെ"
+  },
+  "Even in the deepest silence, our hearts beat in steady harmony.": {
+    "en": "Even in the deepest silence, our hearts beat in steady harmony.",
+    "ml": "നിശബ്ദതയിലും ഞാൻ കേൾക്കുന്നു, നിന്റെ ഓരോ ശ്വാസതാളവും... 🌌💓"
+  },
+  "നിശബ്ദതയിലും ഞാൻ കേൾക്കുന്നു, നിന്റെ ഓരോ ശ്വാസതാളവും... 🌌💓": {
+    "en": "Even in the deepest silence, our hearts beat in steady harmony.",
+    "ml": "നിശബ്ദതയിലും ഞാൻ കേൾക്കുന്നു, നിന്റെ ഓരോ ശ്വാസതാളവും... 🌌💓"
+  },
+  "Remind to Charge (പ്ലഗ് ചെയ്യാൻ പറയൂ) 🔌": {
+    "en": "Remind to Charge 🔌",
+    "ml": "പ്ലഗ് ചെയ്യാൻ പറയൂ"
+  },
+  "Remind to Charge 🔌": {
+    "en": "Remind to Charge 🔌",
+    "ml": "പ്ലഗ് ചെയ്യാൻ പറയൂ"
+  },
+  "പ്ലഗ് ചെയ്യാൻ പറയൂ": {
+    "en": "Remind to Charge 🔌",
+    "ml": "പ്ലഗ് ചെയ്യാൻ പറയൂ"
+  },
+  "Send Love Hug (സ്നേഹാലിംഗനം) 🫂": {
+    "en": "Send Love Hug 🫂",
+    "ml": "സ്നേഹാലിംഗനം"
+  },
+  "Send Love Hug 🫂": {
+    "en": "Send Love Hug 🫂",
+    "ml": "സ്നേഹാലിംഗനം"
+  },
+  "Partner Battery & Charging Care (ബാറ്ററി & ചാർജിംഗ് കെയർ 🔋⚡)": {
+    "en": "Partner Battery & Charging Care",
+    "ml": "ബാറ്ററി & ചാർജിംഗ് കെയർ 🔋⚡"
+  },
+  "Partner Battery & Charging Care": {
+    "en": "Partner Battery & Charging Care",
+    "ml": "ബാറ്ററി & ചാർജിംഗ് കെയർ 🔋⚡"
+  },
+  "ബാറ്ററി & ചാർജിംഗ് കെയർ 🔋⚡": {
+    "en": "Partner Battery & Charging Care",
+    "ml": "ബാറ്ററി & ചാർജിംഗ് കെയർ 🔋⚡"
+  },
+  "Loving Care Actions (സ്നേഹത്തോടെ ഓർമ്മിപ്പിക്കാം)": {
+    "en": "Loving Care Actions",
+    "ml": "സ്നേഹത്തോടെ ഓർമ്മിപ്പിക്കാം"
+  },
+  "Loving Care Actions": {
+    "en": "Loving Care Actions",
+    "ml": "സ്നേഹത്തോടെ ഓർമ്മിപ്പിക്കാം"
+  },
+  "സ്നേഹത്തോടെ ഓർമ്മിപ്പിക്കാം": {
+    "en": "Loving Care Actions",
+    "ml": "സ്നേഹത്തോടെ ഓർമ്മിപ്പിക്കാം"
+  },
+  "Battery Simulator & Testing Tool (ഡെമോ & ടെസ്റ്റിംഗ്)": {
+    "en": "Battery Simulator & Testing Tool",
+    "ml": "ഡെമോ & ടെസ്റ്റിംഗ്"
+  },
+  "Battery Simulator & Testing Tool": {
+    "en": "Battery Simulator & Testing Tool",
+    "ml": "ഡെമോ & ടെസ്റ്റിംഗ്"
+  },
+  "ഡെമോ & ടെസ്റ്റിംഗ്": {
+    "en": "Battery Simulator & Testing Tool",
+    "ml": "ഡെമോ & ടെസ്റ്റിംഗ്"
+  },
+  "What's your favorite food? (ഏറ്റവും ഇഷ്ടപ്പെട്ട ഭക്ഷണം?)": {
+    "en": "What's your favorite food?",
+    "ml": "ഏറ്റവും ഇഷ്ടപ്പെട്ട ഭക്ഷണം?"
+  },
+  "What's your favorite food?": {
+    "en": "What's your favorite food?",
+    "ml": "ഏറ്റവും ഇഷ്ടപ്പെട്ട ഭക്ഷണം?"
+  },
+  "ഏറ്റവും ഇഷ്ടപ്പെട്ട ഭക്ഷണം?": {
+    "en": "What's your favorite food?",
+    "ml": "ഏറ്റവും ഇഷ്ടപ്പെട്ട ഭക്ഷണം?"
+  },
+  "Options (അഭിപ്രായങ്ങൾ)": {
+    "en": "Options",
+    "ml": "അഭിപ്രായങ്ങൾ"
+  },
+  "Options": {
+    "en": "Options",
+    "ml": "അഭിപ്രായങ്ങൾ"
+  },
+  "അഭിപ്രായങ്ങൾ": {
+    "en": "Options",
+    "ml": "അഭിപ്രായങ്ങൾ"
+  },
+  "Love Nudge (ഓർമ്മിപ്പിക്കൂ)": {
+    "en": "Love Nudge",
+    "ml": "ഓർമ്മിപ്പിക്കൂ"
+  },
+  "Love Nudge": {
+    "en": "Love Nudge",
+    "ml": "ഓർമ്മിപ്പിക്കൂ"
+  },
+  "ഓർമ്മിപ്പിക്കൂ": {
+    "en": "Love Nudge",
+    "ml": "ഓർമ്മിപ്പിക്കൂ"
+  },
+  "sent you a sweet reminder to cherish your memories together! 🥰 (നമ്മുടെ ഓർമ്മകൾ കാണാൻ ഓർമ്മിപ്പിച്ചു!)": {
+    "en": "sent you a sweet reminder to cherish your memories together! 🥰",
+    "ml": "നമ്മുടെ ഓർമ്മകൾ കാണാൻ ഓർമ്മിപ്പിച്ചു!"
+  },
+  "sent you a sweet reminder to cherish your memories together! 🥰": {
+    "en": "sent you a sweet reminder to cherish your memories together! 🥰",
+    "ml": "നമ്മുടെ ഓർമ്മകൾ കാണാൻ ഓർമ്മിപ്പിച്ചു!"
+  },
+  "നമ്മുടെ ഓർമ്മകൾ കാണാൻ ഓർമ്മിപ്പിച്ചു!": {
+    "en": "sent you a sweet reminder to cherish your memories together! 🥰",
+    "ml": "നമ്മുടെ ഓർമ്മകൾ കാണാൻ ഓർമ്മിപ്പിച്ചു!"
+  },
+  "നമ്മൾ ഒന്നിച്ചുള്ള യാത്ര · DAYS TOGETHER": {
+    "en": "DAYS TOGETHER",
+    "ml": "നമ്മൾ ഒന്നിച്ചുള്ള യാത്ര"
+  },
+  "DAYS TOGETHER": {
+    "en": "DAYS TOGETHER",
+    "ml": "നമ്മൾ ഒന്നിച്ചുള്ള യാത്ര"
+  },
+  "നമ്മൾ ഒന്നിച്ചുള്ള യാത്ര": {
+    "en": "DAYS TOGETHER",
+    "ml": "നമ്മൾ ഒന്നിച്ചുള്ള യാത്ര"
+  },
+  "Set Start Date (തീയതി നിശ്ചയിക്കൂ)": {
+    "en": "Set Start Date",
+    "ml": "തീയതി നിശ്ചയിക്കൂ"
+  },
+  "Set Start Date": {
+    "en": "Set Start Date",
+    "ml": "തീയതി നിശ്ചയിക്കൂ"
+  },
+  "തീയതി നിശ്ചയിക്കൂ": {
+    "en": "Set Start Date",
+    "ml": "തീയതി നിശ്ചയിക്കൂ"
+  },
+  "Our Journey (ഓർമ്മകൾ)": {
+    "en": "Our Journey",
+    "ml": "ഓർമ്മകൾ"
+  },
+  "Our Journey": {
+    "en": "Our Journey",
+    "ml": "ഓർമ്മകൾ"
+  },
+  "Special Dates & Countdown (വിശേഷ ദിവസങ്ങൾ)": {
+    "en": "Special Dates & Countdown",
+    "ml": "വിശേഷ ദിവസങ്ങൾ"
+  },
+  "Special Dates & Countdown": {
+    "en": "Special Dates & Countdown",
+    "ml": "വിശേഷ ദിവസങ്ങൾ"
+  },
+  "വിശേഷ ദിവസങ്ങൾ": {
+    "en": "Special Dates & Countdown",
+    "ml": "വിശേഷ ദിവസങ്ങൾ"
+  },
+  "Key Dates & Settings (ക്രമീകരണങ്ങൾ)": {
+    "en": "Key Dates & Settings",
+    "ml": "ക്രമീകരണങ്ങൾ"
+  },
+  "Key Dates & Settings": {
+    "en": "Key Dates & Settings",
+    "ml": "ക്രമീകരണങ്ങൾ"
+  },
+  "ക്രമീകരണങ്ങൾ": {
+    "en": "Key Dates & Settings",
+    "ml": "ക്രമീകരണങ്ങൾ"
+  },
+  "Month in Review 📸🎞️ (റീക്യാപ്പ്)": {
+    "en": "Month in Review 📸🎞️",
+    "ml": "റീക്യാപ്പ്"
+  },
+  "Month in Review 📸🎞️": {
+    "en": "Month in Review 📸🎞️",
+    "ml": "റീക്യാപ്പ്"
+  },
+  "റീക്യാപ്പ്": {
+    "en": "Month in Review 📸🎞️",
+    "ml": "റീക്യാപ്പ്"
+  },
+  "Every first, every secret laughter, every memory frozen in time. (നമ്മുടെ ഓരോ ഓർമ്മകളും തീയതി പ്രകാരം)": {
+    "en": "Every first, every secret laughter, every memory frozen in time.",
+    "ml": "നമ്മുടെ ഓരോ ഓർമ്മകളും തീയതി പ്രകാരം"
+  },
+  "Every first, every secret laughter, every memory frozen in time.": {
+    "en": "Every first, every secret laughter, every memory frozen in time.",
+    "ml": "നമ്മുടെ ഓരോ ഓർമ്മകളും തീയതി പ്രകാരം"
+  },
+  "നമ്മുടെ ഓരോ ഓർമ്മകളും തീയതി പ്രകാരം": {
+    "en": "Every first, every secret laughter, every memory frozen in time.",
+    "ml": "നമ്മുടെ ഓരോ ഓർമ്മകളും തീയതി പ്രകാരം"
+  },
+  "Add Special Moment (ഓർമ്മ ചേർക്കുക)": {
+    "en": "Add Special Moment",
+    "ml": "ഓർമ്മ ചേർക്കുക"
+  },
+  "Add Special Moment": {
+    "en": "Add Special Moment",
+    "ml": "ഓർമ്മ ചേർക്കുക"
+  },
+  "ഓർമ്മ ചേർക്കുക": {
+    "en": "Add Special Moment",
+    "ml": "ഓർമ്മ ചേർക്കുക"
+  },
+  "Share this memory card to chat (ചാറ്റിൽ പങ്കിടുക)": {
+    "en": "Share this memory card to chat",
+    "ml": "ചാറ്റിൽ പങ്കിടുക"
+  },
+  "Share this memory card to chat": {
+    "en": "Share this memory card to chat",
+    "ml": "ചാറ്റിൽ പങ്കിടുക"
+  },
+  "ചാറ്റിൽ പങ്കിടുക": {
+    "en": "Share this memory card to chat",
+    "ml": "ചാറ്റിൽ പങ്കിടുക"
+  },
+  "Countdown to our Anniversaries, First Date celebration, and special moments. (വിശേഷ ദിവസങ്ങളുടെ കൗണ്ട്ഡൗൺ)": {
+    "en": "Countdown to our Anniversaries, First Date celebration, and special moments.",
+    "ml": "വിശേഷ ദിവസങ്ങളുടെ കൗണ്ട്ഡൗൺ"
+  },
+  "Countdown to our Anniversaries, First Date celebration, and special moments.": {
+    "en": "Countdown to our Anniversaries, First Date celebration, and special moments.",
+    "ml": "വിശേഷ ദിവസങ്ങളുടെ കൗണ്ട്ഡൗൺ"
+  },
+  "വിശേഷ ദിവസങ്ങളുടെ കൗണ്ട്ഡൗൺ": {
+    "en": "Countdown to our Anniversaries, First Date celebration, and special moments.",
+    "ml": "വിശേഷ ദിവസങ്ങളുടെ കൗണ്ട്ഡൗൺ"
+  },
+  "Add Milestone (വിശേഷ ദിവസം ചേർക്കുക)": {
+    "en": "Add Milestone",
+    "ml": "വിശേഷ ദിവസം ചേർക്കുക"
+  },
+  "Add Milestone": {
+    "en": "Add Milestone",
+    "ml": "വിശേഷ ദിവസം ചേർക്കുക"
+  },
+  "വിശേഷ ദിവസം ചേർക്കുക": {
+    "en": "Add Milestone",
+    "ml": "വിശേഷ ദിവസം ചേർക്കുക"
+  },
+  "Days (ദിവസം)": {
+    "en": "Days",
+    "ml": "ദിവസം"
+  },
+  "Days": {
+    "en": "Days",
+    "ml": "ദിവസം"
+  },
+  "ദിവസം": {
+    "en": "Days",
+    "ml": "ദിവസം"
+  },
+  "Share countdown to chat (ചാറ്റിൽ പങ്കിടുക)": {
+    "en": "Share countdown to chat",
+    "ml": "ചാറ്റിൽ പങ്കിടുക"
+  },
+  "Share countdown to chat": {
+    "en": "Share countdown to chat",
+    "ml": "ചാറ്റിൽ പങ്കിടുക"
+  },
+  "Set the dates that mark the beginning of your forever. (വിശേഷ തീയതികൾ ഇവിടെ മാറ്റാം)": {
+    "en": "Set the dates that mark the beginning of your forever.",
+    "ml": "വിശേഷ തീയതികൾ ഇവിടെ മാറ്റാം"
+  },
+  "Set the dates that mark the beginning of your forever.": {
+    "en": "Set the dates that mark the beginning of your forever.",
+    "ml": "വിശേഷ തീയതികൾ ഇവിടെ മാറ്റാം"
+  },
+  "വിശേഷ തീയതികൾ ഇവിടെ മാറ്റാം": {
+    "en": "Set the dates that mark the beginning of your forever.",
+    "ml": "വിശേഷ തീയതികൾ ഇവിടെ മാറ്റാം"
+  },
+  "💖 Relationship Start Date (ഒരുമിച്ച് തുടങ്ങിയ തീയതി)": {
+    "en": "💖 Relationship Start Date",
+    "ml": "ഒരുമിച്ച് തുടങ്ങിയ തീയതി"
+  },
+  "💖 Relationship Start Date": {
+    "en": "💖 Relationship Start Date",
+    "ml": "ഒരുമിച്ച് തുടങ്ങിയ തീയതി"
+  },
+  "ഒരുമിച്ച് തുടങ്ങിയ തീയതി": {
+    "en": "💖 Relationship Start Date",
+    "ml": "ഒരുമിച്ച് തുടങ്ങിയ തീയതി"
+  },
+  "🥂 Wedding / Love Anniversary (വിവാഹവാർഷികം / ആനിവേഴ്സറി)": {
+    "en": "🥂 Wedding / Love Anniversary",
+    "ml": "വിവാഹവാർഷികം / ആനിവേഴ്സറി"
+  },
+  "🥂 Wedding / Love Anniversary": {
+    "en": "🥂 Wedding / Love Anniversary",
+    "ml": "വിവാഹവാർഷികം / ആനിവേഴ്സറി"
+  },
+  "വിവാഹവാർഷികം / ആനിവേഴ്സറി": {
+    "en": "🥂 Wedding / Love Anniversary",
+    "ml": "വിവാഹവാർഷികം / ആനിവേഴ്സറി"
+  },
+  "☕ First Date Date (ആദ്യ കൂടിക്കാഴ്ച നടന്ന തീയതി)": {
+    "en": "☕ First Date Date",
+    "ml": "ആദ്യ കൂടിക്കാഴ്ച നടന്ന തീയതി"
+  },
+  "☕ First Date Date": {
+    "en": "☕ First Date Date",
+    "ml": "ആദ്യ കൂടിക്കാഴ്ച നടന്ന തീയതി"
+  },
+  "ആദ്യ കൂടിക്കാഴ്ച നടന്ന തീയതി": {
+    "en": "☕ First Date Date",
+    "ml": "ആദ്യ കൂടിക്കാഴ്ച നടന്ന തീയതി"
+  },
+  "📖 Couple Story Title (കഥയുടെ പേര്)": {
+    "en": "📖 Couple Story Title",
+    "ml": "കഥയുടെ പേര്"
+  },
+  "📖 Couple Story Title": {
+    "en": "📖 Couple Story Title",
+    "ml": "കഥയുടെ പേര്"
+  },
+  "കഥയുടെ പേര്": {
+    "en": "📖 Couple Story Title",
+    "ml": "കഥയുടെ പേര്"
+  },
+  "Save Relationship Dates (സൂക്ഷിക്കുക)": {
+    "en": "Save Relationship Dates",
+    "ml": "സൂക്ഷിക്കുക"
+  },
+  "Save Relationship Dates": {
+    "en": "Save Relationship Dates",
+    "ml": "സൂക്ഷിക്കുക"
+  },
+  "സൂക്ഷിക്കുക": {
+    "en": "Save Relationship Dates",
+    "ml": "സൂക്ഷിക്കുക"
+  },
+  "Add a Sweet Moment (ഓർമ്മ ചേർക്കുക) ✨": {
+    "en": "Add a Sweet Moment ✨",
+    "ml": "ഓർമ്മ ചേർക്കുക"
+  },
+  "Add a Sweet Moment ✨": {
+    "en": "Add a Sweet Moment ✨",
+    "ml": "ഓർമ്മ ചേർക്കുക"
+  },
+  "Title (ഓർമ്മയുടെ പേര്)*": {
+    "en": "Title*",
+    "ml": "ഓർമ്മയുടെ പേര്"
+  },
+  "Title*": {
+    "en": "Title*",
+    "ml": "ഓർമ്മയുടെ പേര്"
+  },
+  "ഓർമ്മയുടെ പേര്": {
+    "en": "Title*",
+    "ml": "ഓർമ്മയുടെ പേര്"
+  },
+  "Date (തീയതി)*": {
+    "en": "Date*",
+    "ml": "തീയതി"
+  },
+  "Date*": {
+    "en": "Date*",
+    "ml": "തീയതി"
+  },
+  "തീയതി": {
+    "en": "Date*",
+    "ml": "തീയതി"
+  },
+  "Category (ഇനം)*": {
+    "en": "Category*",
+    "ml": "ഇനം"
+  },
+  "Category*": {
+    "en": "Category*",
+    "ml": "ഇനം"
+  },
+  "ഇനം": {
+    "en": "Category*",
+    "ml": "ഇനം"
+  },
+  "Photo Upload (ചിത്രം)": {
+    "en": "Photo Upload",
+    "ml": "ചിത്രം"
+  },
+  "Photo Upload": {
+    "en": "Photo Upload",
+    "ml": "ചിത്രം"
+  },
+  "ചിത്രം": {
+    "en": "Photo Upload",
+    "ml": "ചിത്രം"
+  },
+  "Pick Photo (ചിത്രം തിരഞ്ഞെടുക്കൂ)": {
+    "en": "Pick Photo",
+    "ml": "ചിത്രം തിരഞ്ഞെടുക്കൂ"
+  },
+  "Pick Photo": {
+    "en": "Pick Photo",
+    "ml": "ചിത്രം തിരഞ്ഞെടുക്കൂ"
+  },
+  "ചിത്രം തിരഞ്ഞെടുക്കൂ": {
+    "en": "Pick Photo",
+    "ml": "ചിത്രം തിരഞ്ഞെടുക്കൂ"
+  },
+  "Our Story / Caption (വിശേഷങ്ങൾ)": {
+    "en": "Our Story / Caption",
+    "ml": "വിശേഷങ്ങൾ"
+  },
+  "Our Story / Caption": {
+    "en": "Our Story / Caption",
+    "ml": "വിശേഷങ്ങൾ"
+  },
+  "വിശേഷങ്ങൾ": {
+    "en": "Our Story / Caption",
+    "ml": "വിശേഷങ്ങൾ"
+  },
+  "Add to Our Story (ഓർമ്മ ചേർക്കൂ 💖)": {
+    "en": "Add to Our Story",
+    "ml": "ഓർമ്മ ചേർക്കൂ 💖"
+  },
+  "Add to Our Story": {
+    "en": "Add to Our Story",
+    "ml": "ഓർമ്മ ചേർക്കൂ 💖"
+  },
+  "ഓർമ്മ ചേർക്കൂ 💖": {
+    "en": "Add to Our Story",
+    "ml": "ഓർമ്മ ചേർക്കൂ 💖"
+  },
+  "Add Milestone Countdown (വിശേഷ ദിവസം) ⏳": {
+    "en": "Add Milestone Countdown ⏳",
+    "ml": "വിശേഷ ദിവസം"
+  },
+  "Add Milestone Countdown ⏳": {
+    "en": "Add Milestone Countdown ⏳",
+    "ml": "വിശേഷ ദിവസം"
+  },
+  "Milestone Title (വിശേഷ ദിവസത്തിന്റെ പേര്)*": {
+    "en": "Milestone Title*",
+    "ml": "വിശേഷ ദിവസത്തിന്റെ പേര്"
+  },
+  "Milestone Title*": {
+    "en": "Milestone Title*",
+    "ml": "വിശേഷ ദിവസത്തിന്റെ പേര്"
+  },
+  "വിശേഷ ദിവസത്തിന്റെ പേര്": {
+    "en": "Milestone Title*",
+    "ml": "വിശേഷ ദിവസത്തിന്റെ പേര്"
+  },
+  "Target Date (തീയതി)*": {
+    "en": "Target Date*",
+    "ml": "തീയതി"
+  },
+  "Target Date*": {
+    "en": "Target Date*",
+    "ml": "തീയതി"
+  },
+  "Category (ഇനം)": {
+    "en": "Category",
+    "ml": "ഇനം"
+  },
+  "Category": {
+    "en": "Category",
+    "ml": "ഇനം"
+  },
+  "വിവാഹവാർഷികം (Anniversary)": {
+    "en": "Anniversary",
+    "ml": "വിവാഹവാർഷികം"
+  },
+  "Anniversary": {
+    "en": "Anniversary",
+    "ml": "വാർഷികം / ആനിവേഴ്സറി 🥂"
+  },
+  "വിവാഹവാർഷികം": {
+    "en": "Anniversary",
+    "ml": "വിവാഹവാർഷികം"
+  },
+  "ആദ്യ കൂടിക്കാഴ്ച (First Date)": {
+    "en": "First Date",
+    "ml": "ആദ്യ കൂടിക്കാഴ്ച"
+  },
+  "First Date": {
+    "en": "First Date",
+    "ml": "ആദ്യ കൂടിക്കാഴ്ച ☕"
+  },
+  "ആദ്യ കൂടിക്കാഴ്ച": {
+    "en": "First Date",
+    "ml": "ആദ്യ കൂടിക്കാഴ്ച"
+  },
+  "യാത്ര (Trip / Vacation)": {
+    "en": "Trip / Vacation",
+    "ml": "യാത്ര"
+  },
+  "Trip / Vacation": {
+    "en": "Trip / Vacation",
+    "ml": "യാത്ര"
+  },
+  "യാത്ര": {
+    "en": "Trip / Vacation",
+    "ml": "യാത്ര"
+  },
+  "ജന്മദിനം (Birthday)": {
+    "en": "Birthday",
+    "ml": "ജന്മദിനം"
+  },
+  "Birthday": {
+    "en": "Birthday",
+    "ml": "ജന്മദിനം 🎂"
+  },
+  "ജന്മദിനം": {
+    "en": "Birthday",
+    "ml": "ജന്മദിനം"
+  },
+  "മറ്റ് നാഴികക്കല്ലുകൾ (Custom)": {
+    "en": "Custom",
+    "ml": "മറ്റ് നാഴികക്കല്ലുകൾ"
+  },
+  "Custom": {
+    "en": "Custom",
+    "ml": "മറ്റ് നാഴികക്കല്ലുകൾ"
+  },
+  "മറ്റ് നാഴികക്കല്ലുകൾ": {
+    "en": "Custom",
+    "ml": "മറ്റ് നാഴികക്കല്ലുകൾ"
+  },
+  "Sweet Note (കുറിപ്പ്)": {
+    "en": "Sweet Note",
+    "ml": "കുറിപ്പ്"
+  },
+  "Sweet Note": {
+    "en": "Sweet Note",
+    "ml": "കുറിപ്പ്"
+  },
+  "കുറിപ്പ്": {
+    "en": "Sweet Note",
+    "ml": "കുറിപ്പ്"
+  },
+  "പ്രണയ കൂപ്പണുകൾ (Love Coupons 🎟️)": {
+    "en": "Love Coupons 🎟️",
+    "ml": "പ്രണയ കൂപ്പണുകൾ"
+  },
+  "Love Coupons 🎟️": {
+    "en": "Love Coupons 🎟️",
+    "ml": "പ്രണയ കൂപ്പണുകൾ"
+  },
+  "പ്രണയ കൂപ്പണുകൾ": {
+    "en": "Love Coupons 🎟️",
+    "ml": "പ്രണയ കൂപ്പണുകൾ"
+  },
+  "നമ്മുടെ സ്വപ്നങ്ങളുടെ പട്ടിക (Bucket List ✈️)": {
+    "en": "Bucket List ✈️",
+    "ml": "നമ്മുടെ സ്വപ്നങ്ങളുടെ പട്ടിക"
+  },
+  "Bucket List ✈️": {
+    "en": "Bucket List ✈️",
+    "ml": "നമ്മുടെ സ്വപ്നങ്ങളുടെ പട്ടിക"
+  },
+  "നമ്മുടെ സ്വപ്നങ്ങളുടെ പട്ടിക": {
+    "en": "Bucket List ✈️",
+    "ml": "നമ്മുടെ സ്വപ്നങ്ങളുടെ പട്ടിക"
+  },
+  "ഡേറ്റ് നൈറ്റ് ഐഡിയ വീൽ (Date Night Wheel 🎲)": {
+    "en": "Date Night Wheel 🎲",
+    "ml": "ഡേറ്റ് നൈറ്റ് ഐഡിയ വീൽ"
+  },
+  "Date Night Wheel 🎲": {
+    "en": "Date Night Wheel 🎲",
+    "ml": "ഡേറ്റ് നൈറ്റ് ഐഡിയ വീൽ"
+  },
+  "ഡേറ്റ് നൈറ്റ് ഐഡിയ വീൽ": {
+    "en": "Date Night Wheel 🎲",
+    "ml": "ഡേറ്റ് നൈറ്റ് ഐഡിയ വീൽ"
+  },
+  "എനിക്ക് ലഭിച്ചവ (For Me) 🎁 (": {
+    "en": "For Me",
+    "ml": "എനിക്ക് ലഭിച്ചവ 🎁 ("
+  },
+  "For Me": {
+    "en": "For Me",
+    "ml": "എനിക്ക് ലഭിച്ചവ 🎁 ("
+  },
+  "എനിക്ക് ലഭിച്ചവ 🎁 (": {
+    "en": "For Me",
+    "ml": "എനിക്ക് ലഭിച്ചവ 🎁 ("
+  },
+  "ഞാൻ നൽകിയവ (Sent by Me) 💌 (": {
+    "en": "Sent by Me",
+    "ml": "ഞാൻ നൽകിയവ 💌 ("
+  },
+  "Sent by Me": {
+    "en": "Sent by Me",
+    "ml": "ഞാൻ നൽകിയവ 💌 ("
+  },
+  "ഞാൻ നൽകിയവ 💌 (": {
+    "en": "Sent by Me",
+    "ml": "ഞാൻ നൽകിയവ 💌 ("
+  },
+  "+ പുതിയ കൂപ്പൺ നൽകാം (Gift Coupon)": {
+    "en": "Gift Coupon",
+    "ml": "+ പുതിയ കൂപ്പൺ നൽകാം"
+  },
+  "Gift Coupon": {
+    "en": "Gift Coupon",
+    "ml": "+ പുതിയ കൂപ്പൺ നൽകാം"
+  },
+  "+ പുതിയ കൂപ്പൺ നൽകാം": {
+    "en": "Gift Coupon",
+    "ml": "+ പുതിയ കൂപ്പൺ നൽകാം"
+  },
+  "ക്വിക്ക് പ്രിസെറ്റ് കൂപ്പണുകൾ (Quick Gift Presets 🎟️):": {
+    "en": "Quick Gift Presets 🎟️",
+    "ml": "ക്വിക്ക് പ്രിസെറ്റ് കൂപ്പണുകൾ:"
+  },
+  "Quick Gift Presets 🎟️": {
+    "en": "Quick Gift Presets 🎟️",
+    "ml": "ക്വിക്ക് പ്രിസെറ്റ് കൂപ്പണുകൾ:"
+  },
+  "ക്വിക്ക് പ്രിസെറ്റ് കൂപ്പണുകൾ:": {
+    "en": "Quick Gift Presets 🎟️",
+    "ml": "ക്വിക്ക് പ്രിസെറ്റ് കൂപ്പണുകൾ:"
+  },
+  "കസ്റ്റം കൂപ്പൺ ഉണ്ടാക്കുക (Create Custom Coupon):": {
+    "en": "Create Custom Coupon",
+    "ml": "കസ്റ്റം കൂപ്പൺ ഉണ്ടാക്കുക:"
+  },
+  "Create Custom Coupon": {
+    "en": "Create Custom Coupon",
+    "ml": "കസ്റ്റം കൂപ്പൺ ഉണ്ടാക്കുക:"
+  },
+  "കസ്റ്റം കൂപ്പൺ ഉണ്ടാക്കുക:": {
+    "en": "Create Custom Coupon",
+    "ml": "കസ്റ്റം കൂപ്പൺ ഉണ്ടാക്കുക:"
+  },
+  "കൂപ്പൺ ടൈറ്റിൽ (Coupon Title):": {
+    "en": "Coupon Title",
+    "ml": "കൂപ്പൺ ടൈറ്റിൽ:"
+  },
+  "Coupon Title": {
+    "en": "Coupon Title",
+    "ml": "കൂപ്പൺ ടൈറ്റിൽ:"
+  },
+  "കൂപ്പൺ ടൈറ്റിൽ:": {
+    "en": "Coupon Title",
+    "ml": "കൂപ്പൺ ടൈറ്റിൽ:"
+  },
+  "സ്നേഹക്കുറിപ്പ് / നിർദ്ദേശങ്ങൾ (Sweet Note):": {
+    "en": "Sweet Note",
+    "ml": "സ്നേഹക്കുറിപ്പ് / നിർദ്ദേശങ്ങൾ:"
+  },
+  "സ്നേഹക്കുറിപ്പ് / നിർദ്ദേശങ്ങൾ:": {
+    "en": "Sweet Note",
+    "ml": "സ്നേഹക്കുറിപ്പ് / നിർദ്ദേശങ്ങൾ:"
+  },
+  "പങ്കാളിക്ക് അയക്കുക (Send Coupon to Partner 💌)": {
+    "en": "Send Coupon to Partner 💌",
+    "ml": "പങ്കാളിക്ക് അയക്കുക"
+  },
+  "Send Coupon to Partner 💌": {
+    "en": "Send Coupon to Partner 💌",
+    "ml": "പങ്കാളിക്ക് അയക്കുക"
+  },
+  "പങ്കാളിക്ക് അയക്കുക": {
+    "en": "Send Coupon to Partner 💌",
+    "ml": "പങ്കാളിക്ക് അയക്കുക"
+  },
+  "വേഗത്തിൽ തുറക്കുക (Quick Reveal ✨)": {
+    "en": "Quick Reveal ✨",
+    "ml": "വേഗത്തിൽ തുറക്കുക"
+  },
+  "Quick Reveal ✨": {
+    "en": "Quick Reveal ✨",
+    "ml": "വേഗത്തിൽ തുറക്കുക"
+  },
+  "വേഗത്തിൽ തുറക്കുക": {
+    "en": "Quick Reveal ✨",
+    "ml": "വേഗത്തിൽ തുറക്കുക"
+  },
+  "ഇപ്പോൾ റിഡീം ചെയ്യുക (Redeem Now 💖)": {
+    "en": "Redeem Now 💖",
+    "ml": "ഇപ്പോൾ റിഡീം ചെയ്യുക"
+  },
+  "Redeem Now 💖": {
+    "en": "Redeem Now 💖",
+    "ml": "ഇപ്പോൾ റിഡീം ചെയ്യുക"
+  },
+  "ഇപ്പോൾ റിഡീം ചെയ്യുക": {
+    "en": "Redeem Now 💖",
+    "ml": "ഇപ്പോൾ റിഡീം ചെയ്യുക"
+  },
+  "ചാറ്റിൽ ഷെയർ ചെയ്യുക (Share to Chat)": {
+    "en": "Share to Chat",
+    "ml": "ചാറ്റിൽ ഷെയർ ചെയ്യുക"
+  },
+  "Share to Chat": {
+    "en": "Share to Chat",
+    "ml": "ചാറ്റിൽ ഷെയർ ചെയ്യുക"
+  },
+  "ചാറ്റിൽ ഷെയർ ചെയ്യുക": {
+    "en": "Share to Chat",
+    "ml": "ചാറ്റിൽ ഷെയർ ചെയ്യുക"
+  },
+  "+ പുതിയ സ്വപ്നം ചേർക്കാം (Add Dream)": {
+    "en": "Add Dream",
+    "ml": "+ പുതിയ സ്വപ്നം ചേർക്കാം"
+  },
+  "Add Dream": {
+    "en": "Add Dream",
+    "ml": "+ പുതിയ സ്വപ്നം ചേർക്കാം"
+  },
+  "+ പുതിയ സ്വപ്നം ചേർക്കാം": {
+    "en": "Add Dream",
+    "ml": "+ പുതിയ സ്വപ്നം ചേർക്കാം"
+  },
+  "✨ നമ്മുടെ സ്വപ്ന ലിസ്റ്റിലേക്ക് ഒരു പുതിയ ആഗ്രഹം (Add to Bucket List):": {
+    "en": "Add to Bucket List",
+    "ml": "✨ നമ്മുടെ സ്വപ്ന ലിസ്റ്റിലേക്ക് ഒരു പുതിയ ആഗ്രഹം:"
+  },
+  "Add to Bucket List": {
+    "en": "Add to Bucket List",
+    "ml": "✨ നമ്മുടെ സ്വപ്ന ലിസ്റ്റിലേക്ക് ഒരു പുതിയ ആഗ്രഹം:"
+  },
+  "✨ നമ്മുടെ സ്വപ്ന ലിസ്റ്റിലേക്ക് ഒരു പുതിയ ആഗ്രഹം:": {
+    "en": "Add to Bucket List",
+    "ml": "✨ നമ്മുടെ സ്വപ്ന ലിസ്റ്റിലേക്ക് ഒരു പുതിയ ആഗ്രഹം:"
+  },
+  "സ്വപ്നം / ആഗ്രഹം (Dream Title):": {
+    "en": "Dream Title",
+    "ml": "സ്വപ്നം / ആഗ്രഹം:"
+  },
+  "Dream Title": {
+    "en": "Dream Title",
+    "ml": "സ്വപ്നം / ആഗ്രഹം:"
+  },
+  "സ്വപ്നം / ആഗ്രഹം:": {
+    "en": "Dream Title",
+    "ml": "സ്വപ്നം / ആഗ്രഹം:"
+  },
+  "കാറ്റഗറി (Category):": {
+    "en": "Category",
+    "ml": "കാറ്റഗറി:"
+  },
+  "കാറ്റഗറി:": {
+    "en": "Category",
+    "ml": "കാറ്റഗറി:"
+  },
+  "Travel & Trips (യാത്രകൾ) ✈️": {
+    "en": "Travel & Trips ✈️",
+    "ml": "യാത്രകൾ"
+  },
+  "Travel & Trips ✈️": {
+    "en": "Travel & Trips ✈️",
+    "ml": "യാത്രകൾ"
+  },
+  "യാത്രകൾ": {
+    "en": "Travel & Trips ✈️",
+    "ml": "യാത്രകൾ"
+  },
+  "Romantic (റൊമാന്റിക്) 💖": {
+    "en": "Romantic 💖",
+    "ml": "റൊമാന്റിക്"
+  },
+  "Romantic 💖": {
+    "en": "Romantic 💖",
+    "ml": "റൊമാന്റിക്"
+  },
+  "റൊമാന്റിക്": {
+    "en": "Romantic 💖",
+    "ml": "റൊമാന്റിക്"
+  },
+  "Cozy Home (വീട്ടിൽ) 🏡": {
+    "en": "Cozy Home 🏡",
+    "ml": "വീട്ടിൽ"
+  },
+  "Cozy Home 🏡": {
+    "en": "Cozy Home 🏡",
+    "ml": "വീട്ടിൽ"
+  },
+  "വീട്ടിൽ": {
+    "en": "Cozy Home 🏡",
+    "ml": "വീട്ടിൽ"
+  },
+  "Adventure (അഡ്വഞ്ചർ) 🚀": {
+    "en": "Adventure 🚀",
+    "ml": "അഡ്വഞ്ചർ"
+  },
+  "Adventure 🚀": {
+    "en": "Adventure 🚀",
+    "ml": "അഡ്വഞ്ചർ"
+  },
+  "അഡ്വഞ്ചർ": {
+    "en": "Adventure 🚀",
+    "ml": "അഡ്വഞ്ചർ"
+  },
+  "Pets & Cute Life (ക്യൂട്ട്) 🐾": {
+    "en": "Pets & Cute Life 🐾",
+    "ml": "ക്യൂട്ട്"
+  },
+  "Pets & Cute Life 🐾": {
+    "en": "Pets & Cute Life 🐾",
+    "ml": "ക്യൂട്ട്"
+  },
+  "ക്യൂട്ട്": {
+    "en": "Pets & Cute Life 🐾",
+    "ml": "ക്യൂട്ട്"
+  },
+  "ലക്ഷ്യം / തീയതി (Target Time):": {
+    "en": "Target Time",
+    "ml": "ലക്ഷ്യം / തീയതി:"
+  },
+  "Target Time": {
+    "en": "Target Time",
+    "ml": "ലക്ഷ്യം / തീയതി:"
+  },
+  "ലക്ഷ്യം / തീയതി:": {
+    "en": "Target Time",
+    "ml": "ലക്ഷ്യം / തീയതി:"
+  },
+  "നമ്മുടെ കുറിപ്പ് (Sweet Notes):": {
+    "en": "Sweet Notes",
+    "ml": "നമ്മുടെ കുറിപ്പ്:"
+  },
+  "Sweet Notes": {
+    "en": "Sweet Notes",
+    "ml": "നമ്മുടെ കുറിപ്പ്:"
+  },
+  "നമ്മുടെ കുറിപ്പ്:": {
+    "en": "Sweet Notes",
+    "ml": "നമ്മുടെ കുറിപ്പ്:"
+  },
+  "ലിസ്റ്റിലേക്ക് ചേർക്കുക (Add to Shared Dreams)": {
+    "en": "Add to Shared Dreams",
+    "ml": "ലിസ്റ്റിലേക്ക് ചേർക്കുക"
+  },
+  "Add to Shared Dreams": {
+    "en": "Add to Shared Dreams",
+    "ml": "ലിസ്റ്റിലേക്ക് ചേർക്കുക"
+  },
+  "ലിസ്റ്റിലേക്ക് ചേർക്കുക": {
+    "en": "Add to Shared Dreams",
+    "ml": "ലിസ്റ്റിലേക്ക് ചേർക്കുക"
+  },
+  "📸 ഓർമ്മ ചേർത്ത് പൂർത്തിയാക്കൂ (Complete Milestone):": {
+    "en": "Complete Milestone",
+    "ml": "📸 ഓർമ്മ ചേർത്ത് പൂർത്തിയാക്കൂ:"
+  },
+  "Complete Milestone": {
+    "en": "Complete Milestone",
+    "ml": "📸 ഓർമ്മ ചേർത്ത് പൂർത്തിയാക്കൂ:"
+  },
+  "📸 ഓർമ്മ ചേർത്ത് പൂർത്തിയാക്കൂ:": {
+    "en": "Complete Milestone",
+    "ml": "📸 ഓർമ്മ ചേർത്ത് പൂർത്തിയാക്കൂ:"
+  },
+  "പൂർത്തിയാക്കിയ തീയതി (Date):": {
+    "en": "Date",
+    "ml": "പൂർത്തിയാക്കിയ തീയതി:"
+  },
+  "Date": {
+    "en": "Date",
+    "ml": "പൂർത്തിയാക്കിയ തീയതി:"
+  },
+  "പൂർത്തിയാക്കിയ തീയതി:": {
+    "en": "Date",
+    "ml": "പൂർത്തിയാക്കിയ തീയതി:"
+  },
+  "മധുരമുള്ള ഓർമ്മക്കുറിപ്പ് (Memory Note):": {
+    "en": "Memory Note",
+    "ml": "മധുരമുള്ള ഓർമ്മക്കുറിപ്പ്:"
+  },
+  "Memory Note": {
+    "en": "Memory Note",
+    "ml": "മധുരമുള്ള ഓർമ്മക്കുറിപ്പ്:"
+  },
+  "മധുരമുള്ള ഓർമ്മക്കുറിപ്പ്:": {
+    "en": "Memory Note",
+    "ml": "മധുരമുള്ള ഓർമ്മക്കുറിപ്പ്:"
+  },
+  "ഫോട്ടോ ചേർക്കുക (Attach Photo):": {
+    "en": "Attach Photo",
+    "ml": "ഫോട്ടോ ചേർക്കുക:"
+  },
+  "Attach Photo": {
+    "en": "Attach Photo",
+    "ml": "ഫോട്ടോ ചേർക്കുക:"
+  },
+  "ഫോട്ടോ ചേർക്കുക:": {
+    "en": "Attach Photo",
+    "ml": "ഫോട്ടോ ചേർക്കുക:"
+  },
+  "സേവ് ചെയ്യുക (Save Milestone ✨)": {
+    "en": "Save Milestone ✨",
+    "ml": "സേവ് ചെയ്യുക"
+  },
+  "Save Milestone ✨": {
+    "en": "Save Milestone ✨",
+    "ml": "സേവ് ചെയ്യുക"
+  },
+  "സേവ് ചെയ്യുക": {
+    "en": "Save Milestone ✨",
+    "ml": "സേവ് ചെയ്യുക"
+  },
+  "പൂർത്തിയാക്കി! (Mark Completed 📸)": {
+    "en": "Mark Completed 📸",
+    "ml": "പൂർത്തിയാക്കി!"
+  },
+  "Mark Completed 📸": {
+    "en": "Mark Completed 📸",
+    "ml": "പൂർത്തിയാക്കി!"
+  },
+  "പൂർത്തിയാക്കി!": {
+    "en": "Mark Completed 📸",
+    "ml": "പൂർത്തിയാക്കി!"
+  },
+  "വീൽ കറക്കൂ! (SPIN THE WHEEL 🎲)": {
+    "en": "SPIN THE WHEEL 🎲",
+    "ml": "വീൽ കറക്കൂ!"
+  },
+  "SPIN THE WHEEL 🎲": {
+    "en": "SPIN THE WHEEL 🎲",
+    "ml": "വീൽ കറക്കൂ!"
+  },
+  "വീൽ കറക്കൂ!": {
+    "en": "SPIN THE WHEEL 🎲",
+    "ml": "വീൽ കറക്കൂ!"
+  },
+  "ചാറ്റിലേക്ക് അയക്കൂ (Plan This Date 💬)": {
+    "en": "Plan This Date 💬",
+    "ml": "ചാറ്റിലേക്ക് അയക്കൂ"
+  },
+  "Plan This Date 💬": {
+    "en": "Plan This Date 💬",
+    "ml": "ചാറ്റിലേക്ക് അയക്കൂ"
+  },
+  "ചാറ്റിലേക്ക് അയക്കൂ": {
+    "en": "Plan This Date 💬",
+    "ml": "ചാറ്റിലേക്ക് അയക്കൂ"
+  },
+  "സ്വപ്ന ലിസ്റ്റിലേക്ക് മാറ്റാം (Add to Bucket List ✈️)": {
+    "en": "Add to Bucket List ✈️",
+    "ml": "സ്വപ്ന ലിസ്റ്റിലേക്ക് മാറ്റാം"
+  },
+  "Add to Bucket List ✈️": {
+    "en": "Add to Bucket List ✈️",
+    "ml": "സ്വപ്ന ലിസ്റ്റിലേക്ക് മാറ്റാം"
+  },
+  "സ്വപ്ന ലിസ്റ്റിലേക്ക് മാറ്റാം": {
+    "en": "Add to Bucket List ✈️",
+    "ml": "സ്വപ്ന ലിസ്റ്റിലേക്ക് മാറ്റാം"
+  },
+  "വീണ്ടും കറക്കുക (Spin Again)": {
+    "en": "Spin Again",
+    "ml": "വീണ്ടും കറക്കുക"
+  },
+  "Spin Again": {
+    "en": "Spin Again",
+    "ml": "വീണ്ടും കറക്കുക"
+  },
+  "വീണ്ടും കറക്കുക": {
+    "en": "Spin Again",
+    "ml": "വീണ്ടും കറക്കുക"
+  },
+  "Our Shared Calendar · നമ്മുടെ കലണ്ടർ": {
+    "en": "Our Shared Calendar",
+    "ml": "നമ്മുടെ കലണ്ടർ"
+  },
+  "Our Shared Calendar": {
+    "en": "Our Shared Calendar",
+    "ml": "നമ്മുടെ കലണ്ടർ"
+  },
+  "നമ്മുടെ കലണ്ടർ": {
+    "en": "Our Shared Calendar",
+    "ml": "നമ്മുടെ കലണ്ടർ"
+  },
+  "To-Do Lists · കാര്യങ്ങൾ": {
+    "en": "To-Do Lists",
+    "ml": "കാര്യങ്ങൾ"
+  },
+  "To-Do Lists": {
+    "en": "To-Do Lists",
+    "ml": "കാര്യങ്ങൾ"
+  },
+  "കാര്യങ്ങൾ": {
+    "en": "To-Do Lists",
+    "ml": "കാര്യങ്ങൾ"
+  },
+  "Monsoon Rain & Droplets": {
+    "en": "Monsoon Rain & Droplets",
+    "ml": "മൃദുവായ മഴത്തുള്ളികൾ"
+  },
+  "മൃദുവായ മഴത്തുള്ളികൾ": {
+    "en": "Monsoon Rain & Droplets",
+    "ml": "മൃദുവായ മഴത്തുള്ളികൾ"
+  },
+  "Soothing rain gently tapping on the windowpane with distant cozy rumbles": {
+    "en": "Soothing rain gently tapping on the windowpane with distant cozy rumbles",
+    "ml": "ജനലിൽ തട്ടിച്ചിതറുന്ന മഴയുടെ തണുപ്പും ശാന്തതയും"
+  },
+  "ജനലിൽ തട്ടിച്ചിതറുന്ന മഴയുടെ തണുപ്പും ശാന്തതയും": {
+    "en": "Soothing rain gently tapping on the windowpane with distant cozy rumbles",
+    "ml": "ജനലിൽ തട്ടിച്ചിതറുന്ന മഴയുടെ തണുപ്പും ശാന്തതയും"
+  },
+  "Calm Ocean Waves": {
+    "en": "Calm Ocean Waves",
+    "ml": "ശാന്തമായ കടലലകൾ"
+  },
+  "ശാന്തമായ കടലലകൾ": {
+    "en": "Calm Ocean Waves",
+    "ml": "ശാന്തമായ കടലലകൾ"
+  },
+  "Rhythmic, slow rolling ocean surf under a midnight moon": {
+    "en": "Rhythmic, slow rolling ocean surf under a midnight moon",
+    "ml": "നിലാവിൽ തീരം തൊട്ട് മടങ്ങുന്ന തിരമാലകളുടെ താളം"
+  },
+  "നിലാവിൽ തീരം തൊട്ട് മടങ്ങുന്ന തിരമാലകളുടെ താളം": {
+    "en": "Rhythmic, slow rolling ocean surf under a midnight moon",
+    "ml": "നിലാവിൽ തീരം തൊട്ട് മടങ്ങുന്ന തിരമാലകളുടെ താളം"
+  },
+  "Celestial Lullaby": {
+    "en": "Celestial Lullaby",
+    "ml": "സോഫ്റ്റ് ലാലേബി & മ്യൂസിക് ബോക്സ്"
+  },
+  "സോഫ്റ്റ് ലാലേബി & മ്യൂസിക് ബോക്സ്": {
+    "en": "Celestial Lullaby",
+    "ml": "സോഫ്റ്റ് ലാലേബി & മ്യൂസിക് ബോക്സ്"
+  },
+  "Dreamy music box bells and ethereal 432Hz theta harmonic pads": {
+    "en": "Dreamy music box bells and ethereal 432Hz theta harmonic pads",
+    "ml": "ഉറക്കത്തിലേക്ക് മാടിവിളിക്കുന്ന മാന്ത്രിക സ്വരതരംഗങ്ങൾ"
+  },
+  "ഉറക്കത്തിലേക്ക് മാടിവിളിക്കുന്ന മാന്ത്രിക സ്വരതരംഗങ്ങൾ": {
+    "en": "Dreamy music box bells and ethereal 432Hz theta harmonic pads",
+    "ml": "ഉറക്കത്തിലേക്ക് മാടിവിളിക്കുന്ന മാന്ത്രിക സ്വരതരംഗങ്ങൾ"
+  },
+  "Night Forest & Fireflies": {
+    "en": "Night Forest & Fireflies",
+    "ml": "രാത്രി വനവും ചീവീടുകളും"
+  },
+  "രാത്രി വനവും ചീവീടുകളും": {
+    "en": "Night Forest & Fireflies",
+    "ml": "രാത്രി വനവും ചീവീടുകളും"
+  },
+  "Gentle night breeze with gentle crickets and forest quietude": {
+    "en": "Gentle night breeze with gentle crickets and forest quietude",
+    "ml": "തണുത്ത കാറ്റും മിന്നാമിനുങ്ങുകളും ചീവീടിന്റെ നാദവും"
+  },
+  "തണുത്ത കാറ്റും മിന്നാമിനുങ്ങുകളും ചീവീടിന്റെ നാദവും": {
+    "en": "Gentle night breeze with gentle crickets and forest quietude",
+    "ml": "തണുത്ത കാറ്റും മിന്നാമിനുങ്ങുകളും ചീവീടിന്റെ നാദവും"
+  },
+  "Warm Bedside Hearth": {
+    "en": "Warm Bedside Hearth",
+    "ml": "വിറകുവെട്ടവും പ്രണയച്ചൂടും"
+  },
+  "വിറകുവെട്ടവും പ്രണയച്ചൂടും": {
+    "en": "Warm Bedside Hearth",
+    "ml": "വിറകുവെട്ടവും പ്രണയച്ചൂടും"
+  },
+  "Warm crackling hearth and soft embers keeping you cozy": {
+    "en": "Warm crackling hearth and soft embers keeping you cozy",
+    "ml": "തണുപ്പകറ്റുന്ന അടുപ്പിന്റെ തരിപ്പും സുരക്ഷിതത്വവും"
+  },
+  "തണുപ്പകറ്റുന്ന അടുപ്പിന്റെ തരിപ്പും സുരക്ഷിതത്വവും": {
+    "en": "Warm crackling hearth and soft embers keeping you cozy",
+    "ml": "തണുപ്പകറ്റുന്ന അടുപ്പിന്റെ തരിപ്പും സുരക്ഷിതത്വവും"
+  },
+  "Sweet dreams my love": {
+    "en": "Sweet dreams my love",
+    "ml": "മധുരസ്വപ്നങ്ങൾ പ്രിയേ 💖"
+  },
+  "മധുരസ്വപ്നങ്ങൾ പ്രിയേ 💖": {
+    "en": "Sweet dreams my love",
+    "ml": "മധുരസ്വപ്നങ്ങൾ പ്രിയേ 💖"
+  },
+  "I'm right beside you": {
+    "en": "I'm right beside you",
+    "ml": "ഞാൻ നിന്റെ അരികിലുണ്ട് ✨"
+  },
+  "ഞാൻ നിന്റെ അരികിലുണ്ട് ✨": {
+    "en": "I'm right beside you",
+    "ml": "ഞാൻ നിന്റെ അരികിലുണ്ട് ✨"
+  },
+  "Sleep tight, hugging you": {
+    "en": "Sleep tight, hugging you",
+    "ml": "നല്ല ഉറക്കം വരട്ടെ, കെട്ടിപ്പിടിക്കുന്നു 🫂"
+  },
+  "നല്ല ഉറക്കം വരട്ടെ, കെട്ടിപ്പിടിക്കുന്നു 🫂": {
+    "en": "Sleep tight, hugging you",
+    "ml": "നല്ല ഉറക്കം വരട്ടെ, കെട്ടിപ്പിടിക്കുന്നു 🫂"
+  },
+  "See you in my dreams": {
+    "en": "See you in my dreams",
+    "ml": "സ്വപ്നത്തിൽ കാണാം 🌙"
+  },
+  "സ്വപ്നത്തിൽ കാണാം 🌙": {
+    "en": "See you in my dreams",
+    "ml": "സ്വപ്നത്തിൽ കാണാം 🌙"
+  },
+  "Wake me up tomorrow": {
+    "en": "Wake me up tomorrow",
+    "ml": "നാളെ രാവിലെ വിളിക്കണേ 🌅"
+  },
+  "നാളെ രാവിലെ വിളിക്കണേ 🌅": {
+    "en": "Wake me up tomorrow",
+    "ml": "നാളെ രാവിലെ വിളിക്കണേ 🌅"
+  },
+  "Inhale gently... (ശ്വാസമെടുക്കൂ 🌸)": {
+    "en": "Inhale gently...",
+    "ml": "ശ്വാസമെടുക്കൂ 🌸"
+  },
+  "Inhale gently...": {
+    "en": "Inhale gently...",
+    "ml": "ശ്വാസമെടുക്കൂ 🌸"
+  },
+  "ശ്വാസമെടുക്കൂ 🌸": {
+    "en": "Inhale gently...",
+    "ml": "ശ്വാസമെടുക്കൂ 🌸"
+  },
+  "Rest together... (ശാന്തമാകൂ ✨)": {
+    "en": "Rest together...",
+    "ml": "ശാന്തമാകൂ ✨"
+  },
+  "Rest together...": {
+    "en": "Rest together...",
+    "ml": "ശാന്തമാകൂ ✨"
+  },
+  "ശാന്തമാകൂ ✨": {
+    "en": "Rest together...",
+    "ml": "ശാന്തമാകൂ ✨"
+  },
+  "Exhale softly... (ശ്വാസം വിടൂ 🍃)": {
+    "en": "Exhale softly...",
+    "ml": "ശ്വാസം വിടൂ 🍃"
+  },
+  "Exhale softly...": {
+    "en": "Exhale softly...",
+    "ml": "ശ്വാസം വിടൂ 🍃"
+  },
+  "ശ്വാസം വിടൂ 🍃": {
+    "en": "Exhale softly...",
+    "ml": "ശ്വാസം വിടൂ 🍃"
+  },
+  "Under the same moon (നിലാവിൽ 🌙)": {
+    "en": "Under the same moon",
+    "ml": "നിലാവിൽ 🌙"
+  },
+  "Under the same moon": {
+    "en": "Under the same moon",
+    "ml": "നിലാവിൽ 🌙"
+  },
+  "നിലാവിൽ 🌙": {
+    "en": "Under the same moon",
+    "ml": "നിലാവിൽ 🌙"
+  },
+  "ഞാൻ ഉറങ്ങാൻ കിടന്നു 😴 (Fell Asleep)": {
+    "en": "Fell Asleep",
+    "ml": "ഞാൻ ഉറങ്ങാൻ കിടന്നു 😴"
+  },
+  "Fell Asleep": {
+    "en": "Fell Asleep",
+    "ml": "ഞാൻ ഉറങ്ങാൻ കിടന്നു 😴"
+  },
+  "ഞാൻ ഉറങ്ങാൻ കിടന്നു 😴": {
+    "en": "Fell Asleep",
+    "ml": "ഞാൻ ഉറങ്ങാൻ കിടന്നു 😴"
+  },
+  "ഉറങ്ങാൻ പോകുന്നു 🛌 (Mark as Asleep)": {
+    "en": "Mark as Asleep",
+    "ml": "ഉറങ്ങാൻ പോകുന്നു 🛌"
+  },
+  "Mark as Asleep": {
+    "en": "Mark as Asleep",
+    "ml": "ഉറങ്ങാൻ പോകുന്നു 🛌"
+  },
+  "ഉറങ്ങാൻ പോകുന്നു 🛌": {
+    "en": "Mark as Asleep",
+    "ml": "ഉറങ്ങാൻ പോകുന്നു 🛌"
+  },
+  "Auto Sleep Timer (ഉറങ്ങിപ്പോയാൽ തനിയെ ഓഫ് ആവും)": {
+    "en": "Auto Sleep Timer",
+    "ml": "ഉറങ്ങിപ്പോയാൽ തനിയെ ഓഫ് ആവും"
+  },
+  "Auto Sleep Timer": {
+    "en": "Auto Sleep Timer",
+    "ml": "ഉറങ്ങിപ്പോയാൽ തനിയെ ഓഫ് ആവും"
+  },
+  "ഉറങ്ങിപ്പോയാൽ തനിയെ ഓഫ് ആവും": {
+    "en": "Auto Sleep Timer",
+    "ml": "ഉറങ്ങിപ്പോയാൽ തനിയെ ഓഫ് ആവും"
+  },
+  "2 മിനിറ്റ് മുൻപ് സൗണ്ട് പതുക്കെ കുറഞ്ഞ് ഓഫാകും (Gradual Fade-out)": {
+    "en": "Gradual Fade-out",
+    "ml": "2 മിനിറ്റ് മുൻപ് സൗണ്ട് പതുക്കെ കുറഞ്ഞ് ഓഫാകും"
+  },
+  "Gradual Fade-out": {
+    "en": "Gradual Fade-out",
+    "ml": "2 മിനിറ്റ് മുൻപ് സൗണ്ട് പതുക്കെ കുറഞ്ഞ് ഓഫാകും"
+  },
+  "2 മിനിറ്റ് മുൻപ് സൗണ്ട് പതുക്കെ കുറഞ്ഞ് ഓഫാകും": {
+    "en": "Gradual Fade-out",
+    "ml": "2 മിനിറ്റ് മുൻപ് സൗണ്ട് പതുക്കെ കുറഞ്ഞ് ഓഫാകും"
+  },
+  "SLEEP TOGETHER · ഒരുമിച്ച് ഉറങ്ങാം 🌌🛌": {
+    "en": "SLEEP TOGETHER",
+    "ml": "ഒരുമിച്ച് ഉറങ്ങാം 🌌🛌"
+  },
+  "SLEEP TOGETHER": {
+    "en": "SLEEP TOGETHER",
+    "ml": "ഒരുമിച്ച് ഉറങ്ങാം 🌌🛌"
+  },
+  "ഒരുമിച്ച് ഉറങ്ങാം 🌌🛌": {
+    "en": "SLEEP TOGETHER",
+    "ml": "ഒരുമിച്ച് ഉറങ്ങാം 🌌🛌"
+  },
+  "What's on your mind? (മനസ്സിലെന്താണ്?)": {
+    "en": "What's on your mind?",
+    "ml": "മനസ്സിലെന്താണ്?"
+  },
+  "What's on your mind?": {
+    "en": "What's on your mind?",
+    "ml": "മനസ്സിലെന്താണ്?"
+  },
+  "മനസ്സിലെന്താണ്?": {
+    "en": "What's on your mind?",
+    "ml": "മനസ്സിലെന്താണ്?"
+  },
+  "Locked For You 💌 (നിനക്കായി)": {
+    "en": "Locked For You 💌",
+    "ml": "നിനക്കായി"
+  },
+  "Locked For You 💌": {
+    "en": "Locked For You 💌",
+    "ml": "നിനക്കായി"
+  },
+  "നിനക്കായി": {
+    "en": "Locked For You 💌",
+    "ml": "നിനക്കായി"
+  },
+  "Sealed by You ✍️ (ഞാൻ അയച്ചവ)": {
+    "en": "Sealed by You ✍️",
+    "ml": "ഞാൻ അയച്ചവ"
+  },
+  "Sealed by You ✍️": {
+    "en": "Sealed by You ✍️",
+    "ml": "ഞാൻ അയച്ചവ"
+  },
+  "ഞാൻ അയച്ചവ": {
+    "en": "Sealed by You ✍️",
+    "ml": "ഞാൻ അയച്ചവ"
+  },
+  "Seal a New Capsule 🔒✨ (പുതിയ കത്ത്)": {
+    "en": "Seal a New Capsule 🔒✨",
+    "ml": "പുതിയ കത്ത്"
+  },
+  "Seal a New Capsule 🔒✨": {
+    "en": "Seal a New Capsule 🔒✨",
+    "ml": "പുതിയ കത്ത്"
+  },
+  "പുതിയ കത്ത്": {
+    "en": "Seal a New Capsule 🔒✨",
+    "ml": "പുതിയ കത്ത്"
+  },
+  "← Back to list (തിരികെ)": {
+    "en": "← Back to list",
+    "ml": "തിരികെ"
+  },
+  "← Back to list": {
+    "en": "← Back to list",
+    "ml": "തിരികെ"
+  },
+  "തിരികെ": {
+    "en": "← Back to list",
+    "ml": "തിരികെ"
+  },
+  "Share in Chat (ചാറ്റിൽ പങ്കുവെക്കാം)": {
+    "en": "Share in Chat",
+    "ml": "ചാറ്റിൽ പങ്കുവെക്കാം"
+  },
+  "ചാറ്റിൽ പങ്കുവെക്കാം": {
+    "en": "Share in Chat",
+    "ml": "ചാറ്റിൽ പങ്കുവെക്കാം"
+  },
+  "Hours (മണിക്കൂർ)": {
+    "en": "Hours",
+    "ml": "മണിക്കൂർ"
+  },
+  "Hours": {
+    "en": "Hours",
+    "ml": "മണിക്കൂർ"
+  },
+  "മണിക്കൂർ": {
+    "en": "Hours",
+    "ml": "മണിക്കൂർ"
+  },
+  "Mins (മിനിറ്റ്)": {
+    "en": "Mins",
+    "ml": "മിനിറ്റ്"
+  },
+  "Mins": {
+    "en": "Mins",
+    "ml": "മിനിറ്റ്"
+  },
+  "മിനിറ്റ്": {
+    "en": "Mins",
+    "ml": "മിനിറ്റ്"
+  },
+  "Secs (സെക്കൻഡ്)": {
+    "en": "Secs",
+    "ml": "സെക്കൻഡ്"
+  },
+  "Secs": {
+    "en": "Secs",
+    "ml": "സെക്കൻഡ്"
+  },
+  "സെക്കൻഡ്": {
+    "en": "Secs",
+    "ml": "സെക്കൻഡ്"
+  },
+  "Nudge Sent! ⏳ (ഓർമ്മിപ്പിച്ചു)": {
+    "en": "Nudge Sent! ⏳",
+    "ml": "ഓർമ്മിപ്പിച്ചു"
+  },
+  "Nudge Sent! ⏳": {
+    "en": "Nudge Sent! ⏳",
+    "ml": "ഓർമ്മിപ്പിച്ചു"
+  },
+  "ഓർമ്മിപ്പിച്ചു": {
+    "en": "Nudge Sent! ⏳",
+    "ml": "ഓർമ്മിപ്പിച്ചു"
+  },
+  "Tease / Nudge Partner ⏳ (കാത്തിരിക്കുന്നുവെന്ന് ഓർമ്മിപ്പിക്കുക)": {
+    "en": "Tease / Nudge Partner ⏳",
+    "ml": "കാത്തിരിക്കുന്നുവെന്ന് ഓർമ്മിപ്പിക്കുക"
+  },
+  "Tease / Nudge Partner ⏳": {
+    "en": "Tease / Nudge Partner ⏳",
+    "ml": "കാത്തിരിക്കുന്നുവെന്ന് ഓർമ്മിപ്പിക്കുക"
+  },
+  "കാത്തിരിക്കുന്നുവെന്ന് ഓർമ്മിപ്പിക്കുക": {
+    "en": "Tease / Nudge Partner ⏳",
+    "ml": "കാത്തിരിക്കുന്നുവെന്ന് ഓർമ്മിപ്പിക്കുക"
+  },
+  "Send Your Love & Reaction (നിന്റെ സ്നേഹപ്രതികരണം 💕)": {
+    "en": "Send Your Love & Reaction",
+    "ml": "നിന്റെ സ്നേഹപ്രതികരണം 💕"
+  },
+  "Send Your Love & Reaction": {
+    "en": "Send Your Love & Reaction",
+    "ml": "നിന്റെ സ്നേഹപ്രതികരണം 💕"
+  },
+  "നിന്റെ സ്നേഹപ്രതികരണം 💕": {
+    "en": "Send Your Love & Reaction",
+    "ml": "നിന്റെ സ്നേഹപ്രതികരണം 💕"
+  },
+  "Write a sweet reply or emotional note... (മറുപടി കുറിക്കുക...)": {
+    "en": "Write a sweet reply or emotional note...",
+    "ml": "മറുപടി കുറിക്കുക..."
+  },
+  "Write a sweet reply or emotional note...": {
+    "en": "Write a sweet reply or emotional note...",
+    "ml": "മറുപടി കുറിക്കുക..."
+  },
+  "മറുപടി കുറിക്കുക...": {
+    "en": "Write a sweet reply or emotional note...",
+    "ml": "മറുപടി കുറിക്കുക..."
+  },
+  "1. Choose the Occasion (വിശേഷ ദിനം തിരഞ്ഞെടുക്കുക)": {
+    "en": "1. Choose the Occasion",
+    "ml": "വിശേഷ ദിനം തിരഞ്ഞെടുക്കുക"
+  },
+  "1. Choose the Occasion": {
+    "en": "1. Choose the Occasion",
+    "ml": "വിശേഷ ദിനം തിരഞ്ഞെടുക്കുക"
+  },
+  "വിശേഷ ദിനം തിരഞ്ഞെടുക്കുക": {
+    "en": "1. Choose the Occasion",
+    "ml": "വിശേഷ ദിനം തിരഞ്ഞെടുക്കുക"
+  },
+  "2. When should this Capsule unlock? (എപ്പോൾ തുറക്കണം?)": {
+    "en": "2. When should this Capsule unlock?",
+    "ml": "എപ്പോൾ തുറക്കണം?"
+  },
+  "2. When should this Capsule unlock?": {
+    "en": "2. When should this Capsule unlock?",
+    "ml": "എപ്പോൾ തുറക്കണം?"
+  },
+  "എപ്പോൾ തുറക്കണം?": {
+    "en": "2. When should this Capsule unlock?",
+    "ml": "എപ്പോൾ തുറക്കണം?"
+  },
+  "3. Capsule Title (കത്തിന്റെ തലക്കെട്ട്)": {
+    "en": "3. Capsule Title",
+    "ml": "കത്തിന്റെ തലക്കെട്ട്"
+  },
+  "3. Capsule Title": {
+    "en": "3. Capsule Title",
+    "ml": "കത്തിന്റെ തലക്കെട്ട്"
+  },
+  "കത്തിന്റെ തലക്കെട്ട്": {
+    "en": "3. Capsule Title",
+    "ml": "കത്തിന്റെ തലക്കെട്ട്"
+  },
+  "4. Envelope Style (തീം)": {
+    "en": "4. Envelope Style",
+    "ml": "തീം"
+  },
+  "4. Envelope Style": {
+    "en": "4. Envelope Style",
+    "ml": "തീം"
+  },
+  "5. Wax Seal Emblem (മുദ്ര)": {
+    "en": "5. Wax Seal Emblem",
+    "ml": "മുദ്ര"
+  },
+  "5. Wax Seal Emblem": {
+    "en": "5. Wax Seal Emblem",
+    "ml": "മുദ്ര"
+  },
+  "മുദ്ര": {
+    "en": "5. Wax Seal Emblem",
+    "ml": "മുദ്ര"
+  },
+  "6. Your Secret Love Letter (രഹസ്യ പ്രണയലേഖനം)": {
+    "en": "6. Your Secret Love Letter",
+    "ml": "രഹസ്യ പ്രണയലേഖനം"
+  },
+  "6. Your Secret Love Letter": {
+    "en": "6. Your Secret Love Letter",
+    "ml": "രഹസ്യ പ്രണയലേഖനം"
+  },
+  "രഹസ്യ പ്രണയലേഖനം": {
+    "en": "6. Your Secret Love Letter",
+    "ml": "രഹസ്യ പ്രണയലേഖനം"
+  },
+  "Write your deepest feelings, secrets, future dreams, wishes, and memories to be unlocked... (നിന്റെ ഹൃദയത്തിൽ നിന്നുള്ള വാക്കുകൾ ഇവിടെ എഴുതൂ...)": {
+    "en": "Write your deepest feelings, secrets, future dreams, wishes, and memories to be unlocked...",
+    "ml": "നിന്റെ ഹൃദയത്തിൽ നിന്നുള്ള വാക്കുകൾ ഇവിടെ എഴുതൂ..."
+  },
+  "Write your deepest feelings, secrets, future dreams, wishes, and memories to be unlocked...": {
+    "en": "Write your deepest feelings, secrets, future dreams, wishes, and memories to be unlocked...",
+    "ml": "നിന്റെ ഹൃദയത്തിൽ നിന്നുള്ള വാക്കുകൾ ഇവിടെ എഴുതൂ..."
+  },
+  "നിന്റെ ഹൃദയത്തിൽ നിന്നുള്ള വാക്കുകൾ ഇവിടെ എഴുതൂ...": {
+    "en": "Write your deepest feelings, secrets, future dreams, wishes, and memories to be unlocked...",
+    "ml": "നിന്റെ ഹൃദയത്തിൽ നിന്നുള്ള വാക്കുകൾ ഇവിടെ എഴുതൂ..."
+  },
+  "7. Record a Voice Note for the Future (വോയ്സ് നോട്ട് റെക്കോർഡ് ചെയ്യാം 🎙️)": {
+    "en": "7. Record a Voice Note for the Future",
+    "ml": "വോയ്സ് നോട്ട് റെക്കോർഡ് ചെയ്യാം 🎙️"
+  },
+  "7. Record a Voice Note for the Future": {
+    "en": "7. Record a Voice Note for the Future",
+    "ml": "വോയ്സ് നോട്ട് റെക്കോർഡ് ചെയ്യാം 🎙️"
+  },
+  "വോയ്സ് നോട്ട് റെക്കോർഡ് ചെയ്യാം 🎙️": {
+    "en": "7. Record a Voice Note for the Future",
+    "ml": "വോയ്സ് നോട്ട് റെക്കോർഡ് ചെയ്യാം 🎙️"
+  },
+  "s / 180s (റെക്കോർഡ് ചെയ്യുന്നു...)": {
+    "en": "s / 180s",
+    "ml": "റെക്കോർഡ് ചെയ്യുന്നു..."
+  },
+  "s / 180s": {
+    "en": "s / 180s",
+    "ml": "റെക്കോർഡ് ചെയ്യുന്നു..."
+  },
+  "റെക്കോർഡ് ചെയ്യുന്നു...": {
+    "en": "s / 180s",
+    "ml": "റെക്കോർഡ് ചെയ്യുന്നു..."
+  },
+  "Stop Recording (നിർത്തുക)": {
+    "en": "Stop Recording",
+    "ml": "നിർത്തുക"
+  },
+  "Stop Recording": {
+    "en": "Stop Recording",
+    "ml": "നിർത്തുക"
+  },
+  "നിർത്തുക": {
+    "en": "Stop Recording",
+    "ml": "നിർത്തുക"
+  },
+  "Record Voice Note (ശബ്ദരേഖ ചേർക്കാം)": {
+    "en": "Record Voice Note",
+    "ml": "ശബ്ദരേഖ ചേർക്കാം"
+  },
+  "Record Voice Note": {
+    "en": "Record Voice Note",
+    "ml": "ശബ്ദരേഖ ചേർക്കാം"
+  },
+  "ശബ്ദരേഖ ചേർക്കാം": {
+    "en": "Record Voice Note",
+    "ml": "ശബ്ദരേഖ ചേർക്കാം"
+  },
+  "8. Attach a Memory Photo (ഓർമ്മ ചിത്രം ചേർക്കാം 📸)": {
+    "en": "8. Attach a Memory Photo",
+    "ml": "ഓർമ്മ ചിത്രം ചേർക്കാം 📸"
+  },
+  "8. Attach a Memory Photo": {
+    "en": "8. Attach a Memory Photo",
+    "ml": "ഓർമ്മ ചിത്രം ചേർക്കാം 📸"
+  },
+  "ഓർമ്മ ചിത്രം ചേർക്കാം 📸": {
+    "en": "8. Attach a Memory Photo",
+    "ml": "ഓർമ്മ ചിത്രം ചേർക്കാം 📸"
+  },
+  "Choose a Photo (ഫോട്ടോ തിരഞ്ഞെടുക്കൂ)": {
+    "en": "Choose a Photo",
+    "ml": "ഫോട്ടോ തിരഞ്ഞെടുക്കൂ"
+  },
+  "Choose a Photo": {
+    "en": "Choose a Photo",
+    "ml": "ഫോട്ടോ തിരഞ്ഞെടുക്കൂ"
+  },
+  "ഫോട്ടോ തിരഞ്ഞെടുക്കൂ": {
+    "en": "Choose a Photo",
+    "ml": "ഫോട്ടോ തിരഞ്ഞെടുക്കൂ"
+  },
+  "Sealing with Wax... (മുദ്ര വെക്കുന്നു...)": {
+    "en": "Sealing with Wax...",
+    "ml": "മുദ്ര വെക്കുന്നു..."
+  },
+  "Sealing with Wax...": {
+    "en": "Sealing with Wax...",
+    "ml": "മുദ്ര വെക്കുന്നു..."
+  },
+  "മുദ്ര വെക്കുന്നു...": {
+    "en": "Sealing with Wax...",
+    "ml": "മുദ്ര വെക്കുന്നു..."
+  },
+  "Seal Time Capsule with Wax 🔒💌 (മുദ്ര വെച്ച് പൂട്ടുക)": {
+    "en": "Seal Time Capsule with Wax 🔒💌",
+    "ml": "മുദ്ര വെച്ച് പൂട്ടുക"
+  },
+  "Seal Time Capsule with Wax 🔒💌": {
+    "en": "Seal Time Capsule with Wax 🔒💌",
+    "ml": "മുദ്ര വെച്ച് പൂട്ടുക"
+  },
+  "മുദ്ര വെച്ച് പൂട്ടുക": {
+    "en": "Seal Time Capsule with Wax 🔒💌",
+    "ml": "മുദ്ര വെച്ച് പൂട്ടുക"
+  },
+  "Seal Your First Capsule (ആദ്യത്തെ കത്ത് സീൽ ചെയ്യാം)": {
+    "en": "Seal Your First Capsule",
+    "ml": "ആദ്യത്തെ കത്ത് സീൽ ചെയ്യാം"
+  },
+  "Seal Your First Capsule": {
+    "en": "Seal Your First Capsule",
+    "ml": "ആദ്യത്തെ കത്ത് സീൽ ചെയ്യാം"
+  },
+  "ആദ്യത്തെ കത്ത് സീൽ ചെയ്യാം": {
+    "en": "Seal Your First Capsule",
+    "ml": "ആദ്യത്തെ കത്ത് സീൽ ചെയ്യാം"
+  },
+  "Unlocked with Love! 💌 (തുറന്നു)": {
+    "en": "Unlocked with Love! 💌",
+    "ml": "തുറന്നു"
+  },
+  "തുറന്നു": {
+    "en": "Unlocked",
+    "ml": "തുറന്നു"
+  },
+  "Read Love Letter 📖 (വായിക്കാം)": {
+    "en": "Read Love Letter 📖",
+    "ml": "വായിക്കാം"
+  },
+  "Read Love Letter 📖": {
+    "en": "Read Love Letter 📖",
+    "ml": "വായിക്കാം"
+  },
+  "വായിക്കാം": {
+    "en": "Read Love Letter 📖",
+    "ml": "വായിക്കാം"
+  },
+  "Break Seal & Open 🔓✨ (മുദ്ര പൊട്ടിക്കുക!)": {
+    "en": "Break Seal & Open 🔓✨",
+    "ml": "മുദ്ര പൊട്ടിക്കുക!"
+  },
+  "Break Seal & Open 🔓✨": {
+    "en": "Break Seal & Open 🔓✨",
+    "ml": "മുദ്ര പൊട്ടിക്കുക!"
+  },
+  "മുദ്ര പൊട്ടിക്കുക!": {
+    "en": "Break Seal & Open 🔓✨",
+    "ml": "മുദ്ര പൊട്ടിക്കുക!"
+  },
+  "Preview (കാണുക)": {
+    "en": "Preview",
+    "ml": "കാണുക"
+  },
+  "Preview": {
+    "en": "Preview",
+    "ml": "കാണുക"
+  },
+  "View Sealed Capsule (വിവരം)": {
+    "en": "View Sealed Capsule",
+    "ml": "വിവരം"
+  },
+  "View Sealed Capsule": {
+    "en": "View Sealed Capsule",
+    "ml": "വിവരം"
+  },
+  "വിവരം": {
+    "en": "View Sealed Capsule",
+    "ml": "വിവരം"
+  },
+  "Gentle Touch": {
+    "en": "Gentle Touch",
+    "ml": "മൃദുസ്പർശം"
+  },
+  "Haptic Hug": {
+    "en": "Haptic Hug",
+    "ml": "സ്നേഹാലിംഗനം"
+  },
+  "Stardust Magic": {
+    "en": "Stardust Magic",
+    "ml": "നക്ഷത്രസ്പർശം"
+  },
+  "നക്ഷത്രസ്പർശം": {
+    "en": "Stardust Magic",
+    "ml": "നക്ഷത്രസ്പർശം"
+  },
+  "Warm Passion": {
+    "en": "Warm Passion",
+    "ml": "ഹൃദയാഗ്നി"
+  },
+  "ഹൃദയാഗ്നി": {
+    "en": "Warm Passion",
+    "ml": "ഹൃദയാഗ്നി"
+  },
+  "Malare Ninne · Premam Classic": {
+    "en": "Malare Ninne · Premam Classic",
+    "ml": "മലരേ നിന്നെ കാണാതിരുന്നാൽ · പ്രേമം"
+  },
+  "മലരേ നിന്നെ കാണാതിരുന്നാൽ · പ്രേമം": {
+    "en": "Malare Ninne · Premam Classic",
+    "ml": "മലരേ നിന്നെ കാണാതിരുന്നാൽ · പ്രേമം"
+  },
+  "Aaradhike · Ambili Soulful Melody": {
+    "en": "Aaradhike · Ambili Soulful Melody",
+    "ml": "ആരാധികേ · അമ്പിളി റൊമാന്റിക് മെലഡി"
+  },
+  "ആരാധികേ · അമ്പിളി റൊമാന്റിക് മെലഡി": {
+    "en": "Aaradhike · Ambili Soulful Melody",
+    "ml": "ആരാധികേ · അമ്പിളി റൊമാന്റിക് മെലഡി"
+  },
+  "Nee Himamazhayayi · Pure Romance": {
+    "en": "Nee Himamazhayayi · Pure Romance",
+    "ml": "നീ ഹിമമഴയായ് · എടക്കാട് ബറ്റാലിയൻ"
+  },
+  "നീ ഹിമമഴയായ് · എടക്കാട് ബറ്റാലിയൻ": {
+    "en": "Nee Himamazhayayi · Pure Romance",
+    "ml": "നീ ഹിമമഴയായ് · എടക്കാട് ബറ്റാലിയൻ"
+  },
+  "Mazhaye Thoomazhaye · Rain of Love": {
+    "en": "Mazhaye Thoomazhaye · Rain of Love",
+    "ml": "മഴയേ തൂമഴയേ · പട്ടം പോലെ"
+  },
+  "മഴയേ തൂമഴയേ · പട്ടം പോലെ": {
+    "en": "Mazhaye Thoomazhaye · Rain of Love",
+    "ml": "മഴയേ തൂമഴയേ · പട്ടം പോലെ"
+  },
+  "Monsoon in Kerala Backwaters · Serene Vibes": {
+    "en": "Monsoon in Kerala Backwaters · Serene Vibes",
+    "ml": "കേരള കായലുകളും മഴയും · പ്രകൃതി സൗന്ദര്യം"
+  },
+  "കേരള കായലുകളും മഴയും · പ്രകൃതി സൗന്ദര്യം": {
+    "en": "Monsoon in Kerala Backwaters · Serene Vibes",
+    "ml": "കേരള കായലുകളും മഴയും · പ്രകൃതി സൗന്ദര്യം"
+  },
+  "Cozy Lofi Beats & Soft Rain · Night Chill": {
+    "en": "Cozy Lofi Beats & Soft Rain · Night Chill",
+    "ml": "കോസി ലോ-ഫൈ & മഴത്തുള്ളികൾ · റിലാക്സ്"
+  },
+  "കോസി ലോ-ഫൈ & മഴത്തുള്ളികൾ · റിലാക്സ്": {
+    "en": "Cozy Lofi Beats & Soft Rain · Night Chill",
+    "ml": "കോസി ലോ-ഫൈ & മഴത്തുള്ളികൾ · റിലാക്സ്"
+  },
+  "This scene is so beautiful! 😍": {
+    "en": "This scene is so beautiful! 😍",
+    "ml": "ഇത് എത്ര മനോഹരമാണ്! 😍"
+  },
+  "ഇത് എത്ര മനോഹരമാണ്! 😍": {
+    "en": "This scene is so beautiful! 😍",
+    "ml": "ഇത് എത്ര മനോഹരമാണ്! 😍"
+  },
+  "Our favorite part! ❤️": {
+    "en": "Our favorite part! ❤️",
+    "ml": "നമ്മുടെ പ്രിയപ്പെട്ട രംഗം! ❤️"
+  },
+  "നമ്മുടെ പ്രിയപ്പെട്ട രംഗം! ❤️": {
+    "en": "Our favorite part! ❤️",
+    "ml": "നമ്മുടെ പ്രിയപ്പെട്ട രംഗം! ❤️"
+  },
+  "Quick popcorn snack break! 🍿": {
+    "en": "Quick popcorn snack break! 🍿",
+    "ml": "ഒരു പോപ്കോൺ ബ്രേക്ക് എടുക്കാം 🍿"
+  },
+  "ഒരു പോപ്കോൺ ബ്രേക്ക് എടുക്കാം 🍿": {
+    "en": "Quick popcorn snack break! 🍿",
+    "ml": "ഒരു പോപ്കോൺ ബ്രേക്ക് എടുക്കാം 🍿"
+  },
+  "Missing you right now 🤍": {
+    "en": "Missing you right now 🤍",
+    "ml": "നിന്നെ ഒരുപാട് മിസ് ചെയ്യുന്നു ഇവിടെ 🤍"
+  },
+  "നിന്നെ ഒരുപാട് മിസ് ചെയ്യുന്നു ഇവിടെ 🤍": {
+    "en": "Missing you right now 🤍",
+    "ml": "നിന്നെ ഒരുപാട് മിസ് ചെയ്യുന്നു ഇവിടെ 🤍"
+  },
+  "Rewinding this, hilarious! 😂": {
+    "en": "Rewinding this, hilarious! 😂",
+    "ml": "ഹഹഹ, ഇത് വീണ്ടും കാണണം! 😂"
+  },
+  "ഹഹഹ, ഇത് വീണ്ടും കാണണം! 😂": {
+    "en": "Rewinding this, hilarious! 😂",
+    "ml": "ഹഹഹ, ഇത് വീണ്ടും കാണണം! 😂"
+  },
+  "We should go there together ✨": {
+    "en": "We should go there together ✨",
+    "ml": "നമുക്ക് ഒന്നിച്ച് അവിടെ പോകണം ✨"
+  },
+  "നമുക്ക് ഒന്നിച്ച് അവിടെ പോകണം ✨": {
+    "en": "We should go there together ✨",
+    "ml": "നമുക്ക് ഒന്നിച്ച് അവിടെ പോകണം ✨"
+  },
+  "💡 1 സെക്കൻഡ് അമർത്തിപ്പിടിച്ചാൽ ഹഗ് വൈബ്രേഷൻ (Haptic Hug) അനുഭവപ്പെടും!": {
+    "en": "Haptic Hug",
+    "ml": "💡 1 സെക്കൻഡ് അമർത്തിപ്പിടിച്ചാൽ ഹഗ് വൈബ്രേഷൻ അനുഭവപ്പെടും!"
+  },
+  "💡 1 സെക്കൻഡ് അമർത്തിപ്പിടിച്ചാൽ ഹഗ് വൈബ്രേഷൻ അനുഭവപ്പെടും!": {
+    "en": "Haptic Hug",
+    "ml": "💡 1 സെക്കൻഡ് അമർത്തിപ്പിടിച്ചാൽ ഹഗ് വൈബ്രേഷൻ അനുഭവപ്പെടും!"
+  },
+  "Add a sweet touch message... (എന്റെ സ്പർശനം നിന്റെ ചാരത്തുണ്ട് 🫂)": {
+    "en": "Add a sweet touch message...",
+    "ml": "എന്റെ സ്പർശനം നിന്റെ ചാരത്തുണ്ട് 🫂"
+  },
+  "Add a sweet touch message...": {
+    "en": "Add a sweet touch message...",
+    "ml": "എന്റെ സ്പർശനം നിന്റെ ചാരത്തുണ്ട് 🫂"
+  },
+  "എന്റെ സ്പർശനം നിന്റെ ചാരത്തുണ്ട് 🫂": {
+    "en": "Add a sweet touch message...",
+    "ml": "എന്റെ സ്പർശനം നിന്റെ ചാരത്തുണ്ട് 🫂"
+  },
+  "രണ്ടുപേരും ചേർന്ന് പാടുന്ന പ്രണയഗാനം (Couple Duet Studio)": {
+    "en": "Couple Duet Studio",
+    "ml": "രണ്ടുപേരും ചേർന്ന് പാടുന്ന പ്രണയഗാനം"
+  },
+  "Couple Duet Studio": {
+    "en": "Couple Duet Studio",
+    "ml": "രണ്ടുപേരും ചേർന്ന് പാടുന്ന പ്രണയഗാനം"
+  },
+  "രണ്ടുപേരും ചേർന്ന് പാടുന്ന പ്രണയഗാനം": {
+    "en": "Couple Duet Studio",
+    "ml": "രണ്ടുപേരും ചേർന്ന് പാടുന്ന പ്രണയഗാനം"
+  },
+  "ആദ്യ വരി (Part 1 · Line 1)": {
+    "en": "Part 1 · Line 1",
+    "ml": "ആദ്യ വരി"
+  },
+  "Part 1 · Line 1": {
+    "en": "Part 1 · Line 1",
+    "ml": "ആദ്യ വരി"
+  },
+  "ആദ്യ വരി": {
+    "en": "Part 1 · Line 1",
+    "ml": "ആദ്യ വരി"
+  },
+  "മറുപടി വരി (Part 2 · Your Response)": {
+    "en": "Part 2 · Your Response",
+    "ml": "മറുപടി വരി"
+  },
+  "Part 2 · Your Response": {
+    "en": "Part 2 · Your Response",
+    "ml": "മറുപടി വരി"
+  },
+  "മറുപടി വരി": {
+    "en": "Part 2 · Your Response",
+    "ml": "മറുപടി വരി"
+  },
+  "റെക്കോർഡിംഗ് നിർത്തൂ (Done Singing)": {
+    "en": "Done Singing",
+    "ml": "റെക്കോർഡിംഗ് നിർത്തൂ"
+  },
+  "Done Singing": {
+    "en": "Done Singing",
+    "ml": "റെക്കോർഡിംഗ് നിർത്തൂ"
+  },
+  "റെക്കോർഡിംഗ് നിർത്തൂ": {
+    "en": "Done Singing",
+    "ml": "റെക്കോർഡിംഗ് നിർത്തൂ"
+  },
+  "വീണ്ടും പാടുക (Re-record Line)": {
+    "en": "Re-record Line",
+    "ml": "വീണ്ടും പാടുക"
+  },
+  "Re-record Line": {
+    "en": "Re-record Line",
+    "ml": "വീണ്ടും പാടുക"
+  },
+  "വീണ്ടും പാടുക": {
+    "en": "Re-record Line",
+    "ml": "വീണ്ടും പാടുക"
+  },
+  "അടുത്ത വരി പാടുക (Record Next Line)": {
+    "en": "Record Next Line",
+    "ml": "അടുത്ത വരി പാടുക"
+  },
+  "Record Next Line": {
+    "en": "Record Next Line",
+    "ml": "അടുത്ത വരി പാടുക"
+  },
+  "അടുത്ത വരി പാടുക": {
+    "en": "Record Next Line",
+    "ml": "അടുത്ത വരി പാടുക"
+  },
+  "ഡ്യുയറ്റ് ശൈലി (Duet Arrangement):": {
+    "en": "Duet Arrangement",
+    "ml": "ഡ്യുയറ്റ് ശൈലി:"
+  },
+  "Duet Arrangement": {
+    "en": "Duet Arrangement",
+    "ml": "ഡ്യുയറ്റ് ശൈലി:"
+  },
+  "ഡ്യുയറ്റ് ശൈലി:": {
+    "en": "Duet Arrangement",
+    "ml": "ഡ്യുയറ്റ് ശൈലി:"
+  },
+  "🔁 ആദ്യ വരി + മറുപടി വരി (Call & Response)": {
+    "en": "Call & Response",
+    "ml": "🔁 ആദ്യ വരി + മറുപടി വരി"
+  },
+  "Call & Response": {
+    "en": "Call & Response",
+    "ml": "🔁 ആദ്യ വരി + മറുപടി വരി"
+  },
+  "🔁 ആദ്യ വരി + മറുപടി വരി": {
+    "en": "Call & Response",
+    "ml": "🔁 ആദ്യ വരി + മറുപടി വരി"
+  },
+  "🎼 ഒന്നിച്ച് പാടാം (Harmonize Together)": {
+    "en": "Harmonize Together",
+    "ml": "🎼 ഒന്നിച്ച് പാടാം"
+  },
+  "Harmonize Together": {
+    "en": "Harmonize Together",
+    "ml": "🎼 ഒന്നിച്ച് പാടാം"
+  },
+  "🎼 ഒന്നിച്ച് പാടാം": {
+    "en": "Harmonize Together",
+    "ml": "🎼 ഒന്നിച്ച് പാടാം"
+  },
+  "✨ റൊമാന്റിക് എക്കോ & റീവെർബ് (Romance Acoustic Warmth)": {
+    "en": "Romance Acoustic Warmth",
+    "ml": "✨ റൊമാന്റിക് എക്കോ & റീവെർബ്"
+  },
+  "Romance Acoustic Warmth": {
+    "en": "Romance Acoustic Warmth",
+    "ml": "✨ റൊമാന്റിക് എക്കോ & റീവെർബ്"
+  },
+  "✨ റൊമാന്റിക് എക്കോ & റീവെർബ്": {
+    "en": "Romance Acoustic Warmth",
+    "ml": "✨ റൊമാന്റിക് എക്കോ & റീവെർബ്"
+  },
+  "ശബ്ദ ക്രമീകരണം (Volume Balance):": {
+    "en": "Volume Balance",
+    "ml": "ശബ്ദ ക്രമീകരണം:"
+  },
+  "Volume Balance": {
+    "en": "Volume Balance",
+    "ml": "ശബ്ദ ക്രമീകരണം:"
+  },
+  "ശബ്ദ ക്രമീകരണം:": {
+    "en": "Volume Balance",
+    "ml": "ശബ്ദ ക്രമീകരണം:"
+  },
+  "മിക്സ് ചെയ്യുന്നു... (Mixing)": {
+    "en": "Mixing",
+    "ml": "മിക്സ് ചെയ്യുന്നു..."
+  },
+  "Mixing": {
+    "en": "Mixing",
+    "ml": "മിക്സ് ചെയ്യുന്നു..."
+  },
+  "മിക്സ് ചെയ്യുന്നു...": {
+    "en": "Mixing",
+    "ml": "മിക്സ് ചെയ്യുന്നു..."
+  },
+  "നമ്മുടെ പൂർണ്ണ ഗാനം (Full Duet Preview)": {
+    "en": "Full Duet Preview",
+    "ml": "നമ്മുടെ പൂർണ്ണ ഗാനം"
+  },
+  "Full Duet Preview": {
+    "en": "Full Duet Preview",
+    "ml": "നമ്മുടെ പൂർണ്ണ ഗാനം"
+  },
+  "നമ്മുടെ പൂർണ്ണ ഗാനം": {
+    "en": "Full Duet Preview",
+    "ml": "നമ്മുടെ പൂർണ്ണ ഗാനം"
+  },
+  "ഡ്യുയറ്റ് കേൾക്കാം (Play Full Song)": {
+    "en": "Play Full Song",
+    "ml": "ഡ്യുയറ്റ് കേൾക്കാം"
+  },
+  "Play Full Song": {
+    "en": "Play Full Song",
+    "ml": "ഡ്യുയറ്റ് കേൾക്കാം"
+  },
+  "ഡ്യുയറ്റ് കേൾക്കാം": {
+    "en": "Play Full Song",
+    "ml": "ഡ്യുയറ്റ് കേൾക്കാം"
+  },
+  "പാട്ട് അയക്കുന്നു... (Sending Duet)": {
+    "en": "Sending Duet",
+    "ml": "പാട്ട് അയക്കുന്നു..."
+  },
+  "Sending Duet": {
+    "en": "Sending Duet",
+    "ml": "പാട്ട് അയക്കുന്നു..."
+  },
+  "പാട്ട് അയക്കുന്നു...": {
+    "en": "Sending Duet",
+    "ml": "പാട്ട് അയക്കുന്നു..."
+  },
+  "ചാറ്റിലേക്ക് പങ്കിടുക (Send Duet to Chat) 🎶": {
+    "en": "Send Duet to Chat",
+    "ml": "ചാറ്റിലേക്ക് പങ്കിടുക 🎶"
+  },
+  "Send Duet to Chat": {
+    "en": "Send Duet to Chat",
+    "ml": "ചാറ്റിലേക്ക് പങ്കിടുക 🎶"
+  },
+  "ചാറ്റിലേക്ക് പങ്കിടുക 🎶": {
+    "en": "Send Duet to Chat",
+    "ml": "ചാറ്റിലേക്ക് പങ്കിടുക 🎶"
+  },
+  "Voice Filter Studio · ശബ്ദ ഇഫക്റ്റുകൾ": {
+    "en": "Voice Filter Studio",
+    "ml": "ശബ്ദ ഇഫക്റ്റുകൾ"
+  },
+  "Voice Filter Studio": {
+    "en": "Voice Filter Studio",
+    "ml": "ശബ്ദ ഇഫക്റ്റുകൾ"
+  },
+  "ശബ്ദ ഇഫക്റ്റുകൾ": {
+    "en": "Voice Filter Studio",
+    "ml": "ശബ്ദ ഇഫക്റ്റുകൾ"
+  },
+  "Record again (വീണ്ടും റെക്കോർഡ് ചെയ്യുക)": {
+    "en": "Record again",
+    "ml": "വീണ്ടും റെക്കോർഡ് ചെയ്യുക"
+  },
+  "Record again": {
+    "en": "Record again",
+    "ml": "വീണ്ടും റെക്കോർഡ് ചെയ്യുക"
+  },
+  "വീണ്ടും റെക്കോർഡ് ചെയ്യുക": {
+    "en": "Record again",
+    "ml": "വീണ്ടും റെക്കോർഡ് ചെയ്യുക"
+  },
+  "Shared Video Clip": {
+    "en": "Shared Video Clip",
+    "ml": "കസ്റ്റം വീഡിയോ ക്ലിപ്പ്"
+  },
+  "കസ്റ്റം വീഡിയോ ക്ലിപ്പ്": {
+    "en": "Shared Video Clip",
+    "ml": "കസ്റ്റം വീഡിയോ ക്ലിപ്പ്"
+  },
+  "Watch Party · വാച്ച് പാർട്ടി": {
+    "en": "Watch Party",
+    "ml": "വാച്ച് പാർട്ടി"
+  },
+  "Watch Party": {
+    "en": "Watch Party",
+    "ml": "വാച്ച് പാർട്ടി"
+  },
+  "വാച്ച് പാർട്ടി": {
+    "en": "Watch Party",
+    "ml": "വാച്ച് പാർട്ടി"
+  },
+  "Synced (സിങ്ക്ഡ്)": {
+    "en": "Synced",
+    "ml": "സിങ്ക്ഡ്"
+  },
+  "Synced": {
+    "en": "Synced",
+    "ml": "സിങ്ക്ഡ്"
+  },
+  "സിങ്ക്ഡ്": {
+    "en": "Synced",
+    "ml": "സിങ്ക്ഡ്"
+  },
+  "Full Screen (പൂർണ്ണ സ്ക്രീൻ)": {
+    "en": "Full Screen",
+    "ml": "പൂർണ്ണ സ്ക്രീൻ"
+  },
+  "Full Screen": {
+    "en": "Full Screen",
+    "ml": "പൂർണ്ണ സ്ക്രീൻ"
+  },
+  "പൂർണ്ണ സ്ക്രീൻ": {
+    "en": "Full Screen",
+    "ml": "പൂർണ്ണ സ്ക്രീൻ"
+  },
+  "Minimize to Mini Player (മിനിമൈസ്)": {
+    "en": "Minimize to Mini Player",
+    "ml": "മിനിമൈസ്"
+  },
+  "Minimize to Mini Player": {
+    "en": "Minimize to Mini Player",
+    "ml": "മിനിമൈസ്"
+  },
+  "മിനിമൈസ്": {
+    "en": "Minimize to Mini Player",
+    "ml": "മിനിമൈസ്"
+  },
+  "Close Watch Party (അടയ്ക്കുക)": {
+    "en": "Close Watch Party",
+    "ml": "അടയ്ക്കുക"
+  },
+  "Close Watch Party": {
+    "en": "Close Watch Party",
+    "ml": "അടയ്ക്കുക"
+  },
+  "അടയ്ക്കുക": {
+    "en": "Close Watch Party",
+    "ml": "അടയ്ക്കുക"
+  },
+  "Rewind 10s (-10 സെക്കൻഡ്)": {
+    "en": "Rewind 10s",
+    "ml": "-10 സെക്കൻഡ്"
+  },
+  "Rewind 10s": {
+    "en": "Rewind 10s",
+    "ml": "-10 സെക്കൻഡ്"
+  },
+  "-10 സെക്കൻഡ്": {
+    "en": "Rewind 10s",
+    "ml": "-10 സെക്കൻഡ്"
+  },
+  "Pause (പോസ്)": {
+    "en": "Pause",
+    "ml": "പോസ്"
+  },
+  "Pause": {
+    "en": "Pause",
+    "ml": "പോസ്"
+  },
+  "പോസ്": {
+    "en": "Pause",
+    "ml": "പോസ്"
+  },
+  "Play Together (ഒന്നിച്ച് പ്ലേ ചെയ്യുക)": {
+    "en": "Play Together",
+    "ml": "ഒന്നിച്ച് പ്ലേ ചെയ്യുക"
+  },
+  "Play Together": {
+    "en": "Play Together",
+    "ml": "ഒന്നിച്ച് പ്ലേ ചെയ്യുക"
+  },
+  "ഒന്നിച്ച് പ്ലേ ചെയ്യുക": {
+    "en": "Play Together",
+    "ml": "ഒന്നിച്ച് പ്ലേ ചെയ്യുക"
+  },
+  "Forward 10s (+10 സെക്കൻഡ്)": {
+    "en": "Forward 10s",
+    "ml": "+10 സെക്കൻഡ്"
+  },
+  "Forward 10s": {
+    "en": "Forward 10s",
+    "ml": "+10 സെക്കൻഡ്"
+  },
+  "+10 സെക്കൻഡ്": {
+    "en": "Forward 10s",
+    "ml": "+10 സെക്കൻഡ്"
+  },
+  "Force re-sync with partner (സിങ്ക് ചെയ്യുക)": {
+    "en": "Force re-sync with partner",
+    "ml": "സിങ്ക് ചെയ്യുക"
+  },
+  "Force re-sync with partner": {
+    "en": "Force re-sync with partner",
+    "ml": "സിങ്ക് ചെയ്യുക"
+  },
+  "സിങ്ക് ചെയ്യുക": {
+    "en": "Force re-sync with partner",
+    "ml": "സിങ്ക് ചെയ്യുക"
+  },
+  "Quick Moments (വേഗത്തിൽ അയക്കാം):": {
+    "en": "Quick Moments:",
+    "ml": "വേഗത്തിൽ അയക്കാം"
+  },
+  "Quick Moments:": {
+    "en": "Quick Moments:",
+    "ml": "വേഗത്തിൽ അയക്കാം"
+  },
+  "വേഗത്തിൽ അയക്കാം": {
+    "en": "Quick Moments:",
+    "ml": "വേഗത്തിൽ അയക്കാം"
+  },
+  "Type a reaction or sweet message... (സന്ദേശം എഴുതൂ)": {
+    "en": "Type a reaction or sweet message...",
+    "ml": "സന്ദേശം എഴുതൂ"
+  },
+  "Type a reaction or sweet message...": {
+    "en": "Type a reaction or sweet message...",
+    "ml": "സന്ദേശം എഴുതൂ"
+  },
+  "സന്ദേശം എഴുതൂ": {
+    "en": "Type a reaction or sweet message...",
+    "ml": "സന്ദേശം എഴുതൂ"
+  },
+  "Add a love note to share to chat... (ഒരു കുറിപ്പ് നൽകാം)": {
+    "en": "Add a love note to share to chat...",
+    "ml": "ഒരു കുറിപ്പ് നൽകാം"
+  },
+  "Add a love note to share to chat...": {
+    "en": "Add a love note to share to chat...",
+    "ml": "ഒരു കുറിപ്പ് നൽകാം"
+  },
+  "ഒരു കുറിപ്പ് നൽകാം": {
+    "en": "Add a love note to share to chat...",
+    "ml": "ഒരു കുറിപ്പ് നൽകാം"
+  },
+  "Shared to Chat! (ഷെയർ ചെയ്തു 🎉)": {
+    "en": "Shared to Chat!",
+    "ml": "ഷെയർ ചെയ്തു 🎉"
+  },
+  "Shared to Chat!": {
+    "en": "Shared to Chat!",
+    "ml": "ഷെയർ ചെയ്തു 🎉"
+  },
+  "ഷെയർ ചെയ്തു 🎉": {
+    "en": "Shared to Chat!",
+    "ml": "ഷെയർ ചെയ്തു 🎉"
+  },
+  "Send Video Card to Chat (ചാറ്റിലേക്ക് ഷെയർ ചെയ്യാം 🎬)": {
+    "en": "Send Video Card to Chat",
+    "ml": "ചാറ്റിലേക്ക് ഷെയർ ചെയ്യാം 🎬"
+  },
+  "Send Video Card to Chat": {
+    "en": "Send Video Card to Chat",
+    "ml": "ചാറ്റിലേക്ക് ഷെയർ ചെയ്യാം 🎬"
+  },
+  "ചാറ്റിലേക്ക് ഷെയർ ചെയ്യാം 🎬": {
+    "en": "Send Video Card to Chat",
+    "ml": "ചാറ്റിലേക്ക് ഷെയർ ചെയ്യാം 🎬"
+  },
+  "Expand Cinema View (വലുതാക്കുക)": {
+    "en": "Expand Cinema View",
+    "ml": "വലുതാക്കുക"
+  },
+  "Expand Cinema View": {
+    "en": "Expand Cinema View",
+    "ml": "വലുതാക്കുക"
+  },
+  "വലുതാക്കുക": {
+    "en": "Expand Cinema View",
+    "ml": "വലുതാക്കുക"
+  },
+  "Deep Romantic": {
+    "en": "Deep Romantic",
+    "ml": "തീവ്ര പ്രണയം"
+  },
+  "തീവ്ര പ്രണയം": {
+    "en": "Deep Romantic",
+    "ml": "തീവ്ര പ്രണയം"
+  },
+  "Heartfelt Apology": {
+    "en": "Heartfelt Apology",
+    "ml": "സ്നേഹത്തോടെയുള്ള ക്ഷമാപണം"
+  },
+  "സ്നേഹത്തോടെയുള്ള ക്ഷമാപണം": {
+    "en": "Heartfelt Apology",
+    "ml": "സ്നേഹത്തോടെയുള്ള ക്ഷമാപണം"
+  },
+  "Malayalam Poetry": {
+    "en": "Malayalam Poetry",
+    "ml": "പ്രണയ കവിത (വരികൾ)"
+  },
+  "പ്രണയ കവിത (വരികൾ)": {
+    "en": "Malayalam Poetry",
+    "ml": "പ്രണയ കവിത (വരികൾ)"
+  },
+  "Playful & Flirty": {
+    "en": "Playful & Flirty",
+    "ml": "കൊഞ്ചലും തമാശയും"
+  },
+  "കൊഞ്ചലും തമാശയും": {
+    "en": "Playful & Flirty",
+    "ml": "കൊഞ്ചലും തമാശയും"
+  },
+  "Comfort & Care": {
+    "en": "Comfort & Care",
+    "ml": "ആശ്വാസവും തുണയും"
+  },
+  "ആശ്വാസവും തുണയും": {
+    "en": "Comfort & Care",
+    "ml": "ആശ്വാസവും തുണയും"
+  },
+  "Goodnight Wish": {
+    "en": "Goodnight Wish",
+    "ml": "മനോഹരമായ ശുഭരാത്രി"
+  },
+  "മനോഹരമായ ശുഭരാത്രി": {
+    "en": "Goodnight Wish",
+    "ml": "മനോഹരമായ ശുഭരാത്രി"
+  },
+  "Morning Sunshine": {
+    "en": "Morning Sunshine",
+    "ml": "സുപ്രഭാതം പ്രിയേ"
+  },
+  "സുപ്രഭാതം പ്രിയേ": {
+    "en": "Morning Sunshine",
+    "ml": "സുപ്രഭാതം പ്രിയേ"
+  },
+  "വാർഷികം 💕": {
+    "en": "Anniversary",
+    "ml": "വാർഷികം 💕"
+  },
+  "ജന്മദിനം 🎂": {
+    "en": "Partner's Birthday",
+    "ml": "ജന്മദിനം 🎂"
+  },
+  "Date Night": {
+    "en": "Date Night",
+    "ml": "ഡേറ്റ് നൈറ്റ് 🌹"
+  },
+  "ഡേറ്റ് നൈറ്റ് 🌹": {
+    "en": "Date Night",
+    "ml": "ഡേറ്റ് നൈറ്റ് 🌹"
+  },
+  "Special Date": {
+    "en": "Special Date",
+    "ml": "പ്രത്യേക ദിവസം ✨"
+  },
+  "പ്രത്യേക ദിവസം ✨": {
+    "en": "Special Date",
+    "ml": "പ്രത്യേക ദിവസം ✨"
+  },
+  "Trip": {
+    "en": "Trip",
+    "ml": "യാത്ര ✈️"
+  },
+  "യാത്ര ✈️": {
+    "en": "Romantic Trip",
+    "ml": "യാത്ര ✈️"
+  },
+  "Appointment": {
+    "en": "Appointment",
+    "ml": "അപ്പോയിൻമെന്റ് 📋"
+  },
+  "അപ്പോയിൻമെന്റ് 📋": {
+    "en": "Appointment",
+    "ml": "അപ്പോയിൻമെന്റ് 📋"
+  },
+  "Other": {
+    "en": "Other",
+    "ml": "മറ്റുള്ളവ 📅"
+  },
+  "മറ്റുള്ളവ 📅": {
+    "en": "Other",
+    "ml": "മറ്റുള്ളവ 📅"
+  },
+  "No reminder": {
+    "en": "No reminder",
+    "ml": "റിമൈൻഡർ വേണ്ട"
+  },
+  "റിമൈൻഡർ വേണ്ട": {
+    "en": "No reminder",
+    "ml": "റിമൈൻഡർ വേണ്ട"
+  },
+  "15 minutes before": {
+    "en": "15 minutes before",
+    "ml": "15 മിനിറ്റ് മുമ്പ്"
+  },
+  "15 മിനിറ്റ് മുമ്പ്": {
+    "en": "15 minutes before",
+    "ml": "15 മിനിറ്റ് മുമ്പ്"
+  },
+  "30 minutes before": {
+    "en": "30 minutes before",
+    "ml": "30 മിനിറ്റ് മുമ്പ്"
+  },
+  "30 മിനിറ്റ് മുമ്പ്": {
+    "en": "30 minutes before",
+    "ml": "30 മിനിറ്റ് മുമ്പ്"
+  },
+  "1 hour before": {
+    "en": "1 hour before",
+    "ml": "1 മണിക്കൂർ മുമ്പ്"
+  },
+  "1 മണിക്കൂർ മുമ്പ്": {
+    "en": "1 hour before",
+    "ml": "1 മണിക്കൂർ മുമ്പ്"
+  },
+  "2 hours before": {
+    "en": "2 hours before",
+    "ml": "2 മണിക്കൂർ മുമ്പ്"
+  },
+  "2 മണിക്കൂർ മുമ്പ്": {
+    "en": "2 hours before",
+    "ml": "2 മണിക്കൂർ മുമ്പ്"
+  },
+  "1 day before": {
+    "en": "1 day before",
+    "ml": "1 ദിവസം മുമ്പ്"
+  },
+  "1 ദിവസം മുമ്പ്": {
+    "en": "1 day before",
+    "ml": "1 ദിവസം മുമ്പ്"
+  },
+  "2 days before": {
+    "en": "2 days before",
+    "ml": "2 ദിവസം മുമ്പ്"
+  },
+  "2 ദിവസം മുമ്പ്": {
+    "en": "2 days before",
+    "ml": "2 ദിവസം മുമ്പ്"
+  },
+  "1 week before": {
+    "en": "1 week before",
+    "ml": "1 ആഴ്ച മുമ്പ്"
+  },
+  "1 ആഴ്ച മുമ്പ്": {
+    "en": "1 week before",
+    "ml": "1 ആഴ്ച മുമ്പ്"
+  },
+  "Does not repeat": {
+    "en": "Does not repeat",
+    "ml": "ആവർത്തിക്കില്ല"
+  },
+  "ആവർത്തിക്കില്ല": {
+    "en": "Does not repeat",
+    "ml": "ആവർത്തിക്കില്ല"
+  },
+  "Daily": {
+    "en": "Daily",
+    "ml": "ദിവസവും"
+  },
+  "ദിവസവും": {
+    "en": "Daily",
+    "ml": "ദിവസവും"
+  },
+  "Weekly": {
+    "en": "Weekly",
+    "ml": "ആഴ്ചതോറും"
+  },
+  "ആഴ്ചതോറും": {
+    "en": "Weekly",
+    "ml": "ആഴ്ചതോറും"
+  },
+  "Monthly": {
+    "en": "Monthly",
+    "ml": "മാസം തോറും"
+  },
+  "മാസം തോറും": {
+    "en": "Monthly",
+    "ml": "മാസം തോറും"
+  },
+  "Yearly": {
+    "en": "Yearly",
+    "ml": "വർഷം തോറും"
+  },
+  "വർഷം തോറും": {
+    "en": "Yearly",
+    "ml": "വർഷം തോറും"
+  },
+  "Low": {
+    "en": "Low",
+    "ml": "കുറവ്"
+  },
+  "കുറവ്": {
+    "en": "Low",
+    "ml": "കുറവ്"
+  },
+  "Normal": {
+    "en": "Normal",
+    "ml": "സാധാരണ"
+  },
+  "സാധാരണ": {
+    "en": "Normal",
+    "ml": "സാധാരണ"
+  },
+  "High": {
+    "en": "High",
+    "ml": "ഉയർന്നത്"
+  },
+  "ഉയർന്നത്": {
+    "en": "High",
+    "ml": "ഉയർന്നത്"
+  },
+  "ഓർമ്മച്ചെപ്പ് 💫": {
+    "en": "Memory Lane",
+    "ml": "ഓർമ്മച്ചെപ്പ് 💫"
+  },
+  "Sweet Romance": {
+    "en": "Sweet Romance",
+    "ml": "പ്രണയം ❤️"
+  },
+  "പ്രണയം ❤️": {
+    "en": "Sweet Romance",
+    "ml": "പ്രണയം ❤️"
+  },
+  "Heart to Heart": {
+    "en": "Heart to Heart",
+    "ml": "ഉള്ളുതുറന്ന് 🌙"
+  },
+  "ഉള്ളുതുറന്ന് 🌙": {
+    "en": "Heart to Heart",
+    "ml": "ഉള്ളുതുറന്ന് 🌙"
+  },
+  "Playful & Silly": {
+    "en": "Playful & Silly",
+    "ml": "കുസൃതി 🤪"
+  },
+  "കുസൃതി 🤪": {
+    "en": "Playful & Silly",
+    "ml": "കുസൃതി 🤪"
+  },
+  "Future Dreams": {
+    "en": "Future Dreams",
+    "ml": "സ്വപ്നക്കൂട് 🏡"
+  },
+  "സ്വപ്നക്കൂട് 🏡": {
+    "en": "Future Dreams",
+    "ml": "സ്വപ്നക്കൂട് 🏡"
+  },
+  "What was our most unforgettable moment together so far?": {
+    "en": "What was our most unforgettable moment together so far?",
+    "ml": "നമ്മൾ ഒന്നിച്ചുണ്ടായിരുന്നതിൽ ഏറ്റവും മറക്കാനാവാത്ത നിമിഷം ഏതാണ്?"
+  },
+  "നമ്മൾ ഒന്നിച്ചുണ്ടായിരുന്നതിൽ ഏറ്റവും മറക്കാനാവാത്ത നിമിഷം ഏതാണ്?": {
+    "en": "What was our most unforgettable moment together so far?",
+    "ml": "നമ്മൾ ഒന്നിച്ചുണ്ടായിരുന്നതിൽ ഏറ്റവും മറക്കാനാവാത്ത നിമിഷം ഏതാണ്?"
+  },
+  "What was your very first thought when you first saw me?": {
+    "en": "What was your very first thought when you first saw me?",
+    "ml": "എന്നെ ആദ്യമായി കണ്ടപ്പോൾ നിന്റെ മനസ്സിൽ തോന്നിയ ആദ്യ ചിന്ത എന്തായിരുന്നു?"
+  },
+  "എന്നെ ആദ്യമായി കണ്ടപ്പോൾ നിന്റെ മനസ്സിൽ തോന്നിയ ആദ്യ ചിന്ത എന്തായിരുന്നു?": {
+    "en": "What was your very first thought when you first saw me?",
+    "ml": "എന്നെ ആദ്യമായി കണ്ടപ്പോൾ നിന്റെ മനസ്സിൽ തോന്നിയ ആദ്യ ചിന്ത എന്തായിരുന്നു?"
+  },
+  "A special secret that only the two of us know and will never tell anyone?": {
+    "en": "A special secret that only the two of us know and will never tell anyone?",
+    "ml": "നമുക്ക് രണ്ടുപേർക്കും മാത്രം അറിയാവുന്ന, മറ്റാരോടും പറയാത്ത ഒരു രഹസ്യം?"
+  },
+  "നമുക്ക് രണ്ടുപേർക്കും മാത്രം അറിയാവുന്ന, മറ്റാരോടും പറയാത്ത ഒരു രഹസ്യം?": {
+    "en": "A special secret that only the two of us know and will never tell anyone?",
+    "ml": "നമുക്ക് രണ്ടുപേർക്കും മാത്രം അറിയാവുന്ന, മറ്റാരോടും പറയാത്ത ഒരു രഹസ്യം?"
+  },
+  "What special dish would you love to cook for me with your own hands?": {
+    "en": "What special dish would you love to cook for me with your own hands?",
+    "ml": "നീ എനിക്ക് വേണ്ടി സ്വന്തം കൈകൊണ്ട് ഉണ്ടാക്കിത്തരാൻ ഏറ്റവും ഇഷ്ടപ്പെടുന്ന ഭക്ഷണം?"
+  },
+  "നീ എനിക്ക് വേണ്ടി സ്വന്തം കൈകൊണ്ട് ഉണ്ടാക്കിത്തരാൻ ഏറ്റവും ഇഷ്ടപ്പെടുന്ന ഭക്ഷണം?": {
+    "en": "What special dish would you love to cook for me with your own hands?",
+    "ml": "നീ എനിക്ക് വേണ്ടി സ്വന്തം കൈകൊണ്ട് ഉണ്ടാക്കിത്തരാൻ ഏറ്റവും ഇഷ്ടപ്പെടുന്ന ഭക്ഷണം?"
+  },
+  "Where is the dream destination you want us two to escape to together?": {
+    "en": "Where is the dream destination you want us two to escape to together?",
+    "ml": "നമ്മൾ രണ്ടുപേരും മാത്രം പോവാൻ ഏറ്റവും കൊതിക്കുന്ന സ്വപ്ന യാത്ര എവിടേക്കാണ്?"
+  },
+  "നമ്മൾ രണ്ടുപേരും മാത്രം പോവാൻ ഏറ്റവും കൊതിക്കുന്ന സ്വപ്ന യാത്ര എവിടേക്കാണ്?": {
+    "en": "Where is the dream destination you want us two to escape to together?",
+    "ml": "നമ്മൾ രണ്ടുപേരും മാത്രം പോവാൻ ഏറ്റവും കൊതിക്കുന്ന സ്വപ്ന യാത്ര എവിടേക്കാണ്?"
+  },
+  "What silly habit of mine never fails to make you smile or laugh?": {
+    "en": "What silly habit of mine never fails to make you smile or laugh?",
+    "ml": "നിന്നെ എപ്പോഴും ചിരിപ്പിക്കുന്ന അല്ലെങ്കിൽ കളിപ്പിക്കുന്ന എന്റെ ഒരു സ്വഭാവം?"
+  },
+  "നിന്നെ എപ്പോഴും ചിരിപ്പിക്കുന്ന അല്ലെങ്കിൽ കളിപ്പിക്കുന്ന എന്റെ ഒരു സ്വഭാവം?": {
+    "en": "What silly habit of mine never fails to make you smile or laugh?",
+    "ml": "നിന്നെ എപ്പോഴും ചിരിപ്പിക്കുന്ന അല്ലെങ്കിൽ കളിപ്പിക്കുന്ന എന്റെ ഒരു സ്വഭാവം?"
+  },
+  "Which song feels like it was written just for the two of us?": {
+    "en": "Which song feels like it was written just for the two of us?",
+    "ml": "നമ്മൾ ഒരുമിച്ച് കേൾക്കുമ്പോൾ \"ഇത് നമ്മുടേതാണ്\" എന്ന് തോന്നുന്ന ആ ഒരു പാട്ട്?"
+  },
+  "നമ്മൾ ഒരുമിച്ച് കേൾക്കുമ്പോൾ \"ഇത് നമ്മുടേതാണ്\" എന്ന് തോന്നുന്ന ആ ഒരു പാട്ട്?": {
+    "en": "Which song feels like it was written just for the two of us?",
+    "ml": "നമ്മൾ ഒരുമിച്ച് കേൾക്കുമ്പോൾ \"ഇത് നമ്മുടേതാണ്\" എന്ന് തോന്നുന്ന ആ ഒരു പാട്ട്?"
+  },
+  "If we had 24 uninterrupted hours with no phones or world, what would we do?": {
+    "en": "If we had 24 uninterrupted hours with no phones or world, what would we do?",
+    "ml": "ഒരു മുഴുവൻ ദിവസവും ഫോണോ ശല്യങ്ങളോ ഇല്ലാതെ നമുക്ക് മാത്രമായി കിട്ടിയാൽ നീ എന്ത് ചെയ്യും?"
+  },
+  "ഒരു മുഴുവൻ ദിവസവും ഫോണോ ശല്യങ്ങളോ ഇല്ലാതെ നമുക്ക് മാത്രമായി കിട്ടിയാൽ നീ എന്ത് ചെയ്യും?": {
+    "en": "If we had 24 uninterrupted hours with no phones or world, what would we do?",
+    "ml": "ഒരു മുഴുവൻ ദിവസവും ഫോണോ ശല്യങ്ങളോ ഇല്ലാതെ നമുക്ക് മാത്രമായി കിട്ടിയാൽ നീ എന്ത് ചെയ്യും?"
+  },
+  "What quality about our bond do you cherish the most deeply?": {
+    "en": "What quality about our bond do you cherish the most deeply?",
+    "ml": "നമ്മുടെ ഈ ബന്ധത്തിൽ നീ ഏറ്റവും കൂടുതൽ വിലമതിക്കുന്ന കാര്യം എന്താണ്?"
+  },
+  "നമ്മുടെ ഈ ബന്ധത്തിൽ നീ ഏറ്റവും കൂടുതൽ വിലമതിക്കുന്ന കാര്യം എന്താണ്?": {
+    "en": "What quality about our bond do you cherish the most deeply?",
+    "ml": "നമ്മുടെ ഈ ബന്ധത്തിൽ നീ ഏറ്റവും കൂടുതൽ വിലമതിക്കുന്ന കാര്യം എന്താണ്?"
+  },
+  "When you miss me so badly, what is the first memory that runs into your mind?": {
+    "en": "When you miss me so badly, what is the first memory that runs into your mind?",
+    "ml": "എന്നെ ഒരുപാട് മിസ്സ് ചെയ്യുമ്പോൾ നിന്റെ ഓർമ്മയിൽ ആദ്യം ഓടിയെത്തുന്നതെന്താണ്?"
+  },
+  "എന്നെ ഒരുപാട് മിസ്സ് ചെയ്യുമ്പോൾ നിന്റെ ഓർമ്മയിൽ ആദ്യം ഓടിയെത്തുന്നതെന്താണ്?": {
+    "en": "When you miss me so badly, what is the first memory that runs into your mind?",
+    "ml": "എന്നെ ഒരുപാട് മിസ്സ് ചെയ്യുമ്പോൾ നിന്റെ ഓർമ്മയിൽ ആദ്യം ഓടിയെത്തുന്നതെന്താണ്?"
+  },
+  "How do you picture us when we grow wrinkled and old together?": {
+    "en": "How do you picture us when we grow wrinkled and old together?",
+    "ml": "നമുക്ക് ഒരുമിച്ച് പ്രായമാകുമ്പോൾ നമ്മൾ എങ്ങനെയായിരിക്കും എന്നാണ് നിന്റെ സങ്കൽപം?"
+  },
+  "നമുക്ക് ഒരുമിച്ച് പ്രായമാകുമ്പോൾ നമ്മൾ എങ്ങനെയായിരിക്കും എന്നാണ് നിന്റെ സങ്കൽപം?": {
+    "en": "How do you picture us when we grow wrinkled and old together?",
+    "ml": "നമുക്ക് ഒരുമിച്ച് പ്രായമാകുമ്പോൾ നമ്മൾ എങ്ങനെയായിരിക്കും എന്നാണ് നിന്റെ സങ്കൽപം?"
+  },
+  "What words of mine have remained deeply etched in your heart?": {
+    "en": "What words of mine have remained deeply etched in your heart?",
+    "ml": "ഞാൻ എപ്പോഴോ പറഞ്ഞതിൽ നിന്റെ ഹൃദയത്തിൽ ഇപ്പോഴും മായാതെ നിൽക്കുന്ന വാക്കുകൾ?"
+  },
+  "ഞാൻ എപ്പോഴോ പറഞ്ഞതിൽ നിന്റെ ഹൃദയത്തിൽ ഇപ്പോഴും മായാതെ നിൽക്കുന്ന വാക്കുകൾ?": {
+    "en": "What words of mine have remained deeply etched in your heart?",
+    "ml": "ഞാൻ എപ്പോഴോ പറഞ്ഞതിൽ നിന്റെ ഹൃദയത്തിൽ ഇപ്പോഴും മായാതെ നിൽക്കുന്ന വാക്കുകൾ?"
+  },
+  "When I am having a rough or low day, what is your magic way to comfort me?": {
+    "en": "When I am having a rough or low day, what is your magic way to comfort me?",
+    "ml": "എനിക്ക് നല്ല സങ്കടമോ സങ്കീർണ്ണതയോ വരുമ്പോൾ എന്നെ ചിരിപ്പിക്കാൻ നീ ചെയ്യുന്ന മാജിക്?"
+  },
+  "എനിക്ക് നല്ല സങ്കടമോ സങ്കീർണ്ണതയോ വരുമ്പോൾ എന്നെ ചിരിപ്പിക്കാൻ നീ ചെയ്യുന്ന മാജിക്?": {
+    "en": "When I am having a rough or low day, what is your magic way to comfort me?",
+    "ml": "എനിക്ക് നല്ല സങ്കടമോ സങ്കീർണ്ണതയോ വരുമ്പോൾ എന്നെ ചിരിപ്പിക്കാൻ നീ ചെയ്യുന്ന മാജിക്?"
+  },
+  "What is the most precious gift or little token I have ever given you?": {
+    "en": "What is the most precious gift or little token I have ever given you?",
+    "ml": "ഞാൻ നിനക്ക് തന്നതിൽ ഏറ്റവും പ്രിയപ്പെട്ട സമ്മാനമോ ഓർമ്മയോ ഏതാണ്?"
+  },
+  "ഞാൻ നിനക്ക് തന്നതിൽ ഏറ്റവും പ്രിയപ്പെട്ട സമ്മാനമോ ഓർമ്മയോ ഏതാണ്?": {
+    "en": "What is the most precious gift or little token I have ever given you?",
+    "ml": "ഞാൻ നിനക്ക് തന്നതിൽ ഏറ്റവും പ്രിയപ്പെട്ട സമ്മാനമോ ഓർമ്മയോ ഏതാണ്?"
+  },
+  "What future milestone are you most excited for us to celebrate together?": {
+    "en": "What future milestone are you most excited for us to celebrate together?",
+    "ml": "നമ്മുടെ ജീവിതത്തിൽ വരാനിരിക്കുന്ന ദിവസങ്ങളിൽ നീ ഏറ്റവും കാത്തിരിക്കുന്ന നിമിഷം?"
+  },
+  "നമ്മുടെ ജീവിതത്തിൽ വരാനിരിക്കുന്ന ദിവസങ്ങളിൽ നീ ഏറ്റവും കാത്തിരിക്കുന്ന നിമിഷം?": {
+    "en": "What future milestone are you most excited for us to celebrate together?",
+    "ml": "നമ്മുടെ ജീവിതത്തിൽ വരാനിരിക്കുന്ന ദിവസങ്ങളിൽ നീ ഏറ്റവും കാത്തിരിക്കുന്ന നിമിഷം?"
+  },
+  "What is that little spark in my eyes or smile that catches your heart every time?": {
+    "en": "What is that little spark in my eyes or smile that catches your heart every time?",
+    "ml": "എന്റെ കണ്ണുകളിലോ ചിരിയിലോ നിന്നെ ഏറ്റവും കൂടുതൽ ആകർഷിക്കുന്നത് എന്താണ്?"
+  },
+  "എന്റെ കണ്ണുകളിലോ ചിരിയിലോ നിന്നെ ഏറ്റവും കൂടുതൽ ആകർഷിക്കുന്നത് എന്താണ്?": {
+    "en": "What is that little spark in my eyes or smile that catches your heart every time?",
+    "ml": "എന്റെ കണ്ണുകളിലോ ചിരിയിലോ നിന്നെ ഏറ്റവും കൂടുതൽ ആകർഷിക്കുന്നത് എന്താണ്?"
+  },
+  "At 2 AM when everyone is asleep, what midnight snack would we sneak and eat together?": {
+    "en": "At 2 AM when everyone is asleep, what midnight snack would we sneak and eat together?",
+    "ml": "അർദ്ധരാത്രി 2 മണിക്ക് നമ്മൾ ഒരുമിച്ച് ഉണ്ടാക്കിക്കഴിക്കാൻ കൊതിക്കുന്ന പലഹാരം?"
+  },
+  "അർദ്ധരാത്രി 2 മണിക്ക് നമ്മൾ ഒരുമിച്ച് ഉണ്ടാക്കിക്കഴിക്കാൻ കൊതിക്കുന്ന പലഹാരം?": {
+    "en": "At 2 AM when everyone is asleep, what midnight snack would we sneak and eat together?",
+    "ml": "അർദ്ധരാത്രി 2 മണിക്ക് നമ്മൾ ഒരുമിച്ച് ഉണ്ടാക്കിക്കഴിക്കാൻ കൊതിക്കുന്ന പലഹാരം?"
+  },
+  "If the two of us had super powers, what cute or wild thing would we do?": {
+    "en": "If the two of us had super powers, what cute or wild thing would we do?",
+    "ml": "നമുക്ക് രണ്ടുപേർക്കും ഓരോ സൂപ്പർ പവർ കിട്ടിയാൽ നമ്മൾ എന്ത് ചെയ്യും?"
+  },
+  "നമുക്ക് രണ്ടുപേർക്കും ഓരോ സൂപ്പർ പവർ കിട്ടിയാൽ നമ്മൾ എന്ത് ചെയ്യും?": {
+    "en": "If the two of us had super powers, what cute or wild thing would we do?",
+    "ml": "നമുക്ക് രണ്ടുപേർക്കും ഓരോ സൂപ്പർ പവർ കിട്ടിയാൽ നമ്മൾ എന്ത് ചെയ്യും?"
+  },
+  "The very exact moment you realized this is not just casual, but something truly deep?": {
+    "en": "The very exact moment you realized this is not just casual, but something truly deep?",
+    "ml": "നമ്മൾ സാധാരണ സുഹൃത്തുക്കൾ മാത്രമല്ല, മറ്റെന്തോ ആണെന്ന് മനസ്സിൽ ആദ്യമായി തോന്നിയ നിമിഷം?"
+  },
+  "നമ്മൾ സാധാരണ സുഹൃത്തുക്കൾ മാത്രമല്ല, മറ്റെന്തോ ആണെന്ന് മനസ്സിൽ ആദ്യമായി തോന്നിയ നിമിഷം?": {
+    "en": "The very exact moment you realized this is not just casual, but something truly deep?",
+    "ml": "നമ്മൾ സാധാരണ സുഹൃത്തുക്കൾ മാത്രമല്ല, മറ്റെന്തോ ആണെന്ന് മനസ്സിൽ ആദ്യമായി തോന്നിയ നിമിഷം?"
+  },
+  "Today, what is one small thing about me that made you feel grateful or warm?": {
+    "en": "Today, what is one small thing about me that made you feel grateful or warm?",
+    "ml": "ഇന്നത്തെ ഈ ദിവസം എന്നെക്കുറിച്ച് ഓർത്ത് നിനക്ക് ഏറ്റവും സന്തോഷം തോന്നിയ ഒരു കാര്യം?"
+  },
+  "ഇന്നത്തെ ഈ ദിവസം എന്നെക്കുറിച്ച് ഓർത്ത് നിനക്ക് ഏറ്റവും സന്തോഷം തോന്നിയ ഒരു കാര്യം?": {
+    "en": "Today, what is one small thing about me that made you feel grateful or warm?",
+    "ml": "ഇന്നത്തെ ഈ ദിവസം എന്നെക്കുറിച്ച് ഓർത്ത് നിനക്ക് ഏറ്റവും സന്തോഷം തോന്നിയ ഒരു കാര്യം?"
+  },
+  "Wooden Desk": {
+    "en": "Wooden Desk",
+    "ml": "തടി മേശ 🪵"
+  },
+  "തടി മേശ 🪵": {
+    "en": "Wooden Desk",
+    "ml": "തടി മേശ 🪵"
+  },
+  "Blush Linen": {
+    "en": "Blush Linen",
+    "ml": "റോസ് ലിനൻ 🌸"
+  },
+  "റോസ് ലിനൻ 🌸": {
+    "en": "Blush Linen",
+    "ml": "റോസ് ലിനൻ 🌸"
+  },
+  "Memory Board": {
+    "en": "Memory Board",
+    "ml": "ഓർമ്മ ബോർഡ് 📌"
+  },
+  "ഓർമ്മ ബോർഡ് 📌": {
+    "en": "Memory Board",
+    "ml": "ഓർമ്മ ബോർഡ് 📌"
+  },
+  "Vintage Parchment": {
+    "en": "Vintage Parchment",
+    "ml": "വിന്റേജ് പേപ്പർ 📜"
+  },
+  "വിന്റേജ് പേപ്പർ 📜": {
+    "en": "Vintage Parchment",
+    "ml": "വിന്റേജ് പേപ്പർ 📜"
+  },
+  "Starry Twilight": {
+    "en": "Starry Twilight",
+    "ml": "നക്ഷത്ര രാവ് 🌌"
+  },
+  "നക്ഷത്ര രാവ് 🌌": {
+    "en": "Starry Twilight",
+    "ml": "നക്ഷത്ര രാവ് 🌌"
+  },
+  "വീഡിയോ ഓർമ്മ (Video Memory)": {
+    "en": "Video Memory",
+    "ml": "വീഡിയോ ഓർമ്മ"
+  },
+  "Video Memory": {
+    "en": "Video Memory",
+    "ml": "വീഡിയോ ഓർമ്മ"
+  },
+  "വീഡിയോ ഓർമ്മ": {
+    "en": "Video Memory",
+    "ml": "വീഡിയോ ഓർമ്മ"
+  },
+  "പോളറോയ്ഡ് ഓർമ്മ (Polaroid Memory)": {
+    "en": "Polaroid Memory",
+    "ml": "പോളറോയ്ഡ് ഓർമ്മ"
+  },
+  "Polaroid Memory": {
+    "en": "Polaroid Memory",
+    "ml": "പോളറോയ്ഡ് ഓർമ്മ"
+  },
+  "പോളറോയ്ഡ് ഓർമ്മ": {
+    "en": "Polaroid Memory",
+    "ml": "പോളറോയ്ഡ് ഓർമ്മ"
+  },
+  "നമ്മുടെ പ്രതിമാസ ഓർമ്മകൾ": {
+    "en": "Our Month in Review",
+    "ml": "നമ്മുടെ പ്രതിമാസ ഓർമ്മകൾ"
+  },
+  "First Chat": {
+    "en": "First Chat",
+    "ml": "ആദ്യ ചാറ്റ് 💬"
+  },
+  "ആദ്യ ചാറ്റ് 💬": {
+    "en": "First Chat",
+    "ml": "ആദ്യ ചാറ്റ് 💬"
+  },
+  "ആദ്യ കൂടിക്കാഴ്ച ☕": {
+    "en": "First Date",
+    "ml": "ആദ്യ കൂടിക്കാഴ്ച ☕"
+  },
+  "Proposal Moment": {
+    "en": "Proposal Moment",
+    "ml": "പ്രൊപ്പോസൽ 💍"
+  },
+  "പ്രൊപ്പോസൽ 💍": {
+    "en": "Proposal Moment",
+    "ml": "പ്രൊപ്പോസൽ 💍"
+  },
+  "Day We Became \"Us\"": {
+    "en": "Day We Became \"Us\"",
+    "ml": "ഒരുമിച്ചായ ദിവസം 💖"
+  },
+  "ഒരുമിച്ചായ ദിവസം 💖": {
+    "en": "Day We Became \"Us\"",
+    "ml": "ഒരുമിച്ചായ ദിവസം 💖"
+  },
+  "വാർഷികം / ആനിവേഴ്സറി 🥂": {
+    "en": "Anniversary",
+    "ml": "വാർഷികം / ആനിവേഴ്സറി 🥂"
+  },
+  "Romantic Trip": {
+    "en": "Romantic Trip",
+    "ml": "യാത്ര ✈️"
+  },
+  "Photo Memory": {
+    "en": "Photo Memory",
+    "ml": "ഫോട്ടോ ഓർമ്മ 📸"
+  },
+  "ഫോട്ടോ ഓർമ്മ 📸": {
+    "en": "Photo Memory",
+    "ml": "ഫോട്ടോ ഓർമ്മ 📸"
+  },
+  "Special Moment": {
+    "en": "Special Moment",
+    "ml": "പ്രത്യേക നിമിഷം ✨"
+  },
+  "പ്രത്യേക നിമിഷം ✨": {
+    "en": "Special Moment",
+    "ml": "പ്രത്യേക നിമിഷം ✨"
+  },
+  "0 days": {
+    "en": "0 days",
+    "ml": "0 ദിവസങ്ങൾ"
+  },
+  "0 ദിവസങ്ങൾ": {
+    "en": "0 days",
+    "ml": "0 ദിവസങ്ങൾ"
+  },
+  "Together for 0 days": {
+    "en": "Together for 0 days",
+    "ml": "ഒരുമിച്ച് 0 ദിവസങ്ങൾ"
+  },
+  "ഒരുമിച്ച് 0 ദിവസങ്ങൾ": {
+    "en": "Together for 0 days",
+    "ml": "ഒരുമിച്ച് 0 ദിവസങ്ങൾ"
+  },
+  "ആദ്യമായി സംസാരിച്ച നിമിഷം (Our First \"Hi\")": {
+    "en": "Our First \"Hi\"",
+    "ml": "ആദ്യമായി സംസാരിച്ച നിമിഷം"
+  },
+  "Our First \"Hi\"": {
+    "en": "Our First \"Hi\"",
+    "ml": "ആദ്യമായി സംസാരിച്ച നിമിഷം"
+  },
+  "ആദ്യമായി സംസാരിച്ച നിമിഷം": {
+    "en": "Our First \"Hi\"",
+    "ml": "ആദ്യമായി സംസാരിച്ച നിമിഷം"
+  },
+  "ആദ്യ കൂടിക്കാഴ്ച (Our First Date)": {
+    "en": "Our First Date",
+    "ml": "ആദ്യ കൂടിക്കാഴ്ച"
+  },
+  "Our First Date": {
+    "en": "Our First Date",
+    "ml": "ആദ്യ കൂടിക്കാഴ്ച"
+  },
+  "നമ്മൾ ഒന്നിച്ചായ ദിവസം (The Day \"Us\" Began)": {
+    "en": "The Day \"Us\" Began",
+    "ml": "നമ്മൾ ഒന്നിച്ചായ ദിവസം"
+  },
+  "The Day \"Us\" Began": {
+    "en": "The Day \"Us\" Began",
+    "ml": "നമ്മൾ ഒന്നിച്ചായ ദിവസം"
+  },
+  "നമ്മൾ ഒന്നിച്ചായ ദിവസം": {
+    "en": "The Day \"Us\" Began",
+    "ml": "നമ്മൾ ഒന്നിച്ചായ ദിവസം"
+  },
+  "All Dreams (എല്ലാം)": {
+    "en": "All Dreams",
+    "ml": "എല്ലാം"
+  },
+  "All Dreams": {
+    "en": "All Dreams",
+    "ml": "എല്ലാം"
+  },
+  "Travel & Trips (യാത്രകൾ)": {
+    "en": "Travel & Trips",
+    "ml": "യാത്രകൾ"
+  },
+  "Travel & Trips": {
+    "en": "Travel & Trips",
+    "ml": "യാത്രകൾ"
+  },
+  "Romantic (റൊമാന്റിക്)": {
+    "en": "Romantic",
+    "ml": "റൊമാന്റിക്"
+  },
+  "Romantic": {
+    "en": "Romantic",
+    "ml": "റൊമാന്റിക്"
+  },
+  "Cozy Home (വീട്ടിലെ കാര്യങ്ങൾ)": {
+    "en": "Cozy Home",
+    "ml": "വീട്ടിലെ കാര്യങ്ങൾ"
+  },
+  "Cozy Home": {
+    "en": "Cozy Home",
+    "ml": "വീട്ടിലെ കാര്യങ്ങൾ"
+  },
+  "വീട്ടിലെ കാര്യങ്ങൾ": {
+    "en": "Cozy Home",
+    "ml": "വീട്ടിലെ കാര്യങ്ങൾ"
+  },
+  "Adventure (അഡ്വഞ്ചർ)": {
+    "en": "Adventure",
+    "ml": "അഡ്വഞ്ചർ"
+  },
+  "Adventure": {
+    "en": "Adventure",
+    "ml": "അഡ്വഞ്ചർ"
+  },
+  "Pets & Life (ക്യൂട്ട് നിമിഷങ്ങൾ)": {
+    "en": "Pets & Life",
+    "ml": "ക്യൂട്ട് നിമിഷങ്ങൾ"
+  },
+  "Pets & Life": {
+    "en": "Pets & Life",
+    "ml": "ക്യൂട്ട് നിമിഷങ്ങൾ"
+  },
+  "ക്യൂട്ട് നിമിഷങ്ങൾ": {
+    "en": "Pets & Life",
+    "ml": "ക്യൂട്ട് നിമിഷങ്ങൾ"
+  },
+  "Living Room Blanket Fort & Nostalgic Movie Night 🍿": {
+    "en": "Living Room Blanket Fort & Nostalgic Movie Night 🍿",
+    "ml": "ലിവിംഗ് റൂം ബ്ലാങ്കറ്റ് ഫോർട്ട് & മൂവി നൈറ്റ് 🍿"
+  },
+  "ലിവിംഗ് റൂം ബ്ലാങ്കറ്റ് ഫോർട്ട് & മൂവി നൈറ്റ് 🍿": {
+    "en": "Living Room Blanket Fort & Nostalgic Movie Night 🍿",
+    "ml": "ലിവിംഗ് റൂം ബ്ലാങ്കറ്റ് ഫോർട്ട് & മൂവി നൈറ്റ് 🍿"
+  },
+  "Build a cozy blanket fort with pillows & fairy lights, bring popcorn, and binge a nostalgic film!": {
+    "en": "Build a cozy blanket fort with pillows & fairy lights, bring popcorn, and binge a nostalgic film!",
+    "ml": "തലയിണകളും ബ്ലാങ്കറ്റുകളും ഫെയറി ലൈറ്റുകളും കൊണ്ട് ഒരു ടെന്റ് കെട്ടി പ്രിയപ്പെട്ട സിനിമ കാണാം!"
+  },
+  "തലയിണകളും ബ്ലാങ്കറ്റുകളും ഫെയറി ലൈറ്റുകളും കൊണ്ട് ഒരു ടെന്റ് കെട്ടി പ്രിയപ്പെട്ട സിനിമ കാണാം!": {
+    "en": "Build a cozy blanket fort with pillows & fairy lights, bring popcorn, and binge a nostalgic film!",
+    "ml": "തലയിണകളും ബ്ലാങ്കറ്റുകളും ഫെയറി ലൈറ്റുകളും കൊണ്ട് ഒരു ടെന്റ് കെട്ടി പ്രിയപ്പെട്ട സിനിമ കാണാം!"
+  },
+  "Cook a Brand New Gourmet Recipe Together 👩‍🍳": {
+    "en": "Cook a Brand New Gourmet Recipe Together 👩‍🍳",
+    "ml": "ഒരുമിച്ച് ഒരു സ്പെഷ്യൽ പാസ്ത / വിഭവം കുക്ക് ചെയ്യാം 👩‍🍳"
+  },
+  "ഒരുമിച്ച് ഒരു സ്പെഷ്യൽ പാസ്ത / വിഭവം കുക്ക് ചെയ്യാം 👩‍🍳": {
+    "en": "Cook a Brand New Gourmet Recipe Together 👩‍🍳",
+    "ml": "ഒരുമിച്ച് ഒരു സ്പെഷ്യൽ പാസ്ത / വിഭവം കുക്ക് ചെയ്യാം 👩‍🍳"
+  },
+  "Put on acoustic jazz, pour drinks, and prepare a delicious fresh meal together from scratch.": {
+    "en": "Put on acoustic jazz, pour drinks, and prepare a delicious fresh meal together from scratch.",
+    "ml": "നല്ലൊരു ബാക്ക്ഗ്രൗണ്ട് മ്യൂസിക് വെച്ച്, ഒരു പുതിയ പാചകക്കുറിപ്പ് ഒന്നിച്ച് ഉണ്ടാക്കി കഴിക്കാം."
+  },
+  "നല്ലൊരു ബാക്ക്ഗ്രൗണ്ട് മ്യൂസിക് വെച്ച്, ഒരു പുതിയ പാചകക്കുറിപ്പ് ഒന്നിച്ച് ഉണ്ടാക്കി കഴിക്കാം.": {
+    "en": "Put on acoustic jazz, pour drinks, and prepare a delicious fresh meal together from scratch.",
+    "ml": "നല്ലൊരു ബാക്ക്ഗ്രൗണ്ട് മ്യൂസിക് വെച്ച്, ഒരു പുതിയ പാചകക്കുറിപ്പ് ഒന്നിച്ച് ഉണ്ടാക്കി കഴിക്കാം."
+  },
+  "Candlelight Living Room Acoustic Karaoke 🎶": {
+    "en": "Candlelight Living Room Acoustic Karaoke 🎶",
+    "ml": "മെഴുകുതിരി വെളിച്ചത്തിൽ സ്വകാര്യ കരോക്കെ നൈറ്റ് 🎶"
+  },
+  "മെഴുകുതിരി വെളിച്ചത്തിൽ സ്വകാര്യ കരോക്കെ നൈറ്റ് 🎶": {
+    "en": "Candlelight Living Room Acoustic Karaoke 🎶",
+    "ml": "മെഴുകുതിരി വെളിച്ചത്തിൽ സ്വകാര്യ കരോക്കെ നൈറ്റ് 🎶"
+  },
+  "Sing your heart out to your favourite couple songs and have a slow dance in the living room.": {
+    "en": "Sing your heart out to your favourite couple songs and have a slow dance in the living room.",
+    "ml": "നമുക്ക് രണ്ടുപേർക്കും ഇഷ്ടമുള്ള മെലഡികൾ പരസ്പരം പാടിക്കൊടുക്കാം, ഡാൻസ് ചെയ്യാം!"
+  },
+  "നമുക്ക് രണ്ടുപേർക്കും ഇഷ്ടമുള്ള മെലഡികൾ പരസ്പരം പാടിക്കൊടുക്കാം, ഡാൻസ് ചെയ്യാം!": {
+    "en": "Sing your heart out to your favourite couple songs and have a slow dance in the living room.",
+    "ml": "നമുക്ക് രണ്ടുപേർക്കും ഇഷ്ടമുള്ള മെലഡികൾ പരസ്പരം പാടിക്കൊടുക്കാം, ഡാൻസ് ചെയ്യാം!"
+  },
+  "At-Home Relaxing Spa & Gentle Massage Night 🕯️": {
+    "en": "At-Home Relaxing Spa & Gentle Massage Night 🕯️",
+    "ml": "ഹോം സ്പാ & റിലാക്സിങ് മസ്സാജ് സെഷൻ 🕯️"
+  },
+  "ഹോം സ്പാ & റിലാക്സിങ് മസ്സാജ് സെഷൻ 🕯️": {
+    "en": "At-Home Relaxing Spa & Gentle Massage Night 🕯️",
+    "ml": "ഹോം സ്പാ & റിലാക്സിങ് മസ്സാജ് സെഷൻ 🕯️"
+  },
+  "Light scented candles, put on cucumber eye pads/face masks, and pamper each other with gentle massages.": {
+    "en": "Light scented candles, put on cucumber eye pads/face masks, and pamper each other with gentle massages.",
+    "ml": "റിലാക്സിങ് മ്യൂസിക്കും ഫേസ് മാസ്കും സുഗന്ധമുള്ള ഓയിലുകളും വെച്ച് പരസ്പരം മസ്സാജ് ചെയ്തു കൊടുക്കാം."
+  },
+  "റിലാക്സിങ് മ്യൂസിക്കും ഫേസ് മാസ്കും സുഗന്ധമുള്ള ഓയിലുകളും വെച്ച് പരസ്പരം മസ്സാജ് ചെയ്തു കൊടുക്കാം.": {
+    "en": "Light scented candles, put on cucumber eye pads/face masks, and pamper each other with gentle massages.",
+    "ml": "റിലാക്സിങ് മ്യൂസിക്കും ഫേസ് മാസ്കും സുഗന്ധമുള്ള ഓയിലുകളും വെച്ച് പരസ്പരം മസ്സാജ് ചെയ്തു കൊടുക്കാം."
+  },
+  "Spontaneous Midnight Drive with Windows Down 🎶": {
+    "en": "Spontaneous Midnight Drive with Windows Down 🎶",
+    "ml": "പാതിരാ ലോങ് ഡ്രൈവും തണുത്ത കാറ്റും 🎶"
+  },
+  "പാതിരാ ലോങ് ഡ്രൈവും തണുത്ത കാറ്റും 🎶": {
+    "en": "Spontaneous Midnight Drive with Windows Down 🎶",
+    "ml": "പാതിരാ ലോങ് ഡ്രൈവും തണുത്ത കാറ്റും 🎶"
+  },
+  "Roll the windows down, play our nostalgic road-trip songs, and drive through the empty night roads.": {
+    "en": "Roll the windows down, play our nostalgic road-trip songs, and drive through the empty night roads.",
+    "ml": "നഗരത്തിന്റെ തിരക്കുകൾ ഒഴിഞ്ഞ രാത്രിയിൽ ഗ്ലാസ് താഴ്ത്തി പാട്ടും കേട്ട് ഡ്രൈവ് ചെയ്യാം."
+  },
+  "നഗരത്തിന്റെ തിരക്കുകൾ ഒഴിഞ്ഞ രാത്രിയിൽ ഗ്ലാസ് താഴ്ത്തി പാട്ടും കേട്ട് ഡ്രൈവ് ചെയ്യാം.": {
+    "en": "Roll the windows down, play our nostalgic road-trip songs, and drive through the empty night roads.",
+    "ml": "നഗരത്തിന്റെ തിരക്കുകൾ ഒഴിഞ്ഞ രാത്രിയിൽ ഗ്ലാസ് താഴ്ത്തി പാട്ടും കേട്ട് ഡ്രൈവ് ചെയ്യാം."
+  },
+  "Sunset Beach Walk & Roadside Kadukkan Chai 🌅☕": {
+    "en": "Sunset Beach Walk & Roadside Kadukkan Chai 🌅☕",
+    "ml": "ബീച്ചിൽ സൂര്യാസ്തമയ നടപ്പും ചൂട് ചായയും 🌅☕"
+  },
+  "ബീച്ചിൽ സൂര്യാസ്തമയ നടപ്പും ചൂട് ചായയും 🌅☕": {
+    "en": "Sunset Beach Walk & Roadside Kadukkan Chai 🌅☕",
+    "ml": "ബീച്ചിൽ സൂര്യാസ്തമയ നടപ്പും ചൂട് ചായയും 🌅☕"
+  },
+  "Walk barefoot on cool sand as the sky turns orange, then grab hot tea and roadside snacks.": {
+    "en": "Walk barefoot on cool sand as the sky turns orange, then grab hot tea and roadside snacks.",
+    "ml": "കടൽത്തീരത്ത് കൈകൾ കോർത്തുപിടിച്ച് നടന്ന് സൂര്യാസ്തമയം കണ്ട് തട്ടുകടയിൽ നിന്ന് ചായ കുടിക്കാം."
+  },
+  "കടൽത്തീരത്ത് കൈകൾ കോർത്തുപിടിച്ച് നടന്ന് സൂര്യാസ്തമയം കണ്ട് തട്ടുകടയിൽ നിന്ന് ചായ കുടിക്കാം.": {
+    "en": "Walk barefoot on cool sand as the sky turns orange, then grab hot tea and roadside snacks.",
+    "ml": "കടൽത്തീരത്ത് കൈകൾ കോർത്തുപിടിച്ച് നടന്ന് സൂര്യാസ്തമയം കണ്ട് തട്ടുകടയിൽ നിന്ന് ചായ കുടിക്കാം."
+  },
+  "Rooftop Stargazing & Heart-to-Heart Deep Talk 🌌": {
+    "en": "Rooftop Stargazing & Heart-to-Heart Deep Talk 🌌",
+    "ml": "ടെറസ്സിൽ സ്റ്റാർ ഗേസിംഗും ഡീപ് ടോക്കും 🌌"
+  },
+  "ടെറസ്സിൽ സ്റ്റാർ ഗേസിംഗും ഡീപ് ടോക്കും 🌌": {
+    "en": "Rooftop Stargazing & Heart-to-Heart Deep Talk 🌌",
+    "ml": "ടെറസ്സിൽ സ്റ്റാർ ഗേസിംഗും ഡീപ് ടോക്കും 🌌"
+  },
+  "Lay a soft mat with pillows on the terrace, stargaze, and talk about our happiest memories.": {
+    "en": "Lay a soft mat with pillows on the terrace, stargaze, and talk about our happiest memories.",
+    "ml": "ടെറസ്സിൽ ഒരു പായയും കുഷ്യനുകളും ഇട്ട് ആകാശത്തിലെ നക്ഷത്രങ്ങളെ നോക്കി സ്വപ്നങ്ങൾ പങ്കുവെക്കാം."
+  },
+  "ടെറസ്സിൽ ഒരു പായയും കുഷ്യനുകളും ഇട്ട് ആകാശത്തിലെ നക്ഷത്രങ്ങളെ നോക്കി സ്വപ്നങ്ങൾ പങ്കുവെക്കാം.": {
+    "en": "Lay a soft mat with pillows on the terrace, stargaze, and talk about our happiest memories.",
+    "ml": "ടെറസ്സിൽ ഒരു പായയും കുഷ്യനുകളും ഇട്ട് ആകാശത്തിലെ നക്ഷത്രങ്ങളെ നോക്കി സ്വപ്നങ്ങൾ പങ്കുവെക്കാം."
+  },
+  "Secret Street Food Crawl: Try 3 New Spots! 🍜": {
+    "en": "Secret Street Food Crawl: Try 3 New Spots! 🍜",
+    "ml": "സ്ട്രീറ്റ് ഫുഡ് ഹണ്ടിംഗ് (3 പുതിയ രുചികൾ) 🍜"
+  },
+  "സ്ട്രീറ്റ് ഫുഡ് ഹണ്ടിംഗ് (3 പുതിയ രുചികൾ) 🍜": {
+    "en": "Secret Street Food Crawl: Try 3 New Spots! 🍜",
+    "ml": "സ്ട്രീറ്റ് ഫുഡ് ഹണ്ടിംഗ് (3 പുതിയ രുചികൾ) 🍜"
+  },
+  "Visit three different local street food stalls and share small bites at each spot.": {
+    "en": "Visit three different local street food stalls and share small bites at each spot.",
+    "ml": "നഗരത്തിലെ 3 വ്യത്യസ്ത സ്ട്രീറ്റ് ഫുഡ് സ്പോട്ടുകളിൽ പോയി ചെറിയ വിഭവങ്ങൾ ഷെയർ ചെയ്ത് രുചിക്കാം."
+  },
+  "നഗരത്തിലെ 3 വ്യത്യസ്ത സ്ട്രീറ്റ് ഫുഡ് സ്പോട്ടുകളിൽ പോയി ചെറിയ വിഭവങ്ങൾ ഷെയർ ചെയ്ത് രുചിക്കാം.": {
+    "en": "Visit three different local street food stalls and share small bites at each spot.",
+    "ml": "നഗരത്തിലെ 3 വ്യത്യസ്ത സ്ട്രീറ്റ് ഫുഡ് സ്പോട്ടുകളിൽ പോയി ചെറിയ വിഭവങ്ങൾ ഷെയർ ചെയ്ത് രുചിക്കാം."
+  },
+  "Dress-Up Candlelight Dinner & Romantic Vibe 🍷": {
+    "en": "Dress-Up Candlelight Dinner & Romantic Vibe 🍷",
+    "ml": "ക്യാൻഡിൽ ലൈറ്റ് ഡിന്നറും ഡ്രീമി വൈബും 🍷"
+  },
+  "ക്യാൻഡിൽ ലൈറ്റ് ഡിന്നറും ഡ്രീമി വൈബും 🍷": {
+    "en": "Dress-Up Candlelight Dinner & Romantic Vibe 🍷",
+    "ml": "ക്യാൻഡിൽ ലൈറ്റ് ഡിന്നറും ഡ്രീമി വൈബും 🍷"
+  },
+  "Dress up elegantly for each other, dim the overhead lights, light candles, and share an intimate meal.": {
+    "en": "Dress up elegantly for each other, dim the overhead lights, light candles, and share an intimate meal.",
+    "ml": "നല്ല വസ്ത്രങ്ങൾ ധരിച്ച്, ലൈറ്റുകൾ അണച്ച് മെഴുകുതിരി വെളിച്ചത്തിൽ ഒരു സ്പെഷ്യൽ ഡിന്നർ കഴിക്കാം."
+  },
+  "നല്ല വസ്ത്രങ്ങൾ ധരിച്ച്, ലൈറ്റുകൾ അണച്ച് മെഴുകുതിരി വെളിച്ചത്തിൽ ഒരു സ്പെഷ്യൽ ഡിന്നർ കഴിക്കാം.": {
+    "en": "Dress up elegantly for each other, dim the overhead lights, light candles, and share an intimate meal.",
+    "ml": "നല്ല വസ്ത്രങ്ങൾ ധരിച്ച്, ലൈറ്റുകൾ അണച്ച് മെഴുകുതിരി വെളിച്ചത്തിൽ ഒരു സ്പെഷ്യൽ ഡിന്നർ കഴിക്കാം."
+  },
+  "Late Night Ice Cream Hunt & Hand-in-Hand Stroll 🌙": {
+    "en": "Late Night Ice Cream Hunt & Hand-in-Hand Stroll 🌙",
+    "ml": "അർദ്ധരാത്രി ഐസ്ക്രീം ഹണ്ട് & വാക്ക് 🌙"
+  },
+  "അർദ്ധരാത്രി ഐസ്ക്രീം ഹണ്ട് & വാക്ക് 🌙": {
+    "en": "Late Night Ice Cream Hunt & Hand-in-Hand Stroll 🌙",
+    "ml": "അർദ്ധരാത്രി ഐസ്ക്രീം ഹണ്ട് & വാക്ക് 🌙"
+  },
+  "Head out late for dessert, get two different ice creams, taste each others, and stroll quietly.": {
+    "en": "Head out late for dessert, get two different ice creams, taste each others, and stroll quietly.",
+    "ml": "രാത്രി വൈകി ഒരു ഐസ്ക്രീം പാർലർ അല്ലെങ്കിൽ തട്ടുകട കണ്ടെത്തി പരസ്പരം രുചികൾ പങ്കിടാം."
+  },
+  "രാത്രി വൈകി ഒരു ഐസ്ക്രീം പാർലർ അല്ലെങ്കിൽ തട്ടുകട കണ്ടെത്തി പരസ്പരം രുചികൾ പങ്കിടാം.": {
+    "en": "Head out late for dessert, get two different ice creams, taste each others, and stroll quietly.",
+    "ml": "രാത്രി വൈകി ഒരു ഐസ്ക്രീം പാർലർ അല്ലെങ്കിൽ തട്ടുകട കണ്ടെത്തി പരസ്പരം രുചികൾ പങ്കിടാം."
+  },
+  "Partner's Birthday": {
+    "en": "Partner's Birthday",
+    "ml": "ജന്മദിനം 🎂"
+  },
+  "Birthday Secret": {
+    "en": "Birthday Secret",
+    "ml": "ജന്മദിന സമ്മാനം"
+  },
+  "ജന്മദിന സമ്മാനം": {
+    "en": "Birthday Secret",
+    "ml": "ജന്മദിന സമ്മാനം"
+  },
+  "Happy Birthday My Love 🎂": {
+    "en": "Happy Birthday My Love 🎂",
+    "ml": "എന്റെ പ്രിയപ്പെട്ടവൾക്ക്/പ്രിയന് ജന്മദിനാശംസകൾ 🎂"
+  },
+  "എന്റെ പ്രിയപ്പെട്ടവൾക്ക്/പ്രിയന് ജന്മദിനാശംസകൾ 🎂": {
+    "en": "Happy Birthday My Love 🎂",
+    "ml": "എന്റെ പ്രിയപ്പെട്ടവൾക്ക്/പ്രിയന് ജന്മദിനാശംസകൾ 🎂"
+  },
+  "A sweet letter, wishes, and love note to open exactly on their special birthday!": {
+    "en": "A sweet letter, wishes, and love note to open exactly on their special birthday!",
+    "ml": "നിന്റെ പങ്കാളിയുടെ ജന്മദിനത്തിൽ മാത്രം തുറക്കാൻ കഴിയുന്ന മാന്ത്രിക കത്ത്!"
+  },
+  "നിന്റെ പങ്കാളിയുടെ ജന്മദിനത്തിൽ മാത്രം തുറക്കാൻ കഴിയുന്ന മാന്ത്രിക കത്ത്!": {
+    "en": "A sweet letter, wishes, and love note to open exactly on their special birthday!",
+    "ml": "നിന്റെ പങ്കാളിയുടെ ജന്മദിനത്തിൽ മാത്രം തുറക്കാൻ കഴിയുന്ന മാന്ത്രിക കത്ത്!"
+  },
+  "Anniversary Capsule": {
+    "en": "Anniversary Capsule",
+    "ml": "വിവാഹവാർഷിക കത്ത്"
+  },
+  "വിവാഹവാർഷിക കത്ത്": {
+    "en": "Anniversary Capsule",
+    "ml": "വിവാഹവാർഷിക കത്ത്"
+  },
+  "Happy Anniversary, Forever & Always 🥂": {
+    "en": "Happy Anniversary, Forever & Always 🥂",
+    "ml": "ഹാപ്പി ആനിവേഴ്സറി, എന്നും എപ്പോഴും 🥂"
+  },
+  "ഹാപ്പി ആനിവേഴ്സറി, എന്നും എപ്പോഴും 🥂": {
+    "en": "Happy Anniversary, Forever & Always 🥂",
+    "ml": "ഹാപ്പി ആനിവേഴ്സറി, എന്നും എപ്പോഴും 🥂"
+  },
+  "Reminisce about your journey and celebrate your milestone together.": {
+    "en": "Reminisce about your journey and celebrate your milestone together.",
+    "ml": "നമ്മുടെ ഒന്നിച്ചുള്ള ജീവിതത്തിന്റെ മറ്റൊരു മനോഹരമായ വാർഷികത്തിന്!"
+  },
+  "നമ്മുടെ ഒന്നിച്ചുള്ള ജീവിതത്തിന്റെ മറ്റൊരു മനോഹരമായ വാർഷികത്തിന്!": {
+    "en": "Reminisce about your journey and celebrate your milestone together.",
+    "ml": "നമ്മുടെ ഒന്നിച്ചുള്ള ജീവിതത്തിന്റെ മറ്റൊരു മനോഹരമായ വാർഷികത്തിന്!"
+  },
+  "Valentine's Day": {
+    "en": "Valentine's Day",
+    "ml": "പ്രണയദിനം (Valentine) 💖"
+  },
+  "പ്രണയദിനം (Valentine) 💖": {
+    "en": "Valentine's Day",
+    "ml": "പ്രണയദിനം (Valentine) 💖"
+  },
+  "Valentine Promise": {
+    "en": "Valentine Promise",
+    "ml": "പ്രണയദിന വാഗ്ദാനം"
+  },
+  "പ്രണയദിന വാഗ്ദാനം": {
+    "en": "Valentine Promise",
+    "ml": "പ്രണയദിന വാഗ്ദാനം"
+  },
+  "To My Eternal Valentine 💖": {
+    "en": "To My Eternal Valentine 💖",
+    "ml": "എന്റെ വാലന്റൈന് ഒരു സ്നേഹസമ്മാനം 💖"
+  },
+  "എന്റെ വാലന്റൈന് ഒരു സ്നേഹസമ്മാനം 💖": {
+    "en": "To My Eternal Valentine 💖",
+    "ml": "എന്റെ വാലന്റൈന് ഒരു സ്നേഹസമ്മാനം 💖"
+  },
+  "Lock your eternal love vows to be unlocked on Valentine’s Day.": {
+    "en": "Lock your eternal love vows to be unlocked on Valentine’s Day.",
+    "ml": "പ്രണയദിനത്തിൽ മാത്രം തുറക്കുന്ന രഹസ്യ പ്രണയലേഖനം!"
+  },
+  "പ്രണയദിനത്തിൽ മാത്രം തുറക്കുന്ന രഹസ്യ പ്രണയലേഖനം!": {
+    "en": "Lock your eternal love vows to be unlocked on Valentine’s Day.",
+    "ml": "പ്രണയദിനത്തിൽ മാത്രം തുറക്കുന്ന രഹസ്യ പ്രണയലേഖനം!"
+  },
+  "Valentine": {
+    "en": "Valentine's Day",
+    "ml": "പ്രണയദിനം (Valentine) 💖"
+  },
+  "പ്രണയദിനം 💖": {
+    "en": "Valentine's Day",
+    "ml": "പ്രണയദിനം (Valentine) 💖"
+  },
+  "New Year Midnight": {
+    "en": "New Year Midnight",
+    "ml": "പുതുവത്സര രാവ് 🎆"
+  },
+  "പുതുവത്സര രാവ് 🎆": {
+    "en": "New Year Midnight",
+    "ml": "പുതുവത്സര രാവ് 🎆"
+  },
+  "New Year Hope": {
+    "en": "New Year Hope",
+    "ml": "പുതുവത്സര പ്രതീക്ഷ"
+  },
+  "പുതുവത്സര പ്രതീക്ഷ": {
+    "en": "New Year Hope",
+    "ml": "പുതുവത്സര പ്രതീക്ഷ"
+  },
+  "Entering Another Beautiful Year Together 🎆": {
+    "en": "Entering Another Beautiful Year Together 🎆",
+    "ml": "ഒരു പുതിയ വർഷം കൂടി നിന്നോടൊപ്പം 🎆"
+  },
+  "ഒരു പുതിയ വർഷം കൂടി നിന്നോടൊപ്പം 🎆": {
+    "en": "Entering Another Beautiful Year Together 🎆",
+    "ml": "ഒരു പുതിയ വർഷം കൂടി നിന്നോടൊപ്പം 🎆"
+  },
+  "New dreams, new promises, and hopes sealed for midnight of the New Year.": {
+    "en": "New dreams, new promises, and hopes sealed for midnight of the New Year.",
+    "ml": "പുതുവർഷത്തിന്റെ പുലരിയിൽ തുറക്കാനായി ഒരു സമ്മാനം."
+  },
+  "പുതുവർഷത്തിന്റെ പുലരിയിൽ തുറക്കാനായി ഒരു സമ്മാനം.": {
+    "en": "New dreams, new promises, and hopes sealed for midnight of the New Year.",
+    "ml": "പുതുവർഷത്തിന്റെ പുലരിയിൽ തുറക്കാനായി ഒരു സമ്മാനം."
+  },
+  "Milestone Moment": {
+    "en": "Milestone Moment",
+    "ml": "വിശേഷ നിമിഷം 🌟"
+  },
+  "വിശേഷ നിമിഷം 🌟": {
+    "en": "Milestone Moment",
+    "ml": "വിശേഷ നിമിഷം 🌟"
+  },
+  "Milestone Secret": {
+    "en": "Milestone Secret",
+    "ml": "നാഴികക്കല്ല് രഹസ്യം"
+  },
+  "നാഴികക്കല്ല് രഹസ്യം": {
+    "en": "Milestone Secret",
+    "ml": "നാഴികക്കല്ല് രഹസ്യം"
+  },
+  "A Special Milestone Surprise 🌟": {
+    "en": "A Special Milestone Surprise 🌟",
+    "ml": "നമ്മുടെ ജീവിതത്തിലെ വലിയൊരു നേട്ടത്തിന് 🌟"
+  },
+  "നമ്മുടെ ജീവിതത്തിലെ വലിയൊരു നേട്ടത്തിന് 🌟": {
+    "en": "A Special Milestone Surprise 🌟",
+    "ml": "നമ്മുടെ ജീവിതത്തിലെ വലിയൊരു നേട്ടത്തിന് 🌟"
+  },
+  "Unlock on a graduation, new home, job, or relationship milestone date.": {
+    "en": "Unlock on a graduation, new home, job, or relationship milestone date.",
+    "ml": "നമ്മുടെ ഒരു വലിയ സ്വപ്നം സാക്ഷാത്കരിക്കപ്പെടുന്ന സുദിനത്തിനായി."
+  },
+  "നമ്മുടെ ഒരു വലിയ സ്വപ്നം സാക്ഷാത്കരിക്കപ്പെടുന്ന സുദിനത്തിനായി.": {
+    "en": "Unlock on a graduation, new home, job, or relationship milestone date.",
+    "ml": "നമ്മുടെ ഒരു വലിയ സ്വപ്നം സാക്ഷാത്കരിക്കപ്പെടുന്ന സുദിനത്തിനായി."
+  },
+  "Secret Love Letter": {
+    "en": "Secret Love Letter",
+    "ml": "രഹസ്യ കത്ത് 💌"
+  },
+  "രഹസ്യ കത്ത് 💌": {
+    "en": "Secret Love Letter",
+    "ml": "രഹസ്യ കത്ത് 💌"
+  },
+  "Time Capsule": {
+    "en": "Time Capsule",
+    "ml": "ടൈം ക്യാപ്സ്യൂൾ"
+  },
+  "ടൈം ക്യാപ്സ്യൂൾ": {
+    "en": "Time Capsule",
+    "ml": "ടൈം ക്യാപ്സ്യൂൾ"
+  },
+  "Open When The Time Comes 💌": {
+    "en": "Open When The Time Comes 💌",
+    "ml": "ഈ ശുഭമുഹൂർത്തത്തിൽ മാത്രം തുറക്കുക 💌"
+  },
+  "ഈ ശുഭമുഹൂർത്തത്തിൽ മാത്രം തുറക്കുക 💌": {
+    "en": "Open When The Time Comes 💌",
+    "ml": "ഈ ശുഭമുഹൂർത്തത്തിൽ മാത്രം തുറക്കുക 💌"
+  },
+  "Choose any future date & time that holds magic for the two of you.": {
+    "en": "Choose any future date & time that holds magic for the two of you.",
+    "ml": "ഭാവിയിലെ ഒരു പ്രത്യേക ദിനത്തിൽ മാത്രം തുറക്കാൻ കഴിയുന്ന രഹസ്യ കത്ത്."
+  },
+  "ഭാവിയിലെ ഒരു പ്രത്യേക ദിനത്തിൽ മാത്രം തുറക്കാൻ കഴിയുന്ന രഹസ്യ കത്ത്.": {
+    "en": "Choose any future date & time that holds magic for the two of you.",
+    "ml": "ഭാവിയിലെ ഒരു പ്രത്യേക ദിനത്തിൽ മാത്രം തുറക്കാൻ കഴിയുന്ന രഹസ്യ കത്ത്."
+  },
+  "Royal Crimson Rose": {
+    "en": "Royal Crimson Rose",
+    "ml": "രാജകീയ റോസ് 🌹"
+  },
+  "രാജകീയ റോസ് 🌹": {
+    "en": "Royal Crimson Rose",
+    "ml": "രാജകീയ റോസ് 🌹"
+  },
+  "Vintage Golden Letter": {
+    "en": "Vintage Golden Letter",
+    "ml": "വിന്റേജ് സുവർണ്ണ കത്ത് 📜"
+  },
+  "വിന്റേജ് സുവർണ്ണ കത്ത് 📜": {
+    "en": "Vintage Golden Letter",
+    "ml": "വിന്റേജ് സുവർണ്ണ കത്ത് 📜"
+  },
+  "Midnight Starlight": {
+    "en": "Midnight Starlight",
+    "ml": "നക്ഷത്ര രാവ് 🌙"
+  },
+  "നക്ഷത്ര രാവ് 🌙": {
+    "en": "Midnight Starlight",
+    "ml": "നക്ഷത്ര രാവ് 🌙"
+  },
+  "Lavender Sunset": {
+    "en": "Lavender Sunset",
+    "ml": "ലാവെൻഡർ സന്ധ്യ 💜"
+  },
+  "ലാവെൻഡർ സന്ധ്യ 💜": {
+    "en": "Lavender Sunset",
+    "ml": "ലാവെൻഡർ സന്ധ്യ 💜"
+  },
+  "Eternal Heart": {
+    "en": "Eternal Heart",
+    "ml": "ഹൃദയം ❤️"
+  },
+  "ഹൃദയം ❤️": {
+    "en": "Eternal Heart",
+    "ml": "ഹൃദയം ❤️"
+  },
+  "Sacred Promise": {
+    "en": "Sacred Promise",
+    "ml": "മോതിരം 💍"
+  },
+  "മോതിരം 💍": {
+    "en": "Sacred Promise",
+    "ml": "മോതിരം 💍"
+  },
+  "True Passion": {
+    "en": "True Passion",
+    "ml": "റോസ് 🌹"
+  },
+  "റോസ് 🌹": {
+    "en": "True Passion",
+    "ml": "റോസ് 🌹"
+  },
+  "Forever Love": {
+    "en": "Forever Love",
+    "ml": "അനന്ത പ്രണയം ♾️"
+  },
+  "അനന്ത പ്രണയം ♾️": {
+    "en": "Forever Love",
+    "ml": "അനന്ത പ്രണയം ♾️"
+  },
+  "Royal Love": {
+    "en": "Royal Love",
+    "ml": "കിരീടം 👑"
+  },
+  "കിരീടം 👑": {
+    "en": "Royal Love",
+    "ml": "കിരീടം 👑"
+  },
+  "Key to My Heart": {
+    "en": "Key to My Heart",
+    "ml": "ഹൃദയ താക്കോൽ 🗝️"
+  },
+  "ഹൃദയ താക്കോൽ 🗝️": {
+    "en": "Key to My Heart",
+    "ml": "ഹൃദയ താക്കോൽ 🗝️"
+  },
+  "Unlocked": {
+    "en": "Unlocked",
+    "ml": "തുറന്നു"
+  },
+  "സ്നേഹത്തോടെ തുറന്നു! 💌": {
+    "en": "Unlocked with Love! 💌",
+    "ml": "സ്നേഹത്തോടെ തുറന്നു! 💌"
+  }
+}

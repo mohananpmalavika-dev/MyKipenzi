@@ -933,7 +933,7 @@ async function flush() {
     flushing = false;
   }
 }
-const flushTimer = setInterval(flush, 150);
+const flushTimer = setInterval(flush, 50);
 flushTimer.unref();
 let sweeping = false;
 let scheduling = false;

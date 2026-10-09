@@ -35,6 +35,12 @@
   --mint-ink: #486c53;
   --gold-soft: #f6ecd3;
   --gold-ink: #89662b;
+  --surface: var(--bg-panel);
+  --bg: var(--bg-chat-panel);
+  --text: var(--text-main);
+  --border: var(--line);
+  --primary: var(--forest);
+  --accent: var(--forest);
 }
 :root[data-theme="dark"] {
   --forest: #d6afce;
@@ -146,6 +152,11 @@ input:focus, textarea:focus, select:focus { border-color: var(--forest); box-sha
 :root .date-separator span { background: var(--bg-panel); border: 1px solid var(--line); color: var(--muted); padding: 6px 13px; border-radius: 20px; }
 .bubble { border-radius: 18px 18px 18px 5px; box-shadow: var(--shadow-bubble); }
 .mine .bubble { border-radius: 18px 18px 5px 18px; }
+.sender-original { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+:root .sender-original small { color: var(--forest); font-size: 11px; font-weight: 600; }
+:root .sender-original p { color: var(--text-main); font-size: var(--chat-font-size); line-height: var(--chat-line-height); }
+.received-feature-translation { display: grid; gap: 10px; margin-bottom: 14px; }
+.received-feature-translation > small { color: var(--forest); font-size: 11px; font-weight: 600; }
 [data-bubble-style="rounded"] .bubble { border-radius: 24px; }
 [data-bubble-style="square"] .bubble { border-radius: 4px; }
 :root .composer-area { background: var(--bg-chat-header); border-color: var(--line); padding: 17px 24px 14px; flex-shrink: 0; }
@@ -161,6 +172,18 @@ input:focus, textarea:focus, select:focus { border-color: var(--forest); box-sha
 :root .modal-heading { border-bottom: 1px solid var(--line); padding-bottom: 18px; margin-bottom: 22px; }
 :root .modal-heading h2 { color: var(--text-heading); font-size: 18px; }
 :root .modal-description { color: var(--muted); }
+:root :is(.daily-prompt-modal, .couple-games-modal-card, .heartbeat-modal-container, .watch-party-container, .story-modal-container, .tc-modal-container, .romantic-modal-container, .love-poet-modal, .voice-duet-modal) { background: var(--bg-modal); color: var(--text-main); border: 1px solid var(--border-modal); border-radius: 22px; box-shadow: 0 24px 100px #21152840; }
+:root :is(.prompt-modal-header, .couple-games-header, .heartbeat-header, .watch-party-header, .story-modal-header, .tc-modal-header, .romantic-modal-header, .love-poet-header, .voice-duet-header) { background: var(--card-bg); border-color: var(--line); color: var(--text-heading); }
+:root :is(.couple-games-header h3, .story-modal-title, .tc-header-title, .romantic-header-title, .love-poet-header h2, .voice-duet-header h2) { color: var(--text-heading); }
+:root :is(.couple-games-header p, .story-modal-subtitle, .tc-header-subtitle, .romantic-header-subtitle, .love-poet-header p, .voice-duet-header p) { color: var(--muted); }
+:root :is(.prompt-tabs, .couple-games-tabs, .story-tabs, .romantic-tabs-nav) { border-color: var(--line); background: var(--bg-panel); }
+:root :is(.prompt-tab-btn.active, .nav-tab-btn.active, .story-tab-btn.active, .romantic-tab-btn.active) { background: var(--accent-soft); color: var(--forest); border-color: var(--card-border); }
+:root :is(.trivia-card, .td-card, .wyr-card, .prompt-hero-card, .answer-card, .my-saved-answer-box, .partner-mystery-box) { border-color: var(--card-border); background: var(--card-bg); color: var(--text-main); }
+:root :is(.trivia-question-text, .td-prompt-text, .prompt-question-ml, .prompt-question-en) { color: var(--text-heading); }
+:root :is(.trivia-option-btn, .story-quick-date-btn, .tc-occasion-option) { border-color: var(--line); background: var(--bg-panel); color: var(--text-main); }
+:root .install-app-btn { background: var(--card-bg); border-color: var(--card-border); color: var(--forest); }
+:root .invisible-ink-quick-toggle { background: var(--accent-soft); border: 1px solid var(--card-border); color: var(--forest); border-radius: 8px; padding: 6px 9px; }
+.invisible-ink-quick-toggle input { width: 14px; height: 14px; margin: 0; accent-color: var(--forest); }
 .settings-assets, .message-alert-settings { background: var(--card-bg); border-color: var(--card-border); }
 .together-page { overflow-y: auto; min-height: 0; flex: 1; }
 .together-page-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 28px 30px; border-bottom: 1px solid var(--line); background: var(--bg-panel); }

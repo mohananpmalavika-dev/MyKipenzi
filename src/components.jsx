@@ -1,4 +1,6 @@
 import { AppearanceOptions } from './AppearanceOptions.jsx';
+import { featureText } from '../shared/featureLocale.js';
+import { receiverMessageText } from '../shared/featureLanguage.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   X,
@@ -1127,7 +1129,9 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
     [media, setMedia] = useState(null),
     [busy, setBusy] = useState(false),
     [ownVoice, setOwnVoice] = useState(false);
-  const translated = !mine && message.translation?.status === 'ready';
+  const translatedText = !mine && !message.deleted_at ? receiverMessageText(message, user.language) : null;
+  const translated = Boolean(translatedText);
+  const label = text => featureText(text, user.language);
 
   const isAudioNote =
     message.attachment &&
@@ -1136,6 +1140,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
         message.attachment.mime === 'video/webm'));
 
   const isInvisibleInk = !message.deleted_at && isMessageInvisibleInk(message.text);
+  const isFeatureShare = !message.deleted_at && /^(?:🫂 \[(?:Virtual Touch|Haptic Hug)|💓 \[Heartbeat Pulse|✨ \[Daily Us Prompt|🎧 \[Listen Together|🎬 \[Watch Party|\[OUR_STORY_|🌟 \[Our Story Memory|⏳ \[Our Story Milestone|💍 \[Our Story Milestone|\[TIME_CAPSULE:|💌 \[Digital Time Capsule|⏳ \[Digital Time Capsule|🌌 \[Sleep Together|\[MONTHLY_RECAP:|📸🎞️ \[Monthly Recap|🎙️🎶 \[Voice Duet:)/u.test(message.text || '');
 
   const defaultVoiceLang =
     user.language || 'en';
@@ -1143,6 +1148,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
   const [translatingLang, setTranslatingLang] = useState(null);
   const [transcriptionOpen, setTranscriptionOpen] = useState(true);
   const [copiedVoiceText, setCopiedVoiceText] = useState(false);
+  useEffect(() => { setSelectedVoiceLang(user.language || 'en'); }, [user.language]);
 
   const currentVoiceItem =
     message.translations?.[selectedVoiceLang] ||
@@ -1246,7 +1252,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
       return;
     }
     const readingTranslation = translated || Boolean(currentVoiceText);
-    const textToSpeak = currentVoiceText || (readingTranslation ? message.translation.text : message.text);
+    const textToSpeak = currentVoiceText || (readingTranslation ? translatedText : message.text);
     const langToSpeak = currentVoiceText ? selectedVoiceLang : (readingTranslation ? user.language : message.source_language);
     const utterance = new SpeechSynthesisUtterance(textToSpeak);
     utterance.lang =
@@ -1303,6 +1309,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
           </div>
         )}
         {!isInvisibleInk && (message.view_once && !message.deleted_at ? <ViewOnceMedia message={message} mine={mine} onError={onError} /> : message.attachment && <Attachment attachment={message.attachment} onError={onError} />)}
+        {translated && isFeatureShare && !isInvisibleInk && <div className="received-feature-translation"><small>{label('Translated message')} · {languages[user.language]}</small><p dir="auto">{translatedText}</p><small>{label('Sender’s original message')}</small></div>}
         {editing ? (
           <form className="message-edit" onSubmit={event => { event.preventDefault(); void mutate('PATCH'); }}>
             <textarea aria-label="Edit message" value={editText} onChange={event => setEditText(event.target.value)} maxLength={5000} disabled={actionBusy} autoFocus />
@@ -1336,7 +1343,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
         ) : isInvisibleInk ? (
           <InvisibleInkCard message={message} mine={mine} onError={onError} />
         ) : (
-          <p dir="auto">{message.deleted_at ? 'Message deleted' : translated ? message.translation.text : message.text}</p>
+          <p dir="auto" lang={translated ? user.language === 'manglish' ? 'ml-Latn' : user.language : undefined}>{message.deleted_at ? 'Message deleted' : translated ? translatedText : message.text}</p>
         )}
         {isAudioNote && (
           <div className="voice-translation-card" role="region" aria-label="Voice note transcription">
@@ -1405,6 +1412,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
                   <p className="voice-translated-text" dir="auto">
                     {currentVoiceText}
                   </p>
+                  {!mine && !message.deleted_at && selectedVoiceLang !== 'transcript' && message.translations?.transcript?.status === 'ready' && <div className="sender-original"><small>{label('Sender’s original message')}</small><p dir="auto">{message.translations.transcript.text}</p></div>}
                   <div className="voice-translation-footer">
                     <span className="voice-lang-desc">
                       {selectedVoiceLang === 'transcript'
@@ -1470,16 +1478,16 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
             </button>
           </div>
         )}
-        {!isAudioNote && translated && (
+        {!isAudioNote && !message.deleted_at && !isInvisibleInk && !isFeatureShare && translated && (
           <>
-            <small className="translation-label">{languages[message.translation.language || user.language]}</small>
+            <small className="translation-label">{label('Translated message')} · {languages[user.language]}</small>
             <div className="sender-original">
-              <small>Sender sent{languages[message.source_language] ? ` · ${languages[message.source_language]}` : ''}</small>
+              <small>{label('Sender’s original message')}{languages[message.source_language] ? ` · ${languages[message.source_language]}` : ''}</small>
               <p dir="auto">{message.text}</p>
             </div>
           </>
         )}
-        {!isAudioNote && mine && message.text && message.receiver_translation && (
+        {!isAudioNote && !message.deleted_at && !isInvisibleInk && mine && message.text && message.receiver_translation && (
           <div className="receiver-preview" aria-live="polite">
             <small>Receiver sees · {languages[message.receiver_translation.language]}</small>
             {message.receiver_translation.status === 'ready' ? (
@@ -1493,10 +1501,10 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
             )}
           </div>
         )}
-        {!isAudioNote && !mine && message.translation?.status === 'pending' && (
-          <small className="translation-label">Translating… · Original shown</small>
+        {!isAudioNote && !message.deleted_at && !isInvisibleInk && !mine && message.translation?.status === 'pending' && (
+          <small className="translation-label">{label('Translating… · Original shown')}</small>
         )}
-        {!isAudioNote && !mine && message.translation?.status === 'failed' && (
+        {!isAudioNote && !message.deleted_at && !isInvisibleInk && !mine && message.translation?.status === 'failed' && (
           <button
             type="button"
             className="translation-label"
@@ -1507,7 +1515,7 @@ export function Message({ message, mine, peerRead, user, capabilities, onError, 
               }).catch((e) => onError(e.message))
             }
           >
-            <RefreshCw size={12} /> Translation unavailable · Retry
+            <RefreshCw size={12} /> {label('Translation unavailable · Retry')}
           </button>
         )}
         <div className="message-meta">
